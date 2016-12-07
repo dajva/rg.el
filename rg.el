@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2016 David Landell <david.landell@sunnyhill.email>
 ;;
-;; Author: David Landell <david.landell@sunnyhill.email>
+;; Authors: David Landell <david.landell@sunnyhill.email>, Roland McGrath <roland@gnu.org>
 ;; Homepage: https://github.com/davja/rg.el
 
 ;; This program is free software; you can redistribute it and/or
