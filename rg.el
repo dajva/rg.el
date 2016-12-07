@@ -57,7 +57,6 @@
     (setq rg-template
           (concat
            "rg --no-heading --color always --colors match:fg:red "
-           (rg-build-type-add-args)
             " "
             "--type <F> <C> <R>"))))
 
@@ -112,7 +111,7 @@
                   (cdr default-alias) ")"))
              ": ")
          rg-files-aliases
-         nil t nil 'grep-files-history
+         nil nil nil 'grep-files-history
          (car default-alias))))
     files))
 
@@ -223,7 +222,11 @@ This command shares argument histories with \\[rgrep] and \\[grep]."
         (setq command (grep-expand-template
                        rg-template
                        regexp
-                       files))
+                       (concat
+                        (if (assoc files (rg-get-type-flags))
+                            (concat files " ")
+                          (concat "custom --type-add 'custom:" files "' "))
+                        (rg-build-type-add-args))))
         (when command
           (if confirm
               (setq command

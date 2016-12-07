@@ -17,12 +17,14 @@ Invoke by <kbd>M-x rg</kbd>. This works the same way as <kbd>M-x rgrep</kbd>,
 i.e. you get an interactive prompt to enter search details. Universal
 argument can be used as for ``rgrep``.
 
-## Customize
-
 [ripgrep](https://github.com/BurntSushi/ripgrep) has its own builtin
 mappings from type names to file name patterns that can be selected
-from rg.el on invocation of ``rg``.
-It's also possible to add custom patterns by customizing
+from rg.el on invocation of ``rg``. It's also possible to specify a
+custom file name pattern in the files prompt.
+
+## Customize
+
+Custom type patterns as for rgrep are supported via customizing of
 ``rg-custom-type-flags``.
 
 ```el
