@@ -32,8 +32,8 @@
 (defvar rg-command "rg --no-heading --color always --colors match:fg:red ")
 
 (defcustom rg-custom-type-flags
-  '(("gn" .    "*.gn*")
-    ("gyp" .    "*.gyp*"))
+  '(("gn" .    "*.gn *.gni")
+    ("gyp" .    "*.gyp *.gypi"))
   "Alist of aliases for the FILES argument to `rg' and `rg'."
   :type 'alist
   :group 'rg)
