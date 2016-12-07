@@ -1,5 +1,7 @@
 ;;; rg.el - Use ripgrep (grep and ag replacement) from within Emacs.
 
+;; Copyright (C) 1985-1987, 1993-1999, 2001-2015 Free Software
+;; Foundation, Inc.
 ;; Copyright (C) 2016 David Landell <david.landell@sunnyhill.email>
 ;;
 ;; Authors: David Landell <david.landell@sunnyhill.email>, Roland McGrath <roland@gnu.org>
