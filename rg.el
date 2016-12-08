@@ -30,8 +30,11 @@
 (require 'grep)
 
 (defvar rg-builtin-type-flags nil)
-(defvar rg-template nil)
-(defvar rg-command "rg --no-heading --color always --colors match:fg:red ")
+(defvar rg-command "rg --no-heading --color always --colors match:fg:red")
+
+(defvar rg-special-types
+  '(("all" . "all defined types")
+    ("everything" . "*")))
 
 (defcustom rg-custom-type-flags
   '(("gn" .    "*.gn *.gni")
@@ -53,32 +56,35 @@
         (split-string globs) " ")))
    rg-custom-type-flags " "))
 
-(defun rg-compute-defaults ()
-  "Compute defaults for rg invokation."
-  (unless rg-template
-    (setq rg-template
-          (concat
-           "rg --no-heading --color always --colors match:fg:red "
-            " "
-            "--type <F> <C> <R>"))))
+(defun rg-build-template(&optional type custom)
+  (concat
+   rg-command
+   " "
+   (rg-build-type-add-args) " "
+   (when type
+     (concat
+      (when custom
+        (concat "--type-add 'custom:" custom "' "))
+      "--type <F> "))
+   "<C> <R>"))
 
 (defun rg-list-builtin-types ()
   "Invokes rg --type-list and puts the result in an alist."
-  (let ((builtins
-         (mapcar
-          (lambda (item)
-            (let ((association (split-string item ":" t " ")))
-              (cons (car association)
-                    (mapconcat 'identity (split-string (cadr association) "," t " ") " "))))
-          (nbutlast (split-string
-                     (shell-command-to-string "rg --type-list") "\n") 1))))
-    (push '("all" . ".*") builtins)))
+  (mapcar
+   (lambda (item)
+     (let ((association (split-string item ":" t " ")))
+       (cons (car association)
+             (mapconcat 'identity (split-string (cadr association) "," t " ") " "))))
+   (nbutlast (split-string
+              (shell-command-to-string "rg --type-list") "\n") 1)))
 
-(defun rg-get-type-flags ()
+
+(defun rg-get-type-flags (&optional nospecial)
   "Returns supported type flags."
   (unless rg-builtin-type-flags
     (setq rg-builtin-type-flags (rg-list-builtin-types)))
-  (append rg-builtin-type-flags rg-custom-type-flags))
+  (append rg-builtin-type-flags rg-custom-type-flags
+          (when (not nospecial) rg-special-types)))
 
 (defun rg-read-files (regexp)
   "Read files arg for interactive rg."
@@ -87,11 +93,9 @@
      (fn (and bn
           (stringp bn)
           (file-name-nondirectory bn)))
-     (rg-files-aliases (rg-get-type-flags))
      (default-alias
        (and fn
-        (let ((aliases (remove (assoc "all" rg-files-aliases)
-                       rg-files-aliases))
+        (let ((aliases (rg-get-type-flags t))
               alias)
           (while aliases
             (setq alias (car aliases)
@@ -112,7 +116,7 @@
                   " (default: [" (car default-alias) "] = "
                   (cdr default-alias) ")"))
              ": ")
-         rg-files-aliases
+         (rg-get-type-flags)
          nil nil nil 'grep-files-history
          (car default-alias))))
     files))
@@ -199,14 +203,11 @@ This command shares argument histories with \\[rgrep] and \\[grep]."
    (progn
      (unless (executable-find "rg")
        (error "rg is not in path."))
-     (rg-compute-defaults)
      (grep-compute-defaults)
      (cond
       ((and rg-command (equal current-prefix-arg '(16)))
        (list (read-from-minibuffer "Run: " rg-command
                                    nil nil 'grep-history)))
-      ((not rg-template)
-       (error "rg.el: No `rg-template' available"))
       (t (let* ((regexp (grep-read-regexp))
                 (files (rg-read-files regexp))
                 (dir (read-directory-name "In directory: "
@@ -222,13 +223,14 @@ This command shares argument histories with \\[rgrep] and \\[grep]."
               (setq command nil))
         (setq dir (file-name-as-directory (expand-file-name dir)))
         (setq command (grep-expand-template
-                       rg-template
+                       (rg-build-template
+                        (not (equal files "everything"))
+                        (unless (assoc files (rg-get-type-flags))
+                          (let ((pattern files))
+                            (setq files "custom")
+                            pattern)))
                        regexp
-                       (concat
-                        (if (assoc files (rg-get-type-flags))
-                            (concat files " ")
-                          (concat "custom --type-add 'custom:" files "' "))
-                        (rg-build-type-add-args))))
+                       files))
         (when command
           (if confirm
               (setq command

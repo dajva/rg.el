@@ -22,6 +22,15 @@ mappings from type names to file name patterns that can be selected
 from rg.el on invocation of ``rg``. It's also possible to specify a
 custom file name pattern in the files prompt.
 
+### Mappings with special meaning
+
+Name | Meaning
+-----|--------
+all | all defined types including ``rg-custom-type-flags``
+everything | all files, i.e. running rg witout ``--type`` flag
+custom | used internally in rg.el for mapping custom globs. Do not use
+this in ``rg-custom-type-flags``
+
 ## Customize
 
 Custom type patterns as for rgrep are supported via customizing of
