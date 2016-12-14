@@ -29,14 +29,14 @@
 
 (require 'grep)
 
-(defvar rg-builtin-type-flags nil)
+(defvar rg-builtin-type-aliases nil)
 (defvar rg-command "rg --no-heading --color always --colors match:fg:red")
 
-(defvar rg-special-types
-  '(("all" . "all defined types")
+(defvar rg-special-type-aliases
+  '(("all" . "all defined type aliases")
     ("everything" . "*")))
 
-(defcustom rg-custom-type-flags
+(defcustom rg-custom-type-aliases
   '(("gn" .    "*.gn *.gni")
     ("gyp" .    "*.gyp *.gypi"))
   "Alist of aliases for the FILES argument to `rg' and `rg'."
@@ -45,7 +45,7 @@
 
 (defun rg-build-type-add-args ()
   "Builds a string of --type-add: 'foo:*.foo' flags for each type in
-  `rg-custom-type-flags'."
+  `rg-custom-type-aliases'."
   (mapconcat
    (lambda (typedef)
      (let ((name (car typedef))
@@ -54,7 +54,7 @@
         (lambda (glob)
           (concat "--type-add '" name ":" glob "'"))
         (split-string globs) " ")))
-   rg-custom-type-flags " "))
+   rg-custom-type-aliases " "))
 
 (defun rg-build-template(&optional type custom)
   (concat
@@ -68,7 +68,7 @@
       "--type <F> "))
    "<C> <R>"))
 
-(defun rg-list-builtin-types ()
+(defun rg-list-builtin-type-aliases ()
   "Invokes rg --type-list and puts the result in an alist."
   (mapcar
    (lambda (item)
@@ -79,12 +79,12 @@
               (shell-command-to-string "rg --type-list") "\n") 1)))
 
 
-(defun rg-get-type-flags (&optional nospecial)
-  "Returns supported type flags."
-  (unless rg-builtin-type-flags
-    (setq rg-builtin-type-flags (rg-list-builtin-types)))
-  (append rg-builtin-type-flags rg-custom-type-flags
-          (when (not nospecial) rg-special-types)))
+(defun rg-get-type-aliases (&optional nospecial)
+  "Returns supported type aliases."
+  (unless rg-builtin-type-aliases
+    (setq rg-builtin-type-aliases (rg-list-builtin-type-aliases)))
+  (append rg-builtin-type-aliases rg-custom-type-aliases
+          (when (not nospecial) rg-special-type-aliases)))
 
 (defun rg-read-files (regexp)
   "Read files arg for interactive rg."
@@ -95,7 +95,7 @@
           (file-name-nondirectory bn)))
      (default-alias
        (and fn
-        (let ((aliases (rg-get-type-flags t))
+        (let ((aliases (rg-get-type-aliases t))
               alias)
           (while aliases
             (setq alias (car aliases)
@@ -116,7 +116,7 @@
                   " (default: [" (car default-alias) "] = "
                   (cdr default-alias) ")"))
              ": ")
-         (rg-get-type-flags)
+         (rg-get-type-aliases)
          nil nil nil 'grep-files-history
          (car default-alias))))
     files))
@@ -186,8 +186,8 @@ This function is called from `compilation-filter-hook'."
 (defun rg (regexp &optional files dir confirm)
   "Run ripgrep, searching for REGEXP in FILES in directory DIR.
 The search is limited to file names matching shell pattern FILES.
-FILES may use abbreviations defined in `rg-custom-type-flags' or
-ripgrep builtin types, e.g.  entering `elisp' is equivalent to `*.el'.
+FILES may use abbreviations defined in `rg-custom-type-aliases' or
+ripgrep builtin type aliases, e.g.  entering `elisp' is equivalent to `*.el'.
 
 With \\[universal-argument] prefix, you can edit the constructed shell command line
 before it is executed.
@@ -225,7 +225,7 @@ This command shares argument histories with \\[rgrep] and \\[grep]."
         (setq command (grep-expand-template
                        (rg-build-template
                         (not (equal files "everything"))
-                        (unless (assoc files (rg-get-type-flags))
+                        (unless (assoc files (rg-get-type-aliases))
                           (let ((pattern files))
                             (setq files "custom")
                             pattern)))
