@@ -11,25 +11,37 @@ Rust. For some introduction and benchmarks, see
 
 This package let you run `ripgrep` like `grep` from within Emacs.
 
+## Installation
+
+Put `rg.el` somewhere in your load path and add this to `init.el`
+
+``` el
+(require 'rg)
+(global-set-key (kbd "M-s") 'rg)
+```
+
+`rg` is an autoloaded symbol so it's also possible to defer loading if
+you have autoloading setup.
+
 ## Usage
 
 Invoke by <kbd>M-x rg</kbd>. This works the same way as <kbd>M-x rgrep</kbd>,
 i.e. you get an interactive prompt to enter search details. Universal
 argument can be used as for `rgrep`.
 
-[ripgrep](https://github.com/BurntSushi/ripgrep) has its own builtin
+[ripgrep](https://github.com/BurntSushi/ripgrep) has its own built in
 mappings from type names to file name patterns that can be selected
 from rg.el on invocation of `rg`. It's also possible to specify a
 custom file name pattern in the files prompt.
 
 ### Mappings with special meaning
 
-Name | Meaning
------|--------
-all | all defined types including `rg-custom-type-aliases`
-everything | all files, i.e. running rg witout `--type` flag
-custom | used internally in rg.el for mapping custom globs. Do not use
-this in `rg-custom-type-aliases`
+| Name | Meaning |
+|-----|--------|
+| all | all defined types including `rg-custom-type-aliases` |
+| everything | all files, i.e. running rg without `--type` flag |
+| custom | used internally in rg.el for mapping custom globs. Do not use this in `rg-custom-type-aliases` |
+
 
 ## Customize
 
