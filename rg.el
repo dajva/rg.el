@@ -1,4 +1,4 @@
-;;; rg.el - Use ripgrep (grep and ag replacement) from within Emacs.
+;;; rg.el --- Use ripgrep (grep and ag replacement) from within Emacs.
 
 ;; Copyright (C) 1985-1987, 1993-1999, 2001-2015 Free Software
 ;; Foundation, Inc.
