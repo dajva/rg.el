@@ -4,8 +4,13 @@
 ;; Foundation, Inc.
 ;; Copyright (C) 2016 David Landell <david.landell@sunnyhill.email>
 ;;
-;; Authors: David Landell <david.landell@sunnyhill.email>, Roland McGrath <roland@gnu.org>
+;; Author: David Landell <david.landell@sunnyhill.email>
+;;         Roland McGrath <roland@gnu.org>
+;; Version: 0.9.0
 ;; Homepage: https://github.com/davja/rg.el
+;; Keywords: matching, tools
+
+;; This file is not part of GNU Emacs.
 
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License
@@ -22,10 +27,16 @@
 ;; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 ;; 02110-1301, USA.
 
-;; Commentary:
+;;; Commentary:
 
-;; This package depends on and reuses parts of emacs builtin grep
-;; package and is mostly adjustments to ripgrep's behavior and output.
+;; This package is a frontend to ripgrep (rg) and works in a similar
+;; way to Emacs built in grep package.  It depends on and reuses parts
+;; of built in grep and is mostly adjustments to ripgrep's behavior
+;; and output.
+
+;; `rg' is the main entry point and works very much like builtin `rgrep'.
+
+;;; Code:
 
 (require 'grep)
 
@@ -44,7 +55,7 @@
   :group 'rg)
 
 (defun rg-build-type-add-args ()
-  "Builds a string of --type-add: 'foo:*.foo' flags for each type in
+"Build a string of --type-add: 'foo:*.foo' flags for each type in
   `rg-custom-type-aliases'."
   (mapconcat
    (lambda (typedef)
@@ -80,14 +91,14 @@
 
 
 (defun rg-get-type-aliases (&optional nospecial)
-  "Returns supported type aliases."
+"Return supported type aliases.  If NOSPECIAL is non nil the `rg-special-type-aliases' will not be included."
   (unless rg-builtin-type-aliases
     (setq rg-builtin-type-aliases (rg-list-builtin-type-aliases)))
   (append rg-builtin-type-aliases rg-custom-type-aliases
           (when (not nospecial) rg-special-type-aliases)))
 
 (defun rg-read-files (regexp)
-  "Read files arg for interactive rg."
+"Read files arg for interactive rg.  REGEXP is the search string."
   (let* ((bn (or (buffer-file-name)
          (replace-regexp-in-string "<[0-9]+>\\'" "" (buffer-name))))
      (fn (and bn
@@ -144,7 +155,7 @@ This function is called from `compilation-filter-hook'."
         (while (re-search-forward "\033\\[[0-9;]*[mK]" end 1)
           (replace-match "" t t))))))
 
-(setq rg-mode-font-lock-keywords
+(defvar rg-mode-font-lock-keywords
    '(;; Command output lines.
      (": \\(.+\\): \\(?:Permission denied\\|No such \\(?:file or directory\\|device or address\\)\\)$"
       1 grep-error-face)
@@ -246,3 +257,4 @@ This command shares argument histories with \\[rgrep] and \\[grep]."
             (setq default-directory dir))))))
 
 (provide 'rg)
+;;; rg.el ends here
