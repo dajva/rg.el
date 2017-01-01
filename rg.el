@@ -56,7 +56,7 @@
 
 (defun rg-build-type-add-args ()
 "Build a string of --type-add: 'foo:*.foo' flags for each type in
-  `rg-custom-type-aliases'."
+`rg-custom-type-aliases'."
   (mapconcat
    (lambda (typedef)
      (let ((name (car typedef))
@@ -195,7 +195,7 @@ This function is called from `compilation-filter-hook'."
 
 ;;;###autoload
 (defun rg (regexp &optional files dir confirm)
-  "Run ripgrep, searching for REGEXP in FILES in directory DIR.
+"Run ripgrep, searching for REGEXP in FILES in directory DIR.
 The search is limited to file names matching shell pattern FILES.
 FILES may use abbreviations defined in `rg-custom-type-aliases' or
 ripgrep builtin type aliases, e.g.  entering `elisp' is equivalent to `*.el'.
@@ -213,7 +213,7 @@ This command shares argument histories with \\[rgrep] and \\[grep]."
   (interactive
    (progn
      (unless (executable-find "rg")
-       (error "rg is not in path."))
+       (error "'rg' is not in path."))
      (grep-compute-defaults)
      (cond
       ((and rg-command (equal current-prefix-arg '(16)))
