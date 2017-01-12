@@ -49,12 +49,16 @@
   '(("all" . "all defined type aliases")
     ("everything" . "*")))
 
+(defgroup rg nil
+  "Settings for rg."
+  :group 'tools
+  :group 'external)
+
 (defcustom rg-custom-type-aliases
   '(("gn" .    "*.gn *.gni")
     ("gyp" .    "*.gyp *.gypi"))
   "Alist of aliases for the FILES argument to `rg' and `rg'."
-  :type 'alist
-  :group 'rg)
+  :type 'alist)
 
 (defun rg-build-type-add-args ()
 "Build a string of --type-add: 'foo:*.foo' flags for each type in
