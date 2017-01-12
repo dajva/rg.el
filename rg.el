@@ -8,6 +8,7 @@
 ;;         Roland McGrath <roland@gnu.org>
 ;; Version: 0.9.0
 ;; Homepage: https://github.com/davja/rg.el
+;; Package-Requires: ((cl-lib "0.5"))
 ;; Keywords: matching, tools
 
 ;; This file is not part of GNU Emacs.
@@ -38,6 +39,7 @@
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'grep)
 
 (defvar rg-builtin-type-aliases nil)
@@ -106,19 +108,14 @@
           (file-name-nondirectory bn)))
      (default-alias
        (and fn
-        (let ((aliases (rg-get-type-aliases t))
-              alias)
-          (while aliases
-            (setq alias (car aliases)
-              aliases (cdr aliases))
-            (if (string-match (mapconcat
-                       'wildcard-to-regexp
-                       (split-string (cdr alias) nil t)
-                       "\\|")
-                      fn)
-            (setq aliases nil)
-              (setq alias nil)))
-          alias)))
+            (cl-find-if
+             (lambda (alias)
+               (string-match (mapconcat
+                              'wildcard-to-regexp
+                              (split-string (cdr alias) nil t)
+                              "\\|")
+                             fn))
+             (rg-get-type-aliases t))))
      (files (completing-read
          (concat "Search for \"" regexp
              "\" in files"
