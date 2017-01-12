@@ -106,31 +106,31 @@
 (defun rg-read-files (regexp)
 "Read files arg for interactive rg.  REGEXP is the search string."
   (let* ((bn (or (buffer-file-name)
-         (replace-regexp-in-string "<[0-9]+>\\'" "" (buffer-name))))
-     (fn (and bn
-          (stringp bn)
-          (file-name-nondirectory bn)))
-     (default-alias
-       (and fn
-            (cl-find-if
-             (lambda (alias)
-               (string-match (mapconcat
-                              'wildcard-to-regexp
-                              (split-string (cdr alias) nil t)
-                              "\\|")
-                             fn))
-             (rg-get-type-aliases t))))
-     (files (completing-read
-         (concat "Search for \"" regexp
-             "\" in files"
-             (if default-alias
-                 (concat
-                  " (default: [" (car default-alias) "] = "
-                  (cdr default-alias) ")"))
-             ": ")
-         (rg-get-type-aliases)
-         nil nil nil 'grep-files-history
-         (car default-alias))))
+                 (replace-regexp-in-string "<[0-9]+>\\'" "" (buffer-name))))
+         (fn (and bn
+                  (stringp bn)
+                  (file-name-nondirectory bn)))
+         (default-alias
+           (and fn
+                (cl-find-if
+                 (lambda (alias)
+                   (string-match (mapconcat
+                                  'wildcard-to-regexp
+                                  (split-string (cdr alias) nil t)
+                                  "\\|")
+                                 fn))
+                 (rg-get-type-aliases t))))
+         (files (completing-read
+                 (concat "Search for \"" regexp
+                         "\" in files"
+                         (if default-alias
+                             (concat
+                              " (default: [" (car default-alias) "] = "
+                              (cdr default-alias) ")"))
+                         ": ")
+                 (rg-get-type-aliases)
+                 nil nil nil 'grep-files-history
+                 (car default-alias))))
     files))
 
 (defun rg-filter ()
@@ -157,24 +157,24 @@ This function is called from `compilation-filter-hook'."
           (replace-match "" t t))))))
 
 (defvar rg-mode-font-lock-keywords
-   '(;; Command output lines.
-     (": \\(.+\\): \\(?:Permission denied\\|No such \\(?:file or directory\\|device or address\\)\\)$"
-      1 grep-error-face)
-     ;; remove match from grep-regexp-alist before fontifying
-     ("^rg[/a-zA-z]* started.*"
-      (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t))
-     ("^rg[/a-zA-z]* finished \\(?:(\\(matches found\\))\\|with \\(no matches found\\)\\).*"
-      (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t)
-      (1 compilation-info-face nil t)
-      (2 compilation-warning-face nil t))
-     ("^rg[/a-zA-z]* \\(exited abnormally\\|interrupt\\|killed\\|terminated\\)\\(?:.*with code \\([0-9]+\\)\\)?.*"
-      (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t)
-      (1 grep-error-face)
-      (2 grep-error-face nil t))
-     ;; "filename-linenumber-" format is used for context lines in GNU
-     ;; grep and rg,
-     ;; "filename=linenumber=" for lines with function names in "git grep -p".
-     ("^.+?[-=][0-9]+[-=].*\n" (0 grep-context-face))))
+  '(;; Command output lines.
+    (": \\(.+\\): \\(?:Permission denied\\|No such \\(?:file or directory\\|device or address\\)\\)$"
+     1 grep-error-face)
+    ;; remove match from grep-regexp-alist before fontifying
+    ("^rg[/a-zA-z]* started.*"
+     (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t))
+    ("^rg[/a-zA-z]* finished \\(?:(\\(matches found\\))\\|with \\(no matches found\\)\\).*"
+     (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t)
+     (1 compilation-info-face nil t)
+     (2 compilation-warning-face nil t))
+    ("^rg[/a-zA-z]* \\(exited abnormally\\|interrupt\\|killed\\|terminated\\)\\(?:.*with code \\([0-9]+\\)\\)?.*"
+     (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t)
+     (1 grep-error-face)
+     (2 grep-error-face nil t))
+    ;; "filename-linenumber-" format is used for context lines in GNU
+    ;; grep and rg,
+    ;; "filename=linenumber=" for lines with function names in "git grep -p".
+    ("^.+?[-=][0-9]+[-=].*\n" (0 grep-context-face))))
 
 (define-compilation-mode rg-mode "rg"
   "Sets `grep-last-buffer' and `compilation-window-height'."
