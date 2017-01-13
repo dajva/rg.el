@@ -194,6 +194,13 @@ This function is called from `compilation-filter-hook'."
        grep-error-screen-columns)
   (add-hook 'compilation-filter-hook 'rg-filter nil t))
 
+(defun rg-expand-template (template &optional regexp files dir excl)
+"Patch rg TEMPLATE string replacing <C>, <D>, <F>, <R>, and <X>."
+  (when (string-match "<C>" template)
+    (setq template
+          (replace-match "-i" t t template)))
+  (grep-expand-template template regexp files dir excl))
+
 ;;;###autoload
 (defun rg (regexp &optional files dir confirm)
 "Run ripgrep, searching for REGEXP in FILES in directory DIR.
@@ -234,7 +241,7 @@ This command shares argument histories with \\[rgrep] and \\[grep]."
           (if (string= command rg-command)
               (setq command nil))
         (setq dir (file-name-as-directory (expand-file-name dir)))
-        (setq command (grep-expand-template
+        (setq command (rg-expand-template
                        (rg-build-template
                         (not (equal files "everything"))
                         (unless (assoc files (rg-get-type-aliases))
