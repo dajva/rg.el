@@ -86,7 +86,7 @@
    "<C> <R>"))
 
 (defun rg-list-builtin-type-aliases ()
-  "Invokes rg --type-list and puts the result in an alist."
+"Invokes rg --type-list and puts the result in an alist."
   (mapcar
    (lambda (item)
      (let ((association (split-string item ":" t " ")))
@@ -134,7 +134,7 @@
     files))
 
 (defun rg-filter ()
-  "Handle match highlighting escape sequences inserted by the rg process.
+"Handle match highlighting escape sequences inserted by the rg process.
 This function is called from `compilation-filter-hook'."
   (save-excursion
     (forward-line 0)
@@ -177,7 +177,7 @@ This function is called from `compilation-filter-hook'."
     ("^.+?[-=][0-9]+[-=].*\n" (0 grep-context-face))))
 
 (define-compilation-mode rg-mode "rg"
-  "Sets `grep-last-buffer' and `compilation-window-height'."
+"Sets `grep-last-buffer' and `compilation-window-height'."
   (setq grep-last-buffer (current-buffer))
   (set (make-local-variable 'tool-bar-map) grep-mode-tool-bar-map)
   (set (make-local-variable 'compilation-error-face)
@@ -198,7 +198,12 @@ This function is called from `compilation-filter-hook'."
 "Patch rg TEMPLATE string replacing <C>, <D>, <F>, <R>, and <X>."
   (when (string-match "<C>" template)
     (setq template
-          (replace-match "-i" t t template)))
+          (replace-match
+           (if (and case-fold-search
+                    (isearch-no-upper-case-p regexp t))
+               "-i"
+             "")
+           t t template)))
   (grep-expand-template template regexp files dir excl))
 
 ;;;###autoload
