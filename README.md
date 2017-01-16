@@ -1,6 +1,7 @@
 # rg.el
 
 [![License GPL 3](https://img.shields.io/badge/license-GPL_3-green.svg?style=flat)](LICENSE)
+[![MELPA](http://melpa.org/packages/rg-badge.svg)](http://melpa.org/#/rg)
 
 Use [ripgrep](https://github.com/BurntSushi/ripgrep) in Emacs.
 
@@ -13,7 +14,11 @@ This package let you run `ripgrep` like `grep` from within Emacs.
 
 ## Installation
 
-Put `rg.el` somewhere in your load path and add this to `init.el`
+This package is available on [MELPA](http://melpa.org/#/rg). Install
+by doing `M-x package-install` <kbd>RET</kbd> `rg` from within emacs.
+
+If you want to install manually just put `rg.el` somewhere in your
+load path and add this to `init.el`
 
 ``` el
 (require 'rg)
