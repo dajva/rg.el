@@ -2,6 +2,7 @@
 
 [![License GPL 3](https://img.shields.io/badge/license-GPL_3-green.svg?style=flat)](LICENSE)
 [![MELPA](http://melpa.org/packages/rg-badge.svg)](http://melpa.org/#/rg)
+[![Build Status](https://travis-ci.org/dajva/rg.el.svg?branch=master)](https://travis-ci.org/dajva/rg.el)
 
 Use [ripgrep](https://github.com/BurntSushi/ripgrep) in Emacs.
 
