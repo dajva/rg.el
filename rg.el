@@ -8,7 +8,7 @@
 ;;         Roland McGrath <roland@gnu.org>
 ;; Version: 0.9.0
 ;; Homepage: https://github.com/davja/rg.el
-;; Package-Requires: ((cl-lib "0.5"))
+;; Package-Requires: ((cl-lib "0.5") (s "1.10.0"))
 ;; Keywords: matching, tools
 
 ;; This file is not part of GNU Emacs.
@@ -41,6 +41,7 @@
 
 (require 'cl-lib)
 (require 'grep)
+(require 's)
 
 (defvar rg-builtin-type-aliases nil)
 (defvar rg-command "rg --no-heading --color always --colors match:fg:red")
@@ -89,9 +90,10 @@
 "Invokes rg --type-list and puts the result in an alist."
   (mapcar
    (lambda (item)
-     (let ((association (split-string item ":" t " ")))
-       (cons (car association)
-             (mapconcat 'identity (split-string (cadr association) "," t " ") " "))))
+     (let ((association (split-string item ":" t)))
+       (cons (s-trim (car association))
+             (s-trim
+              (mapconcat 'identity (split-string (cadr association) "," t ) " ")))))
    (nbutlast (split-string
               (shell-command-to-string "rg --type-list") "\n") 1)))
 
@@ -270,4 +272,9 @@ This command shares argument histories with \\[rgrep] and \\[grep]."
             (setq default-directory dir))))))
 
 (provide 'rg)
+
+;; Local Variables:
+;; byte-compile-warnings: (not cl-functions)
+;; End:
+
 ;;; rg.el ends here

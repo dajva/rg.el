@@ -4,4 +4,5 @@
 (package-file "rg.el")
 
 (development
- (depends-on "cl-lib" "0.5"))
+ (depends-on "cl-lib" "0.5")
+ (depends-on "s"))

@@ -8,7 +8,7 @@ test: build-test package-test
 
 build-test:
 	cask clean-elc
-	cask exec $(EMACS) -batch -Q -L . -eval "(progn (setq byte-compile-error-on-warn t) (batch-byte-compile))" *.el
+	cask emacs -batch -Q -eval "(progn (setq byte-compile-error-on-warn t) (batch-byte-compile))" *.el
 
 package-test:
 	-@rm -r dist 2> /dev/null || true
