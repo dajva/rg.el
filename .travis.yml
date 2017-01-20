@@ -10,6 +10,10 @@ before_install:
   - curl -fsSkL https://raw.github.com/cask/cask/master/go | python
   - export PATH=$HOME/.cask/bin:$PATH
   - cask
+
+  # ripgrep
+  - cargo install ripgrep
+  - export PATH=$HOME/.cargo/bin:$PATH
 env:
   - EVM_EMACS=emacs-24.2-travis
   - EVM_EMACS=emacs-24.3-travis

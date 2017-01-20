@@ -196,7 +196,7 @@ This function is called from `compilation-filter-hook'."
        grep-error-screen-columns)
   (add-hook 'compilation-filter-hook 'rg-filter nil t))
 
-(defun rg-expand-template (template &optional regexp files dir excl)
+(defun rg-expand-template (template regexp &optional files dir excl)
 "Patch rg TEMPLATE string replacing <C>, <D>, <F>, <R>, and <X>."
   (when (string-match "<C>" template)
     (setq template

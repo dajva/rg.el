@@ -5,4 +5,6 @@
 
 (development
  (depends-on "cl-lib" "0.5")
+ (depends-on "ert-runner")
+ (depends-on "noflet")
  (depends-on "s"))

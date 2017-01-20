@@ -4,7 +4,9 @@ PKG_NAME = $(shell cask info | head -1 | cut -f2 -d" ")
 PKG_VERSION = $(shell cask version)
 PKG = $(PKG_NAME)-$(PKG_VERSION).el
 
-test: build-test package-test
+all: install test
+
+test: build-test package-test ert-test
 
 build-test:
 	cask clean-elc
@@ -15,7 +17,16 @@ package-test:
 	cask package
 	cask eval "(package-install-file \"dist/$(PKG)\")"
 
+unit-test:
+	cask exec ert-runner --pattern rg-unit
+
+integration-test:
+	cask exec ert-runner --pattern rg-integration
+
+ert-test:
+	cask exec ert-runner
+
 install:
 	cask install
 
-.PHONY: build-test package-test test install
+.PHONY: test build-test package-test unit-test integration-test ert-test install
