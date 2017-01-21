@@ -43,12 +43,36 @@
 (require 'grep)
 (require 's)
 
-(defvar rg-builtin-type-aliases nil)
-(defvar rg-command "rg --no-heading --color always --colors match:fg:red")
+(defvar rg-builtin-type-aliases nil
+  "Cache for 'rg --type-list'.")
 
-(defvar rg-special-type-aliases
-  '(("all" . "all defined type aliases")
-    ("everything" . "*")))
+(defvar rg-command "rg --no-heading --color always --colors match:fg:red"
+  "Command string for invoking rg.")
+
+(defconst rg-special-type-aliases
+  '(("all" . "all defined type aliases") ; rg --type all
+    ("everything" . "*")) ; rg wihtout '--type' arg
+  "Type aliases that is not output by 'rg --type-list' but is used for specialpurposes.")
+
+(defconst rg-mode-font-lock-keywords
+  '(;; Command output lines.
+    (": \\(.+\\): \\(?:Permission denied\\|No such \\(?:file or directory\\|device or address\\)\\)$"
+     1 grep-error-face)
+    ;; remove match from grep-regexp-alist before fontifying
+    ("^rg[/a-zA-z]* started.*"
+     (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t))
+    ("^rg[/a-zA-z]* finished \\(?:(\\(matches found\\))\\|with \\(no matches found\\)\\).*"
+     (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t)
+     (1 compilation-info-face nil t)
+     (2 compilation-warning-face nil t))
+    ("^rg[/a-zA-z]* \\(exited abnormally\\|interrupt\\|killed\\|terminated\\)\\(?:.*with code \\([0-9]+\\)\\)?.*"
+     (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t)
+     (1 grep-error-face)
+     (2 grep-error-face nil t))
+    ;; "filename-linenumber-" format is used for context lines in GNU
+    ;; grep and rg,
+    ;; "filename=linenumber=" for lines with function names in "git grep -p".
+    ("^.+?[-=][0-9]+[-=].*\n" (0 grep-context-face))))
 
 (defgroup rg nil
   "Settings for rg."
@@ -62,8 +86,7 @@
   :type 'alist)
 
 (defun rg-build-type-add-args ()
-"Build a string of --type-add: 'foo:*.foo' flags for each type in
-`rg-custom-type-aliases'."
+"Build a string of --type-add: 'foo:*.foo' flags for each type in `rg-custom-type-aliases'."
   (mapconcat
    (lambda (typedef)
      (let ((name (car typedef))
@@ -75,6 +98,9 @@
    rg-custom-type-aliases " "))
 
 (defun rg-build-template(&optional type custom)
+"Create command line template. Wehn TYPE is non nil type flag template
+will be added. CUSTOM is a custom file matching pattern that will be
+added as a '--type-add' on the rg command line."
   (concat
    rg-command
    " "
@@ -157,26 +183,6 @@ This function is called from `compilation-filter-hook'."
         (goto-char beg)
         (while (re-search-forward "\033\\[[0-9;]*[mK]" end 1)
           (replace-match "" t t))))))
-
-(defvar rg-mode-font-lock-keywords
-  '(;; Command output lines.
-    (": \\(.+\\): \\(?:Permission denied\\|No such \\(?:file or directory\\|device or address\\)\\)$"
-     1 grep-error-face)
-    ;; remove match from grep-regexp-alist before fontifying
-    ("^rg[/a-zA-z]* started.*"
-     (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t))
-    ("^rg[/a-zA-z]* finished \\(?:(\\(matches found\\))\\|with \\(no matches found\\)\\).*"
-     (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t)
-     (1 compilation-info-face nil t)
-     (2 compilation-warning-face nil t))
-    ("^rg[/a-zA-z]* \\(exited abnormally\\|interrupt\\|killed\\|terminated\\)\\(?:.*with code \\([0-9]+\\)\\)?.*"
-     (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t)
-     (1 grep-error-face)
-     (2 grep-error-face nil t))
-    ;; "filename-linenumber-" format is used for context lines in GNU
-    ;; grep and rg,
-    ;; "filename=linenumber=" for lines with function names in "git grep -p".
-    ("^.+?[-=][0-9]+[-=].*\n" (0 grep-context-face))))
 
 (define-compilation-mode rg-mode "rg"
 "Sets `grep-last-buffer' and `compilation-window-height'."
