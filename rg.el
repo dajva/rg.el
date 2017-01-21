@@ -2,11 +2,11 @@
 
 ;; Copyright (C) 1985-1987, 1993-1999, 2001-2015 Free Software
 ;; Foundation, Inc.
-;; Copyright (C) 2016 David Landell <david.landell@sunnyhill.email>
+;; Copyright (C) 2016-2017 David Landell <david.landell@sunnyhill.email>
 ;;
 ;; Author: David Landell <david.landell@sunnyhill.email>
 ;;         Roland McGrath <roland@gnu.org>
-;; Version: 0.9.0
+;; Version: 1.0.0
 ;; Homepage: https://github.com/davja/rg.el
 ;; Package-Requires: ((cl-lib "0.5") (s "1.10.0"))
 ;; Keywords: matching, tools
