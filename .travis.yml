@@ -26,3 +26,12 @@ matrix:
 script:
   - emacs --version
   - make test
+deploy:
+  provider: releases
+  api_key:
+    secure: ${GH_TOKEN}
+  file: rg.el
+  skip_cleanup: true
+  on:
+    repo: dajva/rg.el
+    tags: true
