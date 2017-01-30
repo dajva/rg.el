@@ -214,6 +214,8 @@ This function is called from `compilation-filter-hook'."
            t t template)))
   (grep-expand-template template regexp files dir excl))
 
+(defalias 'kill-rg 'kill-compilation)
+
 ;;;###autoload
 (defun rg (regexp &optional files dir confirm)
 "Run ripgrep, searching for REGEXP in FILES in directory DIR.
