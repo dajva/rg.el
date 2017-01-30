@@ -49,6 +49,9 @@
 (defvar rg-command "rg --no-heading --color always --colors match:fg:red"
   "Command string for invoking rg.")
 
+(defvar rg-last-search nil
+  "Stores parameters of last search.  Becomes buffer local in rg-mode buffers.")
+
 (defconst rg-special-type-aliases
   '(("all" . "all defined type aliases") ; rg --type all
     ("everything" . "*")) ; rg wihtout '--type' arg
@@ -73,6 +76,15 @@
     ;; grep and rg,
     ;; "filename=linenumber=" for lines with function names in "git grep -p".
     ("^.+?[-=][0-9]+[-=].*\n" (0 grep-context-face))))
+
+(defvar rg-mode-map
+  (let ((map grep-mode-map))
+    (define-key map "c" 'rg-rerun-toggle-case)
+    (define-key map "i" 'rg-rerun-toggle-ignore)
+    (define-key map "r" 'rg-rerun-change-regexp)
+    (define-key map "f" 'rg-rerun-change-files)
+    (define-key map "d" 'rg-rerun-change-dir)
+    map))
 
 (defgroup rg nil
   "Settings for rg."
@@ -200,6 +212,7 @@ This function is called from `compilation-filter-hook'."
   (set (make-local-variable 'compilation-disable-input) t)
   (set (make-local-variable 'compilation-error-screen-columns)
        grep-error-screen-columns)
+  (make-local-variable 'rg-last-search)
   (add-hook 'compilation-filter-hook 'rg-filter nil t))
 
 (defun rg-expand-template (template regexp &optional files dir excl)
@@ -215,6 +228,88 @@ This function is called from `compilation-filter-hook'."
   (grep-expand-template template regexp files dir excl))
 
 (defalias 'kill-rg 'kill-compilation)
+
+(defun rg-toggle-command-flag (flag)
+"Remove FLAG from last search command line if present or add it if
+not present."
+  (let ((command (car compilation-arguments)))
+    (setcar compilation-arguments
+            (if (s-contains-p (concat " " flag " ") command)
+                (s-replace (concat flag " ") "" command)
+              (s-replace "rg" (concat "rg " flag) command)))))
+
+(defmacro rg-rerun-with-changes (spec &rest body)
+"Rerun last search with parameters VAR-REGEXP, VAR-FILES and VAR-DIR. Modify the
+parameters in BODY.
+
+\(fn (VAR-REGEXP VAR-FILES VAR-DIR) BODY...)"
+  (declare (debug (symbolp symbolp symbolp body))
+           (indent 1))
+  (let ((regexp-sym (nth 0 spec))
+        (files-sym (nth 1 spec))
+        (dir-sym (nth 2 spec)))
+    `(cl-destructuring-bind (,regexp-sym ,files-sym ,dir-sym) rg-last-search
+       ,@body
+       (rg ,regexp-sym ,files-sym ,dir-sym))))
+
+(defun rg-read-regexp (prompt default history)
+"Read regexp argument from user.  PROMPT is the read prompt, DEFAULT is the
+default regexp and HISTORY is search history list."
+  (with-no-warnings
+    (if (and (= emacs-major-version 24)
+             (< emacs-minor-version 3))
+        (read-string
+         (concat prompt
+                 (if (and default (> (length default) 0))
+                     (format " (default \"%s\"): " default) ": "))
+         default history)
+      (read-regexp prompt default history))))
+
+;;;###autoload
+(defun rg-rerun-toggle-case ()
+"Rerun last search with toggled case sensitivity setting."
+  (interactive)
+  (rg-toggle-command-flag "-i")
+  (recompile))
+
+;;;###autoload
+(defun rg-rerun-toggle-ignore ()
+"Rerun last search with toggled '--no-ignore' flag."
+  (interactive)
+  (rg-toggle-command-flag "--no-ignore")
+  (recompile))
+
+;;;###autoload
+(defun rg-rerun-change-regexp()
+"Rerun last search but prompt for new regexp."
+  (interactive)
+  (rg-rerun-with-changes (regexp files dir)
+    (let ((read-from-minibuffer-orig (symbol-function 'read-from-minibuffer)))
+      ;; Override read-from-minibuffer in order to insert the original
+      ;; regexp in the input area.
+      (cl-letf (((symbol-function 'read-from-minibuffer)
+                 (lambda (prompt &optional initial-contents &rest args)
+                   (apply read-from-minibuffer-orig prompt regexp args))))
+        (setq regexp (rg-read-regexp "Search for" regexp 'grep-regexp-history))))))
+
+;;;###autoload
+(defun rg-rerun-change-files()
+"Rerun last search but prompt for new files."
+  (interactive)
+  (rg-rerun-with-changes (regexp files dir)
+    (setq files (completing-read
+                 (concat "Repeat search in files (default: [" files "]): ")
+                 (rg-get-type-aliases)
+                 nil nil nil 'grep-files-history
+                 files))))
+
+;;;###autoload
+(defun rg-rerun-change-dir()
+"Rerun last search but prompt for new dir."
+  (interactive)
+  (rg-rerun-with-changes (regexp files dir)
+    (setq dir (read-directory-name "In directory: "
+                                   dir nil))))
 
 ;;;###autoload
 (defun rg (regexp &optional files dir confirm)
@@ -272,6 +367,7 @@ This command shares argument histories with \\[rgrep] and \\[grep]."
                                           command nil nil 'grep-history))
             (add-to-history 'grep-history command))))
       (when command
+        (setq-default rg-last-search (list regexp files dir))
         (let ((default-directory dir))
           ;; Setting process-setup-function makes exit-message-function work
           ;; even when async processes aren't supported.
