@@ -54,6 +54,17 @@ custom file name pattern in the files prompt.
 | _everything_ | all files, i.e. running rg without `--type` flag |
 | _custom_ | used internally in ``rg.el`` for mapping custom globs. Do not use this in `rg-custom-type-aliases` |
 
+### The \*rg\* buffer
+The `rg` results buffer has bindings for modification of the last
+search for quick reruns with refined parameters.
+
+| Binding | Description |
+|-----|--------|
+| d | Change directory |
+| f | Change file pattern |
+| r | Change search string |
+| i | Toggle `--no-ignore` flag |
+| c | Toggle case insensitive setting |
 
 ## Customize
 

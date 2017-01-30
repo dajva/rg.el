@@ -1,4 +1,4 @@
-;;; rg.el --- Use ripgrep (grep and ag replacement) like rgrep.
+;;; rg.el --- A ripgrep frontend, similar to built in grep.el.
 
 ;; Copyright (C) 1985-1987, 1993-1999, 2001-2015 Free Software
 ;; Foundation, Inc.
@@ -31,11 +31,24 @@
 ;;; Commentary:
 
 ;; This package is a frontend to ripgrep (rg) and works in a similar
-;; way to Emacs built in grep package.  It depends on and reuses parts
-;; of built in grep and is mostly adjustments to ripgrep's behavior
-;; and output.
+;; way to Emacs built in `rgrep' command.  It depends on and reuses parts
+;; of built in grep with adjustments to ripgrep and is compatible with
+;; `wgrep'.  The `rg' results buffer has bindings for modification of
+;; the last search for quick reruns with refined parameters.
+;; Possible refinements are: toggle case insensitive search, toggle
+;; '--no-ignore' flag, change directory, change file pattern and change
+;; search string. See `rg-mode' for details.
 
-;; `rg' is the main entry point and works very much like builtin `rgrep'.
+;; Install the package and bind the main entry point `rg':
+;; (eval-after-load
+;;   (global-set-key (kbd "M-s") 'rg))
+
+;; ripgrep has built in type aliases that can be selected on
+;; invocation of `rg'.  Customize `rg-custom-type-aliases' to add your
+;; own aliases:
+;; (setq rg-custom-type-aliases
+;;   '(("foo" .    "*.foo *.bar")
+;;     ("baz" .    "*.baz *.qux")))
 
 ;;; Code:
 
@@ -51,7 +64,7 @@
 (defcustom rg-custom-type-aliases
   '(("gn" .    "*.gn *.gni")
     ("gyp" .    "*.gyp *.gypi"))
-  "Alist of file type aliases that are added to the 'rg' builtin aliases."
+  "Alist of file type aliases that are added to the 'rg' built in aliases."
   :type 'alist)
 
 (defvar rg-builtin-type-aliases nil
@@ -65,8 +78,9 @@
 
 (defconst rg-special-type-aliases
   '(("all" . "all defined type aliases") ; rg --type all
-    ("everything" . "*")) ; rg wihtout '--type' arg
-  "Type aliases that is not output by 'rg --type-list' but is used for specialpurposes.")
+    ("everything" . "*")) ; rg without '--type' arg
+  "Type aliases that are not produced by 'rg --type-list' but are used
+for special purposes.")
 
 (defconst rg-mode-font-lock-keywords
   '(;; Command output lines.
@@ -110,9 +124,9 @@
    rg-custom-type-aliases " "))
 
 (defun rg-build-template(&optional type custom)
-"Create command line template. Wehn TYPE is non nil type flag template
-will be added. CUSTOM is a custom file matching pattern that will be
-added as a '--type-add' on the rg command line."
+"Create command line template.  When TYPE is non nil, type flag template
+will be added.  Optional CUSTOM is a file matching pattern that will be
+added as a '--type-add' parameter to the rg command line."
   (concat
    rg-command
    " "
@@ -137,14 +151,15 @@ added as a '--type-add' on the rg command line."
 
 
 (defun rg-get-type-aliases (&optional nospecial)
-"Return supported type aliases.  If NOSPECIAL is non nil the `rg-special-type-aliases' will not be included."
+"Return supported type aliases.  If NOSPECIAL is non nil the
+`rg-special-type-aliases' will not be included."
   (unless rg-builtin-type-aliases
     (setq rg-builtin-type-aliases (rg-list-builtin-type-aliases)))
   (append rg-builtin-type-aliases rg-custom-type-aliases
           (unless nospecial rg-special-type-aliases)))
 
 (defun rg-read-files (regexp)
-"Read files arg for interactive rg.  REGEXP is the search string."
+"Read files argument for interactive rg.  REGEXP is the search string."
   (let* ((bn (or (buffer-file-name)
                  (replace-regexp-in-string "<[0-9]+>\\'" "" (buffer-name))))
          (fn (and bn
@@ -197,7 +212,17 @@ This function is called from `compilation-filter-hook'."
           (replace-match "" t t))))))
 
 (define-compilation-mode rg-mode "rg"
-"Sets `grep-last-buffer' and `compilation-window-height'."
+"Major mode for `rg' search results.
+Commands:
+\\<rg-mode-map>
+\\[rg-rerun-change-dir]\t Repeat this search in another directory (`rg-rerun-change-dir').
+\\[rg-rerun-change-files]\t Repeat this search with another file pattern (`rg-rerun-change-files').
+\\[rg-rerun-change-regexp]\t Change the search string for the current search (`rg-rerun-change-regexp').
+\\[rg-rerun-toggle-ignore]\t Repeat search with toggled '--no-ignore' flag (`rg-rerun-toggle-ignore').
+\\[rg-rerun-toggle-case]\t Repeat search with toggled case insensitive setting (`rg-rerun-toggle-case').
+\\[wgrep-change-to-wgrep-mode]\t Change mode to `wgrep'.
+
+\\{rg-mode-map}"
   (setq grep-last-buffer (current-buffer))
   (set (make-local-variable 'tool-bar-map) grep-mode-tool-bar-map)
   (set (make-local-variable 'compilation-error-face)
@@ -216,7 +241,8 @@ This function is called from `compilation-filter-hook'."
   (add-hook 'compilation-filter-hook 'rg-filter nil t))
 
 (defun rg-expand-template (template regexp &optional files dir excl)
-"Patch rg TEMPLATE string replacing <C>, <D>, <F>, <R>, and <X>."
+"Expand TEMPLATE string by replacing <C>, <D>, <F>, <R>, and <X>.
+REGEXP is the search string."
   (when (string-match "<C>" template)
     (setq template
           (replace-match
@@ -239,8 +265,8 @@ not present."
               (s-replace "rg" (concat "rg " flag) command)))))
 
 (defmacro rg-rerun-with-changes (spec &rest body)
-"Rerun last search with parameters VAR-REGEXP, VAR-FILES and VAR-DIR. Modify the
-parameters in BODY.
+"Rerun last search with parameters VAR-REGEXP, VAR-FILES and VAR-DIR.
+Modify the parameters in BODY.
 
 \(fn (VAR-REGEXP VAR-FILES VAR-DIR) BODY...)"
   (declare (debug (symbolp symbolp symbolp body))
