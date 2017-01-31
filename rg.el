@@ -43,6 +43,17 @@
 (require 'grep)
 (require 's)
 
+(defgroup rg nil
+  "Settings for rg."
+  :group 'tools
+  :group 'external)
+
+(defcustom rg-custom-type-aliases
+  '(("gn" .    "*.gn *.gni")
+    ("gyp" .    "*.gyp *.gypi"))
+  "Alist of file type aliases that are added to the 'rg' builtin aliases."
+  :type 'alist)
+
 (defvar rg-builtin-type-aliases nil
   "Cache for 'rg --type-list'.")
 
@@ -85,17 +96,6 @@
     (define-key map "f" 'rg-rerun-change-files)
     (define-key map "d" 'rg-rerun-change-dir)
     map))
-
-(defgroup rg nil
-  "Settings for rg."
-  :group 'tools
-  :group 'external)
-
-(defcustom rg-custom-type-aliases
-  '(("gn" .    "*.gn *.gni")
-    ("gyp" .    "*.gyp *.gypi"))
-  "Alist of aliases for the FILES argument to `rg' and `rg'."
-  :type 'alist)
 
 (defun rg-build-type-add-args ()
 "Build a string of --type-add: 'foo:*.foo' flags for each type in `rg-custom-type-aliases'."
@@ -141,7 +141,7 @@ added as a '--type-add' on the rg command line."
   (unless rg-builtin-type-aliases
     (setq rg-builtin-type-aliases (rg-list-builtin-type-aliases)))
   (append rg-builtin-type-aliases rg-custom-type-aliases
-          (when (not nospecial) rg-special-type-aliases)))
+          (unless nospecial rg-special-type-aliases)))
 
 (defun rg-read-files (regexp)
 "Read files arg for interactive rg.  REGEXP is the search string."

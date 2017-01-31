@@ -1,5 +1,3 @@
-EMACS ?= emacs
-
 PKG_NAME = $(shell cask info | head -1 | cut -f2 -d" ")
 PKG_VERSION = $(shell cask version)
 PKG_FULL_NAME = $(PKG_NAME)-$(PKG_VERSION)
@@ -14,7 +12,7 @@ build-test:
 
 package-test:
 	-@rm -r dist 2> /dev/null || true
-	-@rm -r /tmp/$(PKG_NAME)-$(PKG_VERSION)-elpa 2> /dev/null || true
+	-@rm -r /tmp/$(PKG_FULL_NAME)-elpa 2> /dev/null || true
 	cask package
 	PKG_FULL_NAME=$(PKG_FULL_NAME) emacs -batch -Q -l test/package-bootstrap.el \
 		-eval "(package-install-file \"dist/$(PKG_FULL_NAME).el\") (rg \"rg\" \"elisp\" \"/tmp/$(PKG_FULL_NAME)-elpa\"))"

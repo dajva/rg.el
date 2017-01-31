@@ -29,38 +29,38 @@
 
 ;; Unit tests
 
-(ert-deftest rg-unit/test-case-expand-template ()
+(ert-deftest rg-unit-test/case-expand-template ()
 "Test that rg-expand-template handles case settings correctly."
   (let ((template "<F> <C> <R>"))
     (let ((case-fold-search t))
-      (should (s-matches? (regexp-anywhere "-i") (rg-expand-template template "foo")))
-      (should-not (s-matches? (regexp-anywhere "-i") (rg-expand-template template "fOo"))))
+      (should (s-matches? (rg-regexp-anywhere "-i") (rg-expand-template template "foo")))
+      (should-not (s-matches? (rg-regexp-anywhere "-i") (rg-expand-template template "fOo"))))
     (let ((case-fold-search nil))
-      (should-not (s-matches? (regexp-anywhere "-i") (rg-expand-template template "foo")))
-      (should-not (s-matches? (regexp-anywhere "-i") (rg-expand-template template "Foo"))))))
+      (should-not (s-matches? (rg-regexp-anywhere "-i") (rg-expand-template template "foo")))
+      (should-not (s-matches? (rg-regexp-anywhere "-i") (rg-expand-template template "Foo"))))))
 
-(ert-deftest rg-unit/test-build-template ()
-"Test that rg-build-template is correct."
+(ert-deftest rg-unit-test/build-template ()
+"Test rg-build-template template expansion."
   (let* ((rg-command "rg")
         (rg-custom-type-aliases nil)
         (notype-template (rg-build-template))
         (type-template (rg-build-template t))
         (custom-template (rg-build-template t "glob")))
-    (should (s-matches? (regexp-anywhere-but-last "<C>") notype-template))
-    (should (s-matches? (regexp-last "<R>") notype-template))
-    (should-not (s-matches? (regexp-anywhere-but-last "--type <F>") notype-template))
-    (should-not (s-matches? (regexp-anywhere-but-last "--type-add 'custom:") notype-template))
+    (should (s-matches? (rg-regexp-anywhere-but-last "<C>") notype-template))
+    (should (s-matches? (rg-regexp-last "<R>") notype-template))
+    (should-not (s-matches? (rg-regexp-anywhere-but-last "--type <F>") notype-template))
+    (should-not (s-matches? (rg-regexp-anywhere-but-last "--type-add 'custom:") notype-template))
 
-    (should (s-matches? (regexp-anywhere-but-last "--type <F>") type-template))
-    (should-not (s-matches? (regexp-anywhere-but-last "--type-add 'custom:") type-template))
+    (should (s-matches? (rg-regexp-anywhere-but-last "--type <F>") type-template))
+    (should-not (s-matches? (rg-regexp-anywhere-but-last "--type-add 'custom:") type-template))
 
-    (should (s-matches? (regexp-anywhere-but-last "--type-add 'custom: *glob'") custom-template))
-    (should (s-matches? (regexp-anywhere-but-last "--type <F>") custom-template))))
+    (should (s-matches? (rg-regexp-anywhere-but-last "--type-add 'custom: *glob'") custom-template))
+    (should (s-matches? (rg-regexp-anywhere-but-last "--type <F>") custom-template))))
 
 
 ;; Integration tests
 
-(ert-deftest rg-integration/test-read-files-default-alias () :tags '(need-rg)
+(ert-deftest rg-integration-test/read-files-default-alias () :tags '(need-rg)
 "Test that rg-read-files detects the current file and selects matching alias."
   (let (prompt)
     (noflet ((completing-read (pr &rest args) (setq prompt pr)))
@@ -75,7 +75,7 @@
               (rg-read-files "foo")
               (should (s-matches? "\[test\]" prompt))))))
 
-(ert-deftest rg-integration/test-search-alias-builtin () :tags '(need-rg)
+(ert-deftest rg-integration-test/search-alias-builtin () :tags '(need-rg)
 "Test that rg builtin aliases works."
   (let ((case-fold-search t))
     (rg "hello" "elisp" (concat default-directory "test/data"))
@@ -87,7 +87,7 @@
         (should (= 0 (s-count-matches "foo.baz.*hello" bufstr)))
         (should (= 0 (s-count-matches "bar.baz.*hello" bufstr)))))))
 
-(ert-deftest rg-integration/test-search-alias-custom () :tags '(need-rg)
+(ert-deftest rg-integration-test/search-alias-custom () :tags '(need-rg)
 "Test that aliases defined in rg-custom-type-aliases works if explicitly selected."
   (let ((case-fold-search t)
         (rg-custom-type-aliases '(("test" . "*.baz"))))
@@ -100,7 +100,7 @@
         (should (= 3 (s-count-matches "foo.baz.*hello" bufstr)))
         (should (= 3 (s-count-matches "bar.baz.*hello" bufstr)))))))
 
-(ert-deftest rg-integration/test-search-alias-all-custom () :tags '(need-rg)
+(ert-deftest rg-integration-test/search-alias-all-custom () :tags '(need-rg)
 "Test that aliases defined in rg-custom-type-aliases works if
   implicitly selected via '--type all'."
 (let ((case-fold-search t)
@@ -114,7 +114,7 @@
         (should (= 3 (s-count-matches "foo.baz.*hello" bufstr)))
         (should (= 3 (s-count-matches "bar.baz.*hello" bufstr)))))))
 
-(ert-deftest rg-integration/test-search-no-alias() :tags '(need-rg)
+(ert-deftest rg-integration-test/search-no-alias() :tags '(need-rg)
 "Test that custom file pattern that is not an alias works."
   (let ((case-fold-search t))
     (rg "hello" "*.baz" (concat default-directory "test/data"))
@@ -126,7 +126,7 @@
         (should (= 3 (s-count-matches "foo.baz.*hello" bufstr)))
         (should (= 3 (s-count-matches "bar.baz.*hello" bufstr)))))))
 
-(ert-deftest rg-integration/test-search-uppercase-regexp () :tags '(need-rg)
+(ert-deftest rg-integration-test/search-uppercase-regexp () :tags '(need-rg)
 "Test that uppercase search triggers case sensitive search."
   (let ((case-fold-search t))
     (rg "Hello" "all" (concat default-directory "test/data"))
@@ -136,8 +136,7 @@
         (should (= 1 (s-count-matches "foo.el.*hello" bufstr)))
         (should (= 1 (s-count-matches "bar.el.*hello" bufstr)))))))
 
-(ert-deftest rg-integration/test-search-case-sensitive-regexp ()
-:tags '(need-rg)
+(ert-deftest rg-integration-test/search-case-sensitive-regexp () :tags '(need-rg)
 "Test explicit case sensitive search."
   (let ((case-fold-search nil))
     (rg "hello" "all" (concat default-directory "test/data")))

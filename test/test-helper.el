@@ -31,18 +31,18 @@
 (require 'rg)
 (require 's)
 
-(defun regexp-anywhere (needle)
+(defun rg-regexp-anywhere (needle)
   (s-replace "%%%%" needle "\\( \\|^\\)%%%%\\( \\|$\\)"))
 
-(defun regexp-last (needle)
+(defun rg-regexp-last (needle)
   (s-replace "%%%%" needle "\\( \\|^\\)%%%%$"))
 
-(defun regexp-anywhere-but-last (needle)
+(defun rg-regexp-anywhere-but-last (needle)
   (s-replace "%%%%" needle "\\( \\|^\\)%%%% "))
 
 (defun rg-wait-for-search-result ()
-"Wait for the rg search to finish and returns non nil if the search
-was successful. Timeout is 10 s."
+"Wait for the rg process to finish searching and return non nil if the
+search was successful. Timeout is 10 s."
   (let (search-finished)
     (add-hook 'compilation-finish-functions
               (lambda (buffer msg) (setq search-finished msg))
