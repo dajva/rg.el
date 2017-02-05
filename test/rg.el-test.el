@@ -58,6 +58,63 @@
     (should (s-matches? (rg-regexp-anywhere-but-last "--type <F>") custom-template))))
 
 
+(ert-deftest rg-unit-test/toggle-command-flag ()
+"Test `rg-toggle-command-flag'."
+  (let ((testflag "--foo")
+        (compilation-arguments (list (concat "rg --bar searchstring"))))
+    (rg-toggle-command-flag testflag)
+    (should (s-matches? (rg-regexp-anywhere testflag) (car compilation-arguments)))
+    (rg-toggle-command-flag testflag)
+    (should-not (s-matches? (rg-regexp-anywhere testflag) (car compilation-arguments)))))
+
+(ert-deftest rg-unit-test/rerun-change-regexp ()
+"Test result of `rg-rerun-change-regexp'."
+  (let ((rg-last-search '("regexp" "elisp" "/tmp/test"))
+        (result))
+    (noflet ((rg (regexp files dir) (setq result (list regexp files dir)))
+             (rg-read-regexp (&rest _) "new-regexp"))
+            (rg-rerun-change-regexp)
+            (should (cl-every 'equal '("new-regexp" "elisp" "/tmp/test") result)))))
+
+(ert-deftest rg-unit-test/read-regexp-correct-read-func ()
+"Test that `rg-read-regexp' choose the correct read function depending
+on emacs version."
+  (let (called prompt-result)
+    (noflet ((read-string (pr default &rest _)
+                          (setq called 'read-string)
+                          (setq prompt-result pr))
+             (read-regexp (pr &rest _)
+                          (setq called 'read-regexp)
+                          (setq prompt-result pr)))
+            (rg-read-regexp "Search for" "foo" 'bar)
+            (if (and (<= emacs-major-version 24)
+                     (<= emacs-minor-version 2))
+                (progn
+                  (should (eq called 'read-string))
+                  (should (equal prompt-result "Search for (default \"foo\"): ")))
+              (progn
+                (should (eq called 'read-regexp))
+                (should (equal prompt-result "Search for")))))))
+
+(ert-deftest rg-unit-test/rerun-change-files ()
+"Test result of `rg-rerun-change-files'."
+  (let ((rg-last-search '("regexp" "elisp" "/tmp/test"))
+        (result))
+    (noflet ((rg (regexp files dir) (setq result (list regexp files dir)))
+             (completing-read (&rest _) "cpp"))
+            (rg-rerun-change-files)
+            (should (cl-every 'equal '("regexp" "cpp" "/tmp/test") result)))))
+
+(ert-deftest rg-unit-test/rerun-change-dir ()
+"Test result of `rg-rerun-change-dir'."
+  (let ((rg-last-search '("regexp" "elisp" "/tmp/test"))
+        (result))
+    (noflet ((rg (regexp files dir) (setq result (list regexp files dir)))
+             (read-directory-name (&rest _) "/tmp/new"))
+            (rg-rerun-change-dir)
+            (should (cl-every 'equal '("regexp" "elisp" "/tmp/new") result)))))
+
+
 ;; Integration tests
 
 (ert-deftest rg-integration-test/read-files-default-alias () :tags '(need-rg)
