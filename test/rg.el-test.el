@@ -30,7 +30,7 @@
 ;; Unit tests
 
 (ert-deftest rg-unit-test/case-expand-template ()
-"Test that rg-expand-template handles case settings correctly."
+"Test that `rg-expand-template' handles case settings correctly."
   (let ((template "<F> <C> <R>"))
     (let ((case-fold-search t))
       (should (s-matches? (rg-regexp-anywhere "-i") (rg-expand-template template "foo")))
@@ -40,7 +40,7 @@
       (should-not (s-matches? (rg-regexp-anywhere "-i") (rg-expand-template template "Foo"))))))
 
 (ert-deftest rg-unit-test/build-template ()
-"Test rg-build-template template expansion."
+"Test `rg-build-template' template creation."
   (let* ((rg-command "rg")
         (rg-custom-type-aliases nil)
         (notype-template (rg-build-template))
@@ -57,6 +57,13 @@
     (should (s-matches? (rg-regexp-anywhere-but-last "--type-add 'custom: *glob'") custom-template))
     (should (s-matches? (rg-regexp-anywhere-but-last "--type <F>") custom-template))))
 
+(ert-deftest rg-unit-test/custom-command-line-flags ()
+"Test that `rg-command-line-flags' is added to the template."
+  (let* ((rg-command "rg")
+        (rg-custom-type-aliases nil)
+        (rg-command-line-flags '("--foo" "--bar"))
+        (template (rg-build-template)))
+    (should (s-matches? (rg-regexp-anywhere-but-last "--foo --bar") template))))
 
 (ert-deftest rg-unit-test/toggle-command-flag ()
 "Test `rg-toggle-command-flag'."
@@ -130,7 +137,7 @@ on emacs version."
 ;; Integration tests
 
 (ert-deftest rg-integration-test/read-files-default-alias () :tags '(need-rg)
-"Test that rg-read-files detects the current file and selects matching alias."
+"Test that `rg-read-files' detects the current file and selects matching alias."
   (let (prompt)
     (noflet ((completing-read (pr &rest args) (setq prompt pr)))
             (find-file "test/data/foo.el")
@@ -157,7 +164,7 @@ on emacs version."
         (should (= 0 (s-count-matches "bar.baz.*hello" bufstr)))))))
 
 (ert-deftest rg-integration-test/search-alias-custom () :tags '(need-rg)
-"Test that aliases defined in rg-custom-type-aliases works if explicitly selected."
+"Test that aliases defined in `rg-custom-type-aliases' works if explicitly selected."
   (let ((case-fold-search t)
         (rg-custom-type-aliases '(("test" . "*.baz"))))
     (rg "hello" "test" (concat default-directory "test/data"))
@@ -170,7 +177,7 @@ on emacs version."
         (should (= 3 (s-count-matches "bar.baz.*hello" bufstr)))))))
 
 (ert-deftest rg-integration-test/search-alias-all-custom () :tags '(need-rg)
-"Test that aliases defined in rg-custom-type-aliases works if
+"Test that aliases defined in `rg-custom-type-aliases' works if
   implicitly selected via '--type all'."
 (let ((case-fold-search t)
         (rg-custom-type-aliases '(("test" . "*.baz"))))

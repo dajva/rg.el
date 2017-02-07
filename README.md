@@ -68,6 +68,7 @@ search for quick reruns with refined parameters.
 
 ## Customize
 
+### rg-custom-type-aliases
 Custom type patterns as for rgrep are supported via customizing of
 `rg-custom-type-aliases`.
 
@@ -76,6 +77,10 @@ Custom type patterns as for rgrep are supported via customizing of
   '(("foo" .    "*.foo *.bar")
     ("baz" .    "*.baz *.qux")))
 ```
+
+### rg-command-line-flags
+Additional command line flags that will be appended to the ripgrep
+command line.
 
 
 ## Contribute

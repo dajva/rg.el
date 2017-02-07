@@ -37,7 +37,7 @@
 ;; the last search for quick reruns with refined parameters.
 ;; Possible refinements are: toggle case insensitive search, toggle
 ;; '--no-ignore' flag, change directory, change file pattern and change
-;; search string. See `rg-mode' for details.
+;; search string.  See `rg-mode' for details.
 
 ;; Install the package and bind the main entry point `rg':
 ;; (eval-after-load
@@ -66,6 +66,10 @@
     ("gyp" .    "*.gyp *.gypi"))
   "Alist of file type aliases that are added to the 'rg' built in aliases."
   :type 'alist)
+
+(defcustom rg-command-line-flags nil
+  "List of command line flags for rg."
+  :type '(repeat string))
 
 (defvar rg-builtin-type-aliases nil
   "Cache for 'rg --type-list'.")
@@ -128,8 +132,8 @@ for special purposes.")
 will be added.  Optional CUSTOM is a file matching pattern that will be
 added as a '--type-add' parameter to the rg command line."
   (concat
-   rg-command
-   " "
+   rg-command " "
+   (mapconcat 'identity rg-command-line-flags " ")
    (rg-build-type-add-args) " "
    (when type
      (concat
