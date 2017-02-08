@@ -82,6 +82,28 @@ Custom type patterns as for rgrep are supported via customizing of
 Additional command line flags that will be appended to the ripgrep
 command line.
 
+### rg-define-toggle
+This is a macro that can be used to define custom `ripgrep` flag
+toggling functions in the rg result buffer. The macro takes the flag
+(and potential value) as an argument and optionally binds the toggle
+function to a key and enable the flag by default.
+
+The function defined by this macro will be named as the flag name
+stripped with leading dashes and prefixed with `rg-custom-toggle-flag-`.
+
+```el
+(rg-define-toggle "-uu" "I" t)
+
+```
+Creates a function named `rg-custom-toggle-flag-uu` that is on by
+default and bound to <kbd>I</kbd> in `rg` result buffer.
+
+``` el
+(rg-define-toggle "--context 3" (kbd "C-c c"))
+```
+Creates a function named `rg-custom-toggle-flag-context` that is off by
+default and bound to <kbd>C-c c</kbd> in `rg` result buffer.
+
 
 ## Contribute
 

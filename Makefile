@@ -24,7 +24,7 @@ integration-test:
 	cask exec ert-runner --pattern rg-integration
 
 ert-test:
-	cask exec ert-runner
+	cask exec ert-runner --quiet
 
 install:
 	cask install

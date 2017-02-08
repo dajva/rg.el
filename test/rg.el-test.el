@@ -133,6 +133,56 @@ on emacs version."
             (rg-rerun-change-dir)
             (should (cl-every 'equal '("regexp" "elisp" "/tmp/new") result)))))
 
+(ert-deftest rg-unit-test/custom-toggle ()
+"Test `rg-define-toggle' macro."
+  (let ((rg-last-search '("regexp" "elisp" "/tmp/test")))
+    (noflet ((rg-recompile (&rest _) nil))
+            (rg-define-toggle "--foo")
+            (should (functionp 'rg-custom-toggle-flag-foo))
+            (rg-define-toggle "--bar" nil t)
+            (should (functionp 'rg-custom-toggle-flag-bar))
+            (should (member "--bar" rg-toggle-command-line-flags))
+            (rg-custom-toggle-flag-foo)
+            (should (member "--foo" rg-toggle-command-line-flags))
+            (should (member "--bar" rg-toggle-command-line-flags))
+            (rg-custom-toggle-flag-foo)
+            (should-not (member "--foo" rg-toggle-command-line-flags))
+            (should (member "--bar" rg-toggle-command-line-flags))
+            (rg-custom-toggle-flag-bar)
+            (should-not (member "--foo" rg-toggle-command-line-flags))
+            (should-not (member "--bar" rg-toggle-command-line-flags))
+            (rg-custom-toggle-flag-bar)
+            (should-not (member "--foo" rg-toggle-command-line-flags))
+            (should (member "--bar" rg-toggle-command-line-flags)))))
+
+(ert-deftest rg-unit-test/custom-toggle-key-binding ()
+"Test `rg-define-toggle' macro key bindings."
+  (let ((rg-last-search '("regexp" "elisp" "/tmp/test")))
+    (noflet ((rg-recompile (&rest _) nil))
+            (rg-define-toggle "--baz" "b")
+            (should (functionp 'rg-custom-toggle-flag-baz))
+            (should (eq 'rg-custom-toggle-flag-baz (lookup-key grep-mode-map "b"))))))
+
+(ert-deftest rg-unit-test/custom-toggle-double-definition ()
+"Test multiple clashing definitions of same flag and bindings in
+`rg-define-toggle' macro."
+  (let ((rg-last-search '("regexp" "elisp" "/tmp/test")))
+    (noflet ((rg-recompile (&rest _) nil))
+            (rg-define-toggle "--qux" nil t)
+            (should (functionp 'rg-custom-toggle-flag-qux))
+            (should-not (eq 'rg-custom-toggle-flag-qux (lookup-key grep-mode-map "q")))
+            (should (member "--qux" rg-toggle-command-line-flags))
+            (rg-define-toggle "--qux" "q")
+            (should (functionp 'rg-custom-toggle-flag-qux))
+            (should (eq 'rg-custom-toggle-flag-qux (lookup-key grep-mode-map "q")))
+            (should-not (member "--qux" rg-toggle-command-line-flags))
+            (rg-define-toggle "--qux" "z")
+            (should (functionp 'rg-custom-toggle-flag-qux))
+            (should (eq 'rg-custom-toggle-flag-qux (lookup-key grep-mode-map "z")))
+            (rg-define-toggle "--quux" "q")
+            (should (eq 'rg-custom-toggle-flag-quux (lookup-key grep-mode-map "q")))
+            (should-not (eq 'rg-custom-toggle-flag-qux (lookup-key grep-mode-map "q"))))))
+
 
 ;; Integration tests
 

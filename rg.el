@@ -59,6 +59,10 @@
 ;;   '(("foo" .    "*.foo *.bar")
 ;;     ("baz" .    "*.baz *.qux")))
 
+;; The `rg-define-toggle' macro can be used to define a toggleable
+;; flag for the rg command line. Such flags can then be toggled from
+;; the results buffer and the search repeate with updated flags.
+
 ;;; Code:
 
 (require 'cl-lib)
@@ -88,6 +92,9 @@
 
 (defvar rg-last-search nil
   "Stores parameters of last search.  Becomes buffer local in rg-mode buffers.")
+
+(defvar rg-toggle-command-line-flags nil
+  "List of command line flags defined by `rg-define-toggle' macro.")
 
 (defconst rg-special-type-aliases
   '(("all" . "all defined type aliases") ; rg --type all
@@ -142,7 +149,8 @@ will be added.  Optional CUSTOM is a file matching pattern that will be
 added as a '--type-add' parameter to the rg command line."
   (concat
    rg-command " "
-   (mapconcat 'identity rg-command-line-flags " ")
+   (mapconcat 'identity rg-command-line-flags " ") " "
+   (mapconcat 'identity rg-toggle-command-line-flags " ") " "
    (rg-build-type-add-args) " "
    (when type
      (concat
@@ -303,6 +311,38 @@ default regexp and HISTORY is search history list."
                      (format " (default \"%s\"): " default) ": "))
          default history)
       (read-regexp prompt default history))))
+
+;;;###autoload
+(defmacro rg-define-toggle (flag &optional key default)
+"Define a command line flag that can be toggled from the rg result
+buffer.
+
+This will create a function with prefix 'rg-custom-toggle-flag-'
+concatenated with the FLAG name, stripped of any leading dashes.  Flag
+must be a form that will be evaluated to a string a macro expansion
+time.  For instance, if FLAG is '--invert-match' the function name
+will be 'rg-custom-toggle-flag-invert-match.  If the flag contains a
+value that will be excluded from the function name.
+
+Optional KEY is a key binding that is added to `rg-mode-map'.  If the
+optional DEFAULT parameter is non nil the flag will be enabled by default."
+  (let* ((flagvalue (eval flag))
+         (flagname (s-chop-prefixes '("-" "-") (car (s-split " " flagvalue t))))
+         (funname (concat "rg-custom-toggle-flag-" flagname)))
+    `(progn
+       ,(if default
+            `(unless (member ,flagvalue rg-toggle-command-line-flags)
+               (push ,flagvalue rg-toggle-command-line-flags))
+          `(when (member ,flagvalue rg-toggle-command-line-flags)
+             (setq rg-toggle-command-line-flags
+                   (delete ,flagvalue rg-toggle-command-line-flags))))
+       ,(when key
+          `(define-key rg-mode-map ,key (quote ,(intern funname))))
+       (defun ,(intern funname) ()
+         ,(format "Rerun last search with flag '%s' toggled." flagvalue)
+         (interactive)
+         (rg-toggle-command-flag ,flagvalue)
+         (recompile)))))
 
 ;;;###autoload
 (defun rg-rerun-toggle-case ()
