@@ -78,7 +78,7 @@
   '(("gn" .    "*.gn *.gni")
     ("gyp" .    "*.gyp *.gypi"))
   "Alist of file type aliases that are added to the 'rg' built in aliases."
-  :type 'alist)
+  :type '(alist :key-type string :value-type string))
 
 (defcustom rg-command-line-flags nil
   "List of command line flags for rg."
