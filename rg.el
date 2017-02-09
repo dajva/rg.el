@@ -68,6 +68,7 @@
 (require 'cl-lib)
 (require 'grep)
 (require 's)
+(require 'vc-hooks)
 
 (defgroup rg nil
   "Settings for rg."
@@ -274,7 +275,20 @@ REGEXP is the search string."
            t t template)))
   (grep-expand-template template regexp files dir excl))
 
-(defalias 'kill-rg 'kill-compilation)
+(defun rg-project-root (file)
+"Find the project root of the given FILE."
+  (when file
+    (let ((backend (vc-backend file)))
+      (or
+       (when (and (require 'projectile nil t)
+                  (fboundp 'projectile-project-root))
+         (projectile-project-root))
+       (when (and (require 'find-file-in-project nil t)
+                  (fboundp 'ffip-project-root))
+         (ffip-project-root))
+       (when backend
+         (vc-call-backend backend 'root file))
+       (file-name-directory file)))))
 
 (defun rg-toggle-command-flag (flag)
 "Remove FLAG from last search command line if present or add it if
@@ -311,6 +325,8 @@ default regexp and HISTORY is search history list."
                      (format " (default \"%s\"): " default) ": "))
          default history)
       (read-regexp prompt default history))))
+
+(defalias 'kill-rg 'kill-compilation)
 
 ;;;###autoload
 (defmacro rg-define-toggle (flag &optional key default)
@@ -389,6 +405,15 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
   (rg-rerun-with-changes (regexp files dir)
     (setq dir (read-directory-name "In directory: "
                                    dir nil))))
+;;;###autoload
+(defun rg-project ()
+"Run ripgrep in current project.  The project root will will be
+determined by either common project packages like projectile and
+find-file-in-project or the source version control system."
+  (interactive)
+  (let* ((regexp (grep-read-regexp))
+         (files (rg-read-files regexp)))
+    (rg regexp files (rg-project-root buffer-file-name))))
 
 ;;;###autoload
 (defun rg (regexp &optional files dir confirm)

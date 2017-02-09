@@ -36,17 +36,25 @@ you have autoloading setup.
 
 ## Usage
 
+### Main entry point - `rg`
 Invoke by `M-x rg`. This works the same way as `M-x rgrep`,
 i.e. you get an interactive prompt to enter search details. Universal
 argument can be used as for `rgrep`.
+
+### Project search - `rg-project`
+`M-x rg-project` searches in a project defined by
+[projectile](https://github.com/bbatsov/projectile),
+[find-file-in-project](https://github.com/technomancy/find-file-in-project)
+or a `vc-backend`.
+
+### Type aliases
 
 [ripgrep](https://github.com/BurntSushi/ripgrep) has its own built in
 mappings from type names to file name patterns that can be selected
 from `rg.el` on invocation of `rg`. It's also possible to specify a
 custom file name pattern in the files prompt.
 
-
-### Mappings with special meaning
+There are some aliases with special meanings in `rg.el`.
 
 | Name | Meaning |
 |-----|--------|

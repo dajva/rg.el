@@ -273,6 +273,25 @@ on emacs version."
       (should (= 1 (s-count-matches "foo.el.*hello" bufstr)))
       (should (= 1 (s-count-matches "bar.el.*hello" bufstr))))))
 
+(ert-deftest rg-integration-test/project-root ()
+"Test that all paths in `rt-project-root' gives valid results."
+  ;; projectile
+  (rg-check-git-project-root)
+  (eval-after-load 'projectile
+    (fmakunbound 'projectile-project-root))
+
+  ;; ffip requires emacs 24.3 so not possible to test with cask right now.
+  ;; (rg-check-git-project-root)
+  ;; (with-eval-after-load 'find-file-in-project
+  ;;   (fmakunbound 'ffip-project-root))
+
+  ;; vc-backend
+  (rg-check-git-project-root)
+  ;; default
+  (should (equal (expand-file-name
+                  (rg-project-root "/tmp/foo.el"))
+                 "/tmp/")))
+
 (provide 'rg.el-test)
 
 ;;; rg.el-test.el ends here

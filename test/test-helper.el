@@ -53,4 +53,12 @@ search was successful. Timeout is 10 s."
         (accept-process-output nil 0.1)))
     (equal (s-trim search-finished) "finished")))
 
+(defun rg-check-git-project-root ()
+"Check that project root of rg.el-test.el file is main dir of
+repository."
+  (should (equal
+           (expand-file-name (rg-project-root
+                              (concat default-directory "/test/rg.el-test.el")))
+           (expand-file-name default-directory))))
+
 ;;; test-helper.el ends here
