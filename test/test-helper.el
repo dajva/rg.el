@@ -53,6 +53,4 @@ search was successful. Timeout is 10 s."
         (accept-process-output nil 0.1)))
     (equal (s-trim search-finished) "finished")))
 
-(provide 'test-helper)
-
 ;;; test-helper.el ends here
