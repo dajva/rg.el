@@ -1,4 +1,4 @@
-;;; rg.el --- A ripgrep frontend, similar to built in grep.el.
+;;; rg.el --- A ripgrep frontend, similar to built in grep.el. -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 1985-1987, 1993-1999, 2001-2015 Free Software
 ;; Foundation, Inc.
@@ -8,7 +8,7 @@
 ;;         Roland McGrath <roland@gnu.org>
 ;; Version: 1.2.0
 ;; Homepage: https://github.com/davja/rg.el
-;; Package-Requires: ((cl-lib "0.5") (s "1.10.0"))
+;; Package-Requires: ((cl-lib "0.5") (emacs "24") (s "1.10.0"))
 ;; Keywords: matching, tools
 
 ;; This file is not part of GNU Emacs.
@@ -383,7 +383,7 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
       ;; Override read-from-minibuffer in order to insert the original
       ;; regexp in the input area.
       (cl-letf (((symbol-function 'read-from-minibuffer)
-                 (lambda (prompt &optional initial-contents &rest args)
+                 (lambda (prompt &optional _ &rest args)
                    (apply read-from-minibuffer-orig prompt regexp args))))
         (setq regexp (rg-read-regexp "Search for" regexp 'grep-regexp-history))))))
 
