@@ -262,7 +262,7 @@ not present."
     (setcar compilation-arguments
             (if (s-contains-p (concat " " flag " ") command)
                 (s-replace (concat flag " ") "" command)
-              (s-replace "rg" (concat "rg " flag) command)))))
+              (replace-regexp-in-string "^rg " (concat "\\&" flag " ") command t)))))
 
 (defmacro rg-rerun-with-changes (spec &rest body)
 "Rerun last search with parameters VAR-REGEXP, VAR-FILES and VAR-DIR.

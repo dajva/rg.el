@@ -67,6 +67,18 @@
     (rg-toggle-command-flag testflag)
     (should-not (s-matches? (rg-regexp-anywhere testflag) (car compilation-arguments)))))
 
+(ert-deftest rg-unit-test/toggle-command-flag-preserve-rg ()
+"Test that `rg-toggle-command-flag' does not interfere with other
+'rg' substrings in `compilation-arguments'."
+  (let ((testflag "--xrg")
+        (compilation-arguments (list (concat "rg --bar search_rg "))))
+    (rg-toggle-command-flag testflag)
+    (should (s-starts-with? "rg " (car compilation-arguments)))
+    (should (s-ends-with? "search_rg " (car compilation-arguments)))
+    (should (s-matches? (rg-regexp-anywhere testflag) (car compilation-arguments)))
+    (rg-toggle-command-flag testflag)
+    (should-not (s-matches? (rg-regexp-anywhere testflag) (car compilation-arguments)))))
+
 (ert-deftest rg-unit-test/rerun-change-regexp ()
 "Test result of `rg-rerun-change-regexp'."
   (let ((rg-last-search '("regexp" "elisp" "/tmp/test"))
