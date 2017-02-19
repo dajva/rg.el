@@ -30,14 +30,18 @@
 ;; Unit tests
 
 (ert-deftest rg-unit-test/case-expand-template ()
-"Test that `rg-expand-template' handles case settings correctly."
-  (let ((template "<F> <C> <R>"))
+  "Test that `rg-set-case-sensitivity' handles case settings correctly."
+  (let (rg-toggle-command-line-flags)
     (let ((case-fold-search t))
-      (should (s-matches? (rg-regexp-anywhere "-i") (rg-expand-template template "foo")))
-      (should-not (s-matches? (rg-regexp-anywhere "-i") (rg-expand-template template "fOo"))))
+      (rg-set-case-sensitivity "foo")
+      (should (member  "-i" rg-toggle-command-line-flags))
+      (rg-set-case-sensitivity "fOo")
+      (should-not (member  "-i" rg-toggle-command-line-flags))
     (let ((case-fold-search nil))
-      (should-not (s-matches? (rg-regexp-anywhere "-i") (rg-expand-template template "foo")))
-      (should-not (s-matches? (rg-regexp-anywhere "-i") (rg-expand-template template "Foo"))))))
+      (rg-set-case-sensitivity "foo")
+      (should-not (member  "-i" rg-toggle-command-line-flags))
+      (rg-set-case-sensitivity "fOo")
+      (should-not (member  "-i" rg-toggle-command-line-flags))))))
 
 (ert-deftest rg-unit-test/build-template ()
 "Test `rg-build-template' template creation."
@@ -46,7 +50,6 @@
         (notype-template (rg-build-template))
         (type-template (rg-build-template t))
         (custom-template (rg-build-template t "glob")))
-    (should (s-matches? (rg-regexp-anywhere-but-last "<C>") notype-template))
     (should (s-matches? (rg-regexp-last "<R>") notype-template))
     (should-not (s-matches? (rg-regexp-anywhere-but-last "--type <F>") notype-template))
     (should-not (s-matches? (rg-regexp-anywhere-but-last "--type-add 'custom:") notype-template))
@@ -68,32 +71,19 @@
 (ert-deftest rg-unit-test/toggle-command-flag ()
 "Test `rg-toggle-command-flag'."
   (let ((testflag "--foo")
-        (compilation-arguments (list (concat "rg --bar searchstring"))))
-    (rg-toggle-command-flag testflag)
-    (should (s-matches? (rg-regexp-anywhere testflag) (car compilation-arguments)))
-    (rg-toggle-command-flag testflag)
-    (should-not (s-matches? (rg-regexp-anywhere testflag) (car compilation-arguments)))))
-
-(ert-deftest rg-unit-test/toggle-command-flag-preserve-rg ()
-"Test that `rg-toggle-command-flag' does not interfere with other
-'rg' substrings in `compilation-arguments'."
-  (let ((testflag "--xrg")
-        (compilation-arguments (list (concat "rg --bar search_rg "))))
-    (rg-toggle-command-flag testflag)
-    (should (s-starts-with? "rg " (car compilation-arguments)))
-    (should (s-ends-with? "search_rg " (car compilation-arguments)))
-    (should (s-matches? (rg-regexp-anywhere testflag) (car compilation-arguments)))
-    (rg-toggle-command-flag testflag)
-    (should-not (s-matches? (rg-regexp-anywhere testflag) (car compilation-arguments)))))
+        flaglist)
+    (setq flaglist (rg-toggle-command-flag testflag flaglist))
+    (should (member testflag flaglist))
+    (setq flaglist (rg-toggle-command-flag testflag flaglist))
+    (should-not (member testflag flaglist))))
 
 (ert-deftest rg-unit-test/rerun-change-regexp ()
 "Test result of `rg-rerun-change-regexp'."
-  (let ((rg-last-search '("regexp" "elisp" "/tmp/test"))
-        (result))
-    (noflet ((rg (regexp files dir) (setq result (list regexp files dir)))
+  (let ((rg-last-search '("regexp" "elisp" "/tmp/test")))
+    (noflet ((rg-recompile (&rest _) nil)
              (rg-read-regexp (&rest _) "new-regexp"))
             (rg-rerun-change-regexp)
-            (should (cl-every 'equal '("new-regexp" "elisp" "/tmp/test") result)))))
+            (should (cl-every 'equal '("new-regexp" "elisp" "/tmp/test") rg-last-search)))))
 
 (ert-deftest rg-unit-test/read-regexp-correct-read-func ()
 "Test that `rg-read-regexp' choose the correct read function depending
@@ -117,21 +107,19 @@ on emacs version."
 
 (ert-deftest rg-unit-test/rerun-change-files ()
 "Test result of `rg-rerun-change-files'."
-  (let ((rg-last-search '("regexp" "elisp" "/tmp/test"))
-        (result))
-    (noflet ((rg (regexp files dir) (setq result (list regexp files dir)))
+  (let ((rg-last-search '("regexp" "elisp" "/tmp/test")))
+    (noflet ((rg-recompile (&rest _) nil)
              (completing-read (&rest _) "cpp"))
             (rg-rerun-change-files)
-            (should (cl-every 'equal '("regexp" "cpp" "/tmp/test") result)))))
+            (should (cl-every 'equal '("regexp" "cpp" "/tmp/test") rg-last-search)))))
 
 (ert-deftest rg-unit-test/rerun-change-dir ()
 "Test result of `rg-rerun-change-dir'."
-  (let ((rg-last-search '("regexp" "elisp" "/tmp/test"))
-        (result))
-    (noflet ((rg (regexp files dir) (setq result (list regexp files dir)))
+  (let ((rg-last-search '("regexp" "elisp" "/tmp/test")))
+    (noflet ((rg-recompile (&rest _) nil)
              (read-directory-name (&rest _) "/tmp/new"))
             (rg-rerun-change-dir)
-            (should (cl-every 'equal '("regexp" "elisp" "/tmp/new") result)))))
+            (should (cl-every 'equal '("regexp" "elisp" "/tmp/new") rg-last-search)))))
 
 (ert-deftest rg-unit-test/custom-toggle ()
 "Test `rg-define-toggle' macro."
@@ -183,6 +171,18 @@ on emacs version."
             (should (eq 'rg-custom-toggle-flag-quux (lookup-key grep-mode-map "q")))
             (should-not (eq 'rg-custom-toggle-flag-qux (lookup-key grep-mode-map "q"))))))
 
+(ert-deftest rg-unit-test/build-command ()
+"Test that`rg-build-command' convert files argument to correct type
+alias."
+  (let ((rg-command "rg")
+        (rg-custom-type-aliases nil)
+        full-command)
+    (setq full-command (rg-build-command "foo" "cpp"))
+    (should (s-matches? "rg +--type +cpp +foo" full-command))
+    (setq full-command (rg-build-command "foo" "everything"))
+    (should (s-matches? "rg +foo" full-command))
+    (setq full-command (rg-build-command "foo" "bar"))
+    (should (s-matches? "rg +--type-add +'custom:bar' +--type +custom +foo" full-command))))
 
 ;; Integration tests
 
@@ -229,7 +229,7 @@ on emacs version."
 (ert-deftest rg-integration-test/search-alias-all-custom () :tags '(need-rg)
 "Test that aliases defined in `rg-custom-type-aliases' works if
   implicitly selected via '--type all'."
-(let ((case-fold-search t)
+  (let ((case-fold-search t)
         (rg-custom-type-aliases '(("test" . "*.baz"))))
     (rg "hello" "all" (concat default-directory "test/data"))
     (with-current-buffer "*rg*"

@@ -8,4 +8,5 @@
  (depends-on "ert-runner")
  (depends-on "noflet")
  (depends-on "projectile")
- (depends-on "s"))
+ (depends-on "s")
+ (depends-on "seq"))

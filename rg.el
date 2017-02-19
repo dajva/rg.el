@@ -8,7 +8,7 @@
 ;;         Roland McGrath <roland@gnu.org>
 ;; Version: 1.2.0
 ;; Homepage: https://github.com/davja/rg.el
-;; Package-Requires: ((cl-lib "0.5") (emacs "24") (s "1.10.0"))
+;; Package-Requires: ((cl-lib "0.5") (emacs "24") (s "1.10.0") (seq "2.19"))
 ;; Keywords: matching, tools
 
 ;; This file is not part of GNU Emacs.
@@ -68,6 +68,7 @@
 (require 'cl-lib)
 (require 'grep)
 (require 's)
+(require 'seq)
 (require 'vc-hooks)
 
 (defgroup rg nil
@@ -158,7 +159,7 @@ added as a '--type-add' parameter to the rg command line."
       (when custom
         (concat "--type-add 'custom:" custom "' "))
       "--type <F> "))
-   "<C> <R>"))
+   "<R>"))
 
 (defun rg-list-builtin-type-aliases ()
 "Invokes rg --type-list and puts the result in an alist."
@@ -260,20 +261,8 @@ Commands:
   (set (make-local-variable 'compilation-error-screen-columns)
        grep-error-screen-columns)
   (make-local-variable 'rg-last-search)
-  (add-hook 'compilation-filter-hook 'rg-filter nil t))
-
-(defun rg-expand-template (template regexp &optional files dir excl)
-"Expand TEMPLATE string by replacing <C>, <D>, <F>, <R>, and <X>.
-REGEXP is the search string."
-  (when (string-match "<C>" template)
-    (setq template
-          (replace-match
-           (if (and case-fold-search
-                    (isearch-no-upper-case-p regexp t))
-               "-i"
-             "")
-           t t template)))
-  (grep-expand-template template regexp files dir excl))
+  (make-local-variable 'rg-toggle-command-line-flags)
+  (add-hook 'compilation-filter-hook 'rg-filter nil t) )
 
 (defun rg-project-root (file)
 "Find the project root of the given FILE."
@@ -290,28 +279,72 @@ REGEXP is the search string."
          (vc-call-backend backend 'root file))
        (file-name-directory file)))))
 
-(defun rg-toggle-command-flag (flag)
-"Remove FLAG from last search command line if present or add it if
-not present."
-  (let ((command (car compilation-arguments)))
-    (setcar compilation-arguments
-            (if (s-contains-p (concat " " flag " ") command)
-                (s-replace (concat flag " ") "" command)
-              (replace-regexp-in-string "^rg " (concat "\\&" flag " ") command t)))))
+(defun rg-toggle-command-flag (flag flaglist)
+"Remove FLAG from FLAGLIST line if present or add it if not present."
+  (let (removed)
+    (setq flaglist
+          (seq-remove (lambda (enabled-flag)
+                        (when (equal enabled-flag flag)
+                          (setq removed t)))
+                      flaglist))
+    (unless removed
+      (setq flaglist (cons flag flaglist))))
+  flaglist)
 
-(defmacro rg-rerun-with-changes (spec &rest body)
-"Rerun last search with parameters VAR-REGEXP, VAR-FILES and VAR-DIR.
-Modify the parameters in BODY.
+(defun rg-build-command (regexp files)
+"Create the command for REGEXP and FILES."
+  (grep-expand-template
+   (rg-build-template
+    (not (equal files "everything"))
+    (unless (assoc files (rg-get-type-aliases))
+      (let ((pattern files))
+        (setq files "custom")
+        pattern)))
+   regexp
+   files))
 
-\(fn (VAR-REGEXP VAR-FILES VAR-DIR) BODY...)"
-  (declare (debug (symbolp symbolp symbolp body))
+(defun rg-recompile (regexp files dir)
+"Run `recompile' with supplied search parameters (REGEXP, FILES, DIR)."
+  (setcar compilation-arguments
+          (rg-build-command regexp files))
+  (let ((compilation-directory dir))
+    ;; compilation-directory is used as search dir and
+    ;; default-directory is used as the base for file paths.
+    (setq default-directory compilation-directory)
+    (recompile)))
+
+(defmacro rg-rerun-with-changes (varplist &rest body)
+"Rerun last search with changed parameters.  VARPLIST is a property
+list of the form (:parameter1 symbol1 [:parameter2 symbol2] ...) that
+specifies the parameters that will be exposed in BODY.  The values of
+the parameters will be bound to corresponding symbols.
+
+BODY can modify the exposed parameters and these will be used together
+with the non exposed unmodified parameters to rerun the the search.
+
+Supported properties are :regexp, :files, :dir and :flags, where the
+three first are bound to the corresponding parameters in `rg' from
+`rg-last-search' and :flags is bound to
+`rg-toggle-command-line-flags'.
+
+Example:
+\(rg-rerun-with-changes \(:regexp searchstring\)
+  \(setq searchstring \"new string\"\)\)"
+  (declare (debug ((&rest symbolp symbolp) body))
            (indent 1))
-  (let ((regexp-sym (nth 0 spec))
-        (files-sym (nth 1 spec))
-        (dir-sym (nth 2 spec)))
-    `(cl-destructuring-bind (,regexp-sym ,files-sym ,dir-sym) rg-last-search
-       ,@body
-       (rg ,regexp-sym ,files-sym ,dir-sym))))
+  (let ((regexp (or (plist-get varplist :regexp) (cl-gensym)))
+        (files (or (plist-get varplist :files) (cl-gensym)))
+        (dir (or (plist-get varplist :dir) (cl-gensym)))
+        (flags (or (plist-get varplist :flags) (cl-gensym))))
+    `(cl-destructuring-bind (,regexp ,files ,dir) rg-last-search
+       (let ((,flags rg-toggle-command-line-flags))
+         ,@body
+         (let ((rg-toggle-command-line-flags ,flags))
+           (rg-recompile ,regexp ,files ,dir))
+         ;; Buffer locals will be reset in recompile so we need to reset
+         ;; the values here.
+         (setq rg-last-search (list ,regexp ,files ,dir))
+         (setq rg-toggle-command-line-flags ,flags)))))
 
 (defun rg-read-regexp (prompt default history)
 "Read regexp argument from user.  PROMPT is the read prompt, DEFAULT is the
@@ -325,6 +358,16 @@ default regexp and HISTORY is search history list."
                      (format " (default \"%s\"): " default) ": "))
          default history)
       (read-regexp prompt default history))))
+
+(defun rg-set-case-sensitivity (regexp)
+"Make sure -i is added to the command if needed.  If REGEXP contain
+uppercase letters, case sensitive search is forced."
+  (if (and case-fold-search
+           (isearch-no-upper-case-p regexp t))
+      (when (not (member "-i" rg-toggle-command-line-flags))
+        (push "-i" rg-toggle-command-line-flags))
+    (when (member "-i" rg-toggle-command-line-flags)
+      (setq rg-toggle-command-line-flags (delete "-i" rg-toggle-command-line-flags)))))
 
 (defalias 'kill-rg 'kill-compilation)
 
@@ -357,28 +400,28 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
        (defun ,(intern funname) ()
          ,(format "Rerun last search with flag '%s' toggled." flagvalue)
          (interactive)
-         (rg-toggle-command-flag ,flagvalue)
-         (recompile)))))
+         (rg-rerun-with-changes (:flags flags)
+           (setq flags (rg-toggle-command-flag ,flagvalue flags)))))))
 
 ;;;###autoload
 (defun rg-rerun-toggle-case ()
 "Rerun last search with toggled case sensitivity setting."
   (interactive)
-  (rg-toggle-command-flag "-i")
-  (recompile))
+  (rg-rerun-with-changes (:flags flags)
+    (setq flags (rg-toggle-command-flag "-i" flags))))
 
 ;;;###autoload
 (defun rg-rerun-toggle-ignore ()
 "Rerun last search with toggled '--no-ignore' flag."
   (interactive)
-  (rg-toggle-command-flag "--no-ignore")
-  (recompile))
+  (rg-rerun-with-changes (:flags flags)
+    (setq flags (rg-toggle-command-flag "--no-ignore" flags))))
 
 ;;;###autoload
 (defun rg-rerun-change-regexp()
 "Rerun last search but prompt for new regexp."
   (interactive)
-  (rg-rerun-with-changes (regexp files dir)
+  (rg-rerun-with-changes (:regexp regexp)
     (let ((read-from-minibuffer-orig (symbol-function 'read-from-minibuffer)))
       ;; Override read-from-minibuffer in order to insert the original
       ;; regexp in the input area.
@@ -391,7 +434,7 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
 (defun rg-rerun-change-files()
 "Rerun last search but prompt for new files."
   (interactive)
-  (rg-rerun-with-changes (regexp files dir)
+  (rg-rerun-with-changes (:files files)
     (setq files (completing-read
                  (concat "Repeat search in files (default: [" files "]): ")
                  (rg-get-type-aliases)
@@ -402,7 +445,7 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
 (defun rg-rerun-change-dir()
 "Rerun last search but prompt for new dir."
   (interactive)
-  (rg-rerun-with-changes (regexp files dir)
+  (rg-rerun-with-changes (:dir dir)
     (setq dir (read-directory-name "In directory: "
                                    dir nil))))
 ;;;###autoload
@@ -460,15 +503,8 @@ This command shares argument histories with \\[rgrep] and \\[grep]."
           (if (string= command rg-command)
               (setq command nil))
         (setq dir (file-name-as-directory (expand-file-name dir)))
-        (setq command (rg-expand-template
-                       (rg-build-template
-                        (not (equal files "everything"))
-                        (unless (assoc files (rg-get-type-aliases))
-                          (let ((pattern files))
-                            (setq files "custom")
-                            pattern)))
-                       regexp
-                       files))
+        (rg-set-case-sensitivity regexp)
+        (setq command (rg-build-command regexp files))
         (when command
           (if confirm
               (setq command
