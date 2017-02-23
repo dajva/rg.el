@@ -411,21 +411,18 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
          (rg-rerun-with-changes (:flags flags)
            (setq flags (rg-toggle-command-flag ,flagvalue flags)))))))
 
-;;;###autoload
 (defun rg-rerun-toggle-case ()
 "Rerun last search with toggled case sensitivity setting."
   (interactive)
   (rg-rerun-with-changes (:flags flags)
     (setq flags (rg-toggle-command-flag "-i" flags))))
 
-;;;###autoload
 (defun rg-rerun-toggle-ignore ()
 "Rerun last search with toggled '--no-ignore' flag."
   (interactive)
   (rg-rerun-with-changes (:flags flags)
     (setq flags (rg-toggle-command-flag "--no-ignore" flags))))
 
-;;;###autoload
 (defun rg-rerun-change-regexp()
 "Rerun last search but prompt for new regexp."
   (interactive)
@@ -438,7 +435,6 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
                    (apply read-from-minibuffer-orig prompt regexp args))))
         (setq regexp (rg-read-regexp "Search for" regexp 'grep-regexp-history))))))
 
-;;;###autoload
 (defun rg-rerun-change-files()
 "Rerun last search but prompt for new files."
   (interactive)
@@ -449,7 +445,6 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
                  nil nil nil 'grep-files-history
                  files))))
 
-;;;###autoload
 (defun rg-rerun-change-dir()
 "Rerun last search but prompt for new dir."
   (interactive)
