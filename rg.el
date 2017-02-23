@@ -39,6 +39,11 @@
 ;; (eval-after-load
 ;;   (global-set-key (kbd "M-s") 'rg))
 
+;; There are also other entry points for easy searching:
+;; `rg-project' - Search in a project.
+;; `rg-dwim' - Handsfree search. Search thing at point in project in
+;; files matching the type alias of the current buffer file name.
+
 ;; The `rg' results buffer has bindings for modification of
 ;; the last search for quick reruns with refined parameters.
 ;; Possible refinements are: toggle case insensitive search, toggle
@@ -181,35 +186,38 @@ added as a '--type-add' parameter to the rg command line."
   (append rg-builtin-type-aliases rg-custom-type-aliases
           (unless nospecial rg-special-type-aliases)))
 
-(defun rg-read-files (regexp)
-"Read files argument for interactive rg.  REGEXP is the search string."
+(defun rg-default-alias ()
+"Return the default alias by matching alias globs with the buffer
+file name."
   (let* ((bn (or (buffer-file-name)
                  (replace-regexp-in-string "<[0-9]+>\\'" "" (buffer-name))))
          (fn (and bn
                   (stringp bn)
-                  (file-name-nondirectory bn)))
-         (default-alias
-           (and fn
-                (cl-find-if
-                 (lambda (alias)
-                   (string-match (mapconcat
-                                  'wildcard-to-regexp
-                                  (split-string (cdr alias) nil t)
-                                  "\\|")
-                                 fn))
-                 (rg-get-type-aliases t))))
-         (files (completing-read
-                 (concat "Search for \"" regexp
-                         "\" in files"
-                         (if default-alias
-                             (concat
-                              " (default: [" (car default-alias) "] = "
-                              (cdr default-alias) ")"))
-                         ": ")
-                 (rg-get-type-aliases)
-                 nil nil nil 'grep-files-history
-                 (car default-alias))))
-    files))
+                  (file-name-nondirectory bn))))
+    (and fn
+         (cl-find-if
+          (lambda (alias)
+            (string-match (mapconcat
+                           'wildcard-to-regexp
+                           (split-string (cdr alias) nil t)
+                           "\\|")
+                          fn))
+          (rg-get-type-aliases t)))))
+
+(defun rg-read-files (regexp)
+"Read files argument for interactive rg.  REGEXP is the search string."
+  (let ((default-alias (rg-default-alias)))
+    (completing-read
+     (concat "Search for \"" regexp
+             "\" in files"
+             (if default-alias
+                 (concat
+                  " (default: [" (car default-alias) "] = "
+                  (cdr default-alias) ")"))
+             ": ")
+     (rg-get-type-aliases)
+     nil nil nil 'grep-files-history
+     (car default-alias))))
 
 (defun rg-filter ()
 "Handle match highlighting escape sequences inserted by the rg process.
@@ -457,6 +465,22 @@ find-file-in-project or the source version control system."
   (let* ((regexp (grep-read-regexp))
          (files (rg-read-files regexp)))
     (rg regexp files (rg-project-root buffer-file-name))))
+
+;;;###autoload
+(defun rg-dwim ()
+"Run rg without user interaction figuring out the user's intention by
+magic(!).  The default magic searches for thing at point in files matching
+current file under project root directory.
+
+With \\[universal-argument] prefix, search is done in current dir
+instead of project root."
+  (interactive)
+  (let* ((curdir (equal current-prefix-arg '(4)))
+         (regexp (grep-tag-default))
+        (files (or (car (rg-default-alias)) "all"))
+        (dir (or (when curdir default-directory)
+                 (rg-project-root buffer-file-name))))
+    (rg regexp files dir)))
 
 ;;;###autoload
 (defun rg (regexp &optional files dir confirm)

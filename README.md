@@ -47,6 +47,10 @@ argument can be used as for `rgrep`.
 [find-file-in-project](https://github.com/technomancy/find-file-in-project)
 or a `vc-backend`.
 
+### Do what I mean - `rg-dwim`
+`M-x rg-dwim` searches for _thing at point_ in a project in all files
+with the same type alias as the current buffer file.
+
 ### Type aliases
 
 [ripgrep](https://github.com/BurntSushi/ripgrep) has its own built in

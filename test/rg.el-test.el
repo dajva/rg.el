@@ -184,22 +184,19 @@ alias."
     (setq full-command (rg-build-command "foo" "bar"))
     (should (s-matches? "rg +--type-add +'custom:bar' +--type +custom +foo" full-command))))
 
-;; Integration tests
+(ert-deftest rg-unit-test/default-alias ()
+"Test that `rg-default-alias' detects the current file and selects
+matching alias."
+  (find-file "test/data/foo.el")
+  (should (equal (car (rg-default-alias)) "elisp"))
+  (find-file "test/data/foo.baz")
+  (should (equal (car (rg-default-alias)) nil))
+  (let ((rg-custom-type-aliases '(("test" . "*.baz"))))
+    (find-file "test/data/foo.baz")
+    (should (equal (car (rg-default-alias)) "test"))))
 
-(ert-deftest rg-integration-test/read-files-default-alias () :tags '(need-rg)
-"Test that `rg-read-files' detects the current file and selects matching alias."
-  (let (prompt)
-    (noflet ((completing-read (pr &rest args) (setq prompt pr)))
-            (find-file "test/data/foo.el")
-            (rg-read-files "foo")
-            (should (s-matches? "\[elisp\]" prompt))
-            (find-file "test/data/foo.baz")
-            (rg-read-files "foo")
-            (should-not (s-matches? "\[.*\]" prompt))
-            (let ((rg-custom-type-aliases '(("test" . "*.baz"))))
-              (find-file "test/data/foo.baz")
-              (rg-read-files "foo")
-              (should (s-matches? "\[test\]" prompt))))))
+
+;; Integration tests
 
 (ert-deftest rg-integration-test/search-alias-builtin () :tags '(need-rg)
 "Test that rg builtin aliases works."
