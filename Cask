@@ -12,4 +12,5 @@
  (depends-on "package-lint")
  (depends-on "projectile")
  (depends-on "s")
- (depends-on "seq"))
+ (depends-on "seq")
+ (depends-on "undercover"))

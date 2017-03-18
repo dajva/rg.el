@@ -26,6 +26,9 @@
 
 ;;; Code:
 
+(when (require 'undercover nil t)
+  (undercover "rg.el"))
+
 (require 'cl-lib)
 (require 'ert)
 (require 'rg)
