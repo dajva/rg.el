@@ -315,11 +315,11 @@ Commands:
 "Run `recompile' with supplied search parameters (REGEXP, FILES, DIR)."
   (setcar compilation-arguments
           (rg-build-command regexp files))
-  (let ((compilation-directory dir))
-    ;; compilation-directory is used as search dir and
-    ;; default-directory is used as the base for file paths.
-    (setq default-directory compilation-directory)
-    (recompile)))
+  ;; compilation-directory is used as search dir and
+  ;; default-directory is used as the base for file paths.
+  (setq compilation-directory dir)
+  (setq default-directory compilation-directory)
+  (recompile))
 
 (defmacro rg-rerun-with-changes (varplist &rest body)
 "Rerun last search with changed parameters.  VARPLIST is a property
@@ -347,8 +347,8 @@ Example:
     `(cl-destructuring-bind (,regexp ,files ,dir) rg-last-search
        (let ((,flags rg-toggle-command-line-flags))
          ,@body
-         (let ((rg-toggle-command-line-flags ,flags))
-           (rg-recompile ,regexp ,files ,dir))
+         (setq rg-toggle-command-line-flags ,flags)
+         (rg-recompile ,regexp ,files ,dir)
          ;; Buffer locals will be reset in recompile so we need to reset
          ;; the values here.
          (setq rg-last-search (list ,regexp ,files ,dir))
