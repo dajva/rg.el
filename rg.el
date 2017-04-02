@@ -66,7 +66,7 @@
 
 ;; The `rg-define-toggle' macro can be used to define a toggleable
 ;; flag for the rg command line. Such flags can then be toggled from
-;; the results buffer and the search repeate with updated flags.
+;; the results buffer to repeat the search with updated flags.
 
 ;;; Code:
 
@@ -153,6 +153,8 @@ for special purposes.")
     (define-key map "r" 'rg-rerun-change-regexp)
     (define-key map "f" 'rg-rerun-change-files)
     (define-key map "d" 'rg-rerun-change-dir)
+    (define-key map "s" 'rg-save-search-as-name)
+    (define-key map "S" 'rg-save-search)
     map))
 
 (defface rg-filename-face
@@ -319,6 +321,8 @@ Commands:
 \\[rg-rerun-change-regexp]\t Change the search string for the current search (`rg-rerun-change-regexp').
 \\[rg-rerun-toggle-ignore]\t Repeat search with toggled '--no-ignore' flag (`rg-rerun-toggle-ignore').
 \\[rg-rerun-toggle-case]\t Repeat search with toggled case insensitive setting (`rg-rerun-toggle-case').
+\\[rg-save-search-as-name]\t Save search result, prompt for new name (`rg-save-search-as-name').
+\\[rg-save-search]\t Save search result to some unique name (`rg-save-search').
 \\[wgrep-change-to-wgrep-mode]\t Change mode to `wgrep'.
 
 \\{rg-mode-map}"
@@ -525,6 +529,32 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
   (rg-rerun-with-changes (:dir dir)
     (setq dir (read-directory-name "In directory: "
                                    dir nil))))
+
+(defun rg-save-search-as-name (newname)
+"Save the search result in current *rg* result buffer.  The result
+buffer will be renamed to *rg NEWNAME*.  New searches will use the
+standard *rg* buffer unless the search is done from a saved buffer in
+which case the saved buffer will be reused."
+  (interactive "sSave search as name: ")
+  (unless (eq major-mode 'rg-mode)
+    (error "Not an rg-mode buffer"))
+  (rename-buffer (concat "*rg " newname "*")))
+
+(defun rg-save-search ()
+"Save the search result in current *rg* result buffer.  The result
+buffer will be renamed by the `rename-uniquify' function.  To choose a
+custom name, use `rg-save-search-as-name' instead.  New searches will
+use the standard *rg* buffer unless the search is done from a saved
+buffer in which case the saved buffer will be reused."
+  (interactive)
+  (unless (eq major-mode 'rg-mode)
+    (error "Not an rg-mode buffer"))
+  (rename-uniquely)
+  ;; If the new buffer name became '*rg*', just rename again to make
+  ;; sure the result is saved.
+  (when (equal (buffer-name) "*rg*")
+    (rename-uniquely)))
+
 ;;;###autoload
 (defun rg-project ()
 "Run ripgrep in current project.  The project root will will be

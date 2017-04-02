@@ -77,6 +77,8 @@ search for quick reruns with refined parameters.
 | r | Change search string |
 | i | Toggle `--no-ignore` flag |
 | c | Toggle case insensitive setting |
+| s | Save search result to unique name |
+| S | Save search result, prompt for name |
 
 ## Customize
 
