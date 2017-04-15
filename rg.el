@@ -228,15 +228,17 @@ file name."
          (fn (and bn
                   (stringp bn)
                   (file-name-nondirectory bn))))
-    (and fn
-         (cl-find-if
-          (lambda (alias)
-            (string-match (mapconcat
-                           'wildcard-to-regexp
-                           (split-string (cdr alias) nil t)
-                           "\\|")
-                          fn))
-          (rg-get-type-aliases t)))))
+    (or
+     (and fn
+          (cl-find-if
+           (lambda (alias)
+             (string-match (mapconcat
+                            'wildcard-to-regexp
+                            (split-string (cdr alias) nil t)
+                            "\\|")
+                           fn))
+           (rg-get-type-aliases t)))
+     '("all" . "*"))))
 
 (defun rg-read-files (regexp)
 "Read files argument for interactive rg.  REGEXP is the search string."
@@ -576,7 +578,7 @@ instead of project root."
   (interactive)
   (let* ((curdir (equal current-prefix-arg '(4)))
          (regexp (grep-tag-default))
-        (files (or (car (rg-default-alias)) "all"))
+        (files (car (rg-default-alias)))
         (dir (or (when curdir default-directory)
                  (rg-project-root buffer-file-name))))
     (rg regexp files dir)))

@@ -190,7 +190,7 @@ matching alias."
   (find-file "test/data/foo.el")
   (should (equal (car (rg-default-alias)) "elisp"))
   (find-file "test/data/foo.baz")
-  (should (equal (car (rg-default-alias)) nil))
+  (should (equal (car (rg-default-alias)) "all"))
   (let ((rg-custom-type-aliases '(("test" . "*.baz"))))
     (find-file "test/data/foo.baz")
     (should (equal (car (rg-default-alias)) "test"))))
