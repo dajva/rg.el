@@ -130,7 +130,7 @@ for special purposes.")
     ("^.+?[-=][0-9]+[-=].*\n" (0 grep-context-face))))
 
 (defvar rg-mode-map
-  (let ((map grep-mode-map))
+  (let ((map (copy-keymap grep-mode-map)))
     (define-key map "c" 'rg-rerun-toggle-case)
     (define-key map "i" 'rg-rerun-toggle-ignore)
     (define-key map "r" 'rg-rerun-change-regexp)

@@ -149,7 +149,7 @@ on emacs version."
     (noflet ((rg-recompile (&rest _) nil))
             (rg-define-toggle "--baz" "b")
             (should (functionp 'rg-custom-toggle-flag-baz))
-            (should (eq 'rg-custom-toggle-flag-baz (lookup-key grep-mode-map "b"))))))
+            (should (eq 'rg-custom-toggle-flag-baz (lookup-key rg-mode-map "b"))))))
 
 (ert-deftest rg-unit-test/custom-toggle-double-definition ()
 "Test multiple clashing definitions of same flag and bindings in
@@ -158,18 +158,18 @@ on emacs version."
     (noflet ((rg-recompile (&rest _) nil))
             (rg-define-toggle "--qux" nil t)
             (should (functionp 'rg-custom-toggle-flag-qux))
-            (should-not (eq 'rg-custom-toggle-flag-qux (lookup-key grep-mode-map "q")))
+            (should-not (eq 'rg-custom-toggle-flag-qux (lookup-key rg-mode-map "q")))
             (should (member "--qux" rg-toggle-command-line-flags))
             (rg-define-toggle "--qux" "q")
             (should (functionp 'rg-custom-toggle-flag-qux))
-            (should (eq 'rg-custom-toggle-flag-qux (lookup-key grep-mode-map "q")))
+            (should (eq 'rg-custom-toggle-flag-qux (lookup-key rg-mode-map "q")))
             (should-not (member "--qux" rg-toggle-command-line-flags))
             (rg-define-toggle "--qux" "z")
             (should (functionp 'rg-custom-toggle-flag-qux))
-            (should (eq 'rg-custom-toggle-flag-qux (lookup-key grep-mode-map "z")))
+            (should (eq 'rg-custom-toggle-flag-qux (lookup-key rg-mode-map "z")))
             (rg-define-toggle "--quux" "q")
-            (should (eq 'rg-custom-toggle-flag-quux (lookup-key grep-mode-map "q")))
-            (should-not (eq 'rg-custom-toggle-flag-qux (lookup-key grep-mode-map "q"))))))
+            (should (eq 'rg-custom-toggle-flag-quux (lookup-key rg-mode-map "q")))
+            (should-not (eq 'rg-custom-toggle-flag-qux (lookup-key rg-mode-map "q"))))))
 
 (ert-deftest rg-unit-test/build-command ()
 "Test that`rg-build-command' convert files argument to correct type
