@@ -94,7 +94,7 @@
 (defvar rg-builtin-type-aliases nil
   "Cache for 'rg --type-list'.")
 
-(defvar rg-command "rg --no-heading --color always --colors match:fg:red"
+(defvar rg-command "rg --column --heading --color always --colors match:fg:red"
   "Command string for invoking rg.")
 
 (defvar rg-last-search nil
@@ -137,6 +137,16 @@ for special purposes.")
     (define-key map "f" 'rg-rerun-change-files)
     (define-key map "d" 'rg-rerun-change-dir)
     map))
+
+(defface rg-filename-face
+  '((t :inherit compilation-info))
+  "face for filename"
+  :group 'rg-face)
+
+(defface rg-file-tag-face
+  '((t :inherit 'font-lock-function-name-face))
+  "face for filename"
+  :group 'rg-face)
 
 (defun rg-build-type-add-args ()
 "Build a string of --type-add: 'foo:*.foo' flags for each type in `rg-custom-type-aliases'."
@@ -232,8 +242,18 @@ This function is called from `compilation-filter-hook'."
       ;; escape sequence in one chunk and the rest in another.
       (when (< (point) end)
         (setq end (copy-marker end))
+	;; Add File: in front of filename
+	(while (re-search-forward "^\033\\[m\033\\[35m\\(.*?\\)\033\\[m$" end 1)
+          (replace-match (concat (propertize "File:"
+	  				     'face nil 'font-lock-face 'rg-file-tag-face)
+	  			 " "
+	  			 (propertize (match-string 1)
+	  				     'face nil 'font-lock-face 'rg-filename-face))
+	  		 t t))
+        (goto-char beg)
+
         ;; Highlight rg matches and delete marking sequences.
-        (while (re-search-forward "\033\\[38;5;9m\\(.*?\\)\033\\[[0-9]*m" end 1)
+        (while (re-search-forward "\033\\[m\033\\[31m\033\\[1m\\(.*?\\)\033\\[m" end 1)
           (replace-match (propertize (match-string 1)
                                      'face nil 'font-lock-face grep-match-face)
                          t t))
@@ -241,6 +261,22 @@ This function is called from `compilation-filter-hook'."
         (goto-char beg)
         (while (re-search-forward "\033\\[[0-9;]*[mK]" end 1)
           (replace-match "" t t))))))
+
+
+(defvar rg/file-column-pattern-nogroup
+  "^\\(.+?\\):\\([1-9][0-9]*\\):\\([1-9][0-9]*\\):"
+  "A regexp pattern that groups output into filename, line number and column number.")
+
+(defvar rg/file-column-pattern-group
+  "^\\([[:digit:]]+\\):\\([[:digit:]]+\\):"
+  "A regexp pattern to match line number and column number with grouped output.")
+
+(defun rg/compilation-match-grouped-filename ()
+  "Match filename backwards when a line/column match is found in grouped output mode."
+  (save-match-data
+    (save-excursion
+      (when (re-search-backward "^File: \\(.*\\)$" (point-min) t)
+        (list (match-string 1))))))
 
 (define-compilation-mode rg-mode "rg"
 "Major mode for `rg' search results.
@@ -259,7 +295,13 @@ Commands:
   (set (make-local-variable 'compilation-error-face)
        grep-hit-face)
   (set (make-local-variable 'compilation-error-regexp-alist)
-       grep-regexp-alist)
+       '(compilation-rg-nogroup compilation-rg-group))
+
+  (set (make-local-variable 'compilation-error-regexp-alist-alist)
+       (list (cons 'compilation-rg-nogroup  (list rg/file-column-pattern-nogroup 1 2 3))
+             (cons 'compilation-rg-group  (list rg/file-column-pattern-group
+                                                'rg/compilation-match-grouped-filename 1 2))))
+
   ;; compilation-directory-matcher can't be nil, so we set it to a regexp that
   ;; can never match.
   (set (make-local-variable 'compilation-directory-matcher) '("\\`a\\`"))
