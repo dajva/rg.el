@@ -91,7 +91,7 @@
   "List of command line flags for rg."
   :type '(repeat string))
 
-(defcustom rg-group-result t
+(defcustom rg-group-result nil
     "Group matches in the same file together.
 
 If nil, the file name is repeated at the beginning of every match line."
