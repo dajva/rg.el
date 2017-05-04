@@ -175,7 +175,7 @@ added as a '--type-add' parameter to the rg command line."
    rg-command " "
    (if rg-group-result
        "--heading "
-       "--no-heading ")
+       "")
    (mapconcat 'identity rg-command-line-flags " ") " "
    (mapconcat 'identity rg-toggle-command-line-flags " ") " "
    (rg-build-type-add-args) " "
