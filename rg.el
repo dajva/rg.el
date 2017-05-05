@@ -98,10 +98,15 @@ If nil, the file name is repeated at the beginning of every match line."
   :type 'boolean
   :group 'rg)
 
+(defcustom rg-show-columns nil
+  "If t, show the columns of the matches in the output buffer."
+  :type 'boolean
+  :group 'rg)
+
 (defvar rg-builtin-type-aliases nil
   "Cache for 'rg --type-list'.")
 
-(defvar rg-command "rg --column --color always --colors match:fg:red"
+(defvar rg-command "rg --no-heading --color always --colors match:fg:red"
   "Command string for invoking rg.")
 
 (defvar rg-last-search nil
@@ -175,7 +180,9 @@ added as a '--type-add' parameter to the rg command line."
    rg-command " "
    (if rg-group-result
        "--heading "
-       "")
+     "")
+   (if rg-show-columns
+       " --column ")
    (mapconcat 'identity rg-command-line-flags " ") " "
    (mapconcat 'identity rg-toggle-command-line-flags " ") " "
    (rg-build-type-add-args) " "
@@ -275,13 +282,21 @@ This function is called from `compilation-filter-hook'."
           (replace-match "" t t))))))
 
 
-(defvar rg/file-column-pattern-nogroup
+(defvar rg/file-column-pattern-nogroup-with-column
   "^\\(.+?\\):\\([1-9][0-9]*\\):\\([1-9][0-9]*\\):"
   "A regexp pattern that groups output into filename, line number and column number.")
+
+(defvar rg/file-column-pattern-nogroup-no-column
+  "^\\(.+?\\):\\([1-9][0-9]*\\):"
+  "A regexp pattern that groups output into filename, line number.")
 
 (defvar rg/file-column-pattern-group
   "^\\([[:digit:]]+\\):\\([[:digit:]]+\\):"
   "A regexp pattern to match line number and column number with grouped output.")
+
+(defvar rg/file-column-pattern-group-no-column
+  "^\\([[:digit:]]+\\):"
+  "A regexp pattern to match line number with grouped output.")
 
 (defun rg/compilation-match-grouped-filename ()
   "Match filename backwards when a line/column match is found in grouped output mode."
@@ -307,12 +322,15 @@ Commands:
   (set (make-local-variable 'compilation-error-face)
        grep-hit-face)
   (set (make-local-variable 'compilation-error-regexp-alist)
-       '(compilation-rg-nogroup compilation-rg-group))
+       '(compilation-rg-nogroup-with-column compilation-rg-group compilation-rg-group-no-column  compilation-rg-nogroup-no-column))
 
   (set (make-local-variable 'compilation-error-regexp-alist-alist)
-       (list (cons 'compilation-rg-nogroup  (list rg/file-column-pattern-nogroup 1 2 3))
+       (list (cons 'compilation-rg-nogroup-with-column  (list rg/file-column-pattern-nogroup-with-column 1 2 3))
+             (cons 'compilation-rg-nogroup-no-column  (list rg/file-column-pattern-nogroup-no-column 1 2))
              (cons 'compilation-rg-group  (list rg/file-column-pattern-group
-                                                'rg/compilation-match-grouped-filename 1 2))))
+                                                'rg/compilation-match-grouped-filename 1 2))
+	     (cons 'compilation-rg-group-no-column  (list rg/file-column-pattern-group-no-column
+							  'rg/compilation-match-grouped-filename 1))))
 
   ;; compilation-directory-matcher can't be nil, so we set it to a regexp that
   ;; can never match.
