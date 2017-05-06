@@ -111,13 +111,13 @@ If nil, the file name is repeated at the beginning of every match line."
 (defconst rg-builtin-type-aliases nil
   "Cache for 'rg --type-list'.")
 
-(defconst rg-command "rg --color always --colors match:fg:red"
+(defvar rg-command "rg --color always --colors match:fg:red"
   "Command string for invoking rg.")
 
-(defconst rg-last-search nil
+(defvar rg-last-search nil
   "Stores parameters of last search.  Becomes buffer local in rg-mode buffers.")
 
-(defconst rg-toggle-command-line-flags nil
+(defvar rg-toggle-command-line-flags nil
   "List of command line flags defined by `rg-define-toggle' macro.")
 
 (defconst rg-special-type-aliases
