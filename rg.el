@@ -296,11 +296,11 @@ This function is called from `compilation-filter-hook'."
   "A regexp pattern that groups output into filename, line number.")
 
 (defvar rg-file-column-pattern-group
-  "^\\([[:digit:]]+\\):\\([[:digit:]]+\\):"
+  "^\\([1-9][0-9]*\\):\\([1-9][0-9]*\\):"
   "A regexp pattern to match line number and column number with grouped output.")
 
 (defvar rg-file-column-pattern-group-no-column
-  "^\\([[:digit:]]+\\):"
+  "^\\([1-9][0-9]*\\):"
   "A regexp pattern to match line number with grouped output.")
 
 (defun rg-match-grouped-filename ()
