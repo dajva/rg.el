@@ -233,7 +233,7 @@ This function is called from `compilation-filter-hook'."
       (when (< (point) end)
         (setq end (copy-marker end))
         ;; Highlight rg matches and delete marking sequences.
-        (while (re-search-forward "\033\\[38;5;9m\\(.*?\\)\033\\[[0-9]*m" end 1)
+        (while (re-search-forward "\033\\[m\033\\[31m\033\\[1m\\(.*?\\)\033\\[m" end 1)
           (replace-match (propertize (match-string 1)
                                      'face nil 'font-lock-face grep-match-face)
                          t t))
