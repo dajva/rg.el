@@ -178,11 +178,11 @@ alias."
         (rg-custom-type-aliases nil)
         full-command)
     (setq full-command (rg-build-command "foo" "cpp"))
-    (should (s-matches? "rg +--type +cpp +foo" full-command))
+    (should (s-matches? "rg +--no-heading +--type +cpp +foo" full-command))
     (setq full-command (rg-build-command "foo" "everything"))
-    (should (s-matches? "rg +foo" full-command))
+    (should (s-matches? "rg +--no-heading +foo" full-command))
     (setq full-command (rg-build-command "foo" "bar"))
-    (should (s-matches? "rg +--type-add +'custom:bar' +--type +custom +foo" full-command))))
+    (should (s-matches? "rg +--no-heading +--type-add +'custom:bar' +--type +custom +foo" full-command))))
 
 (ert-deftest rg-unit-test/default-alias ()
 "Test that `rg-default-alias' detects the current file and selects
