@@ -182,7 +182,7 @@ added as a '--type-add' parameter to the rg command line."
        "--heading "
      "")
    (if rg-show-columns
-       " --column ")
+       "--column ")
    (mapconcat 'identity rg-command-line-flags " ") " "
    (mapconcat 'identity rg-toggle-command-line-flags " ") " "
    (rg-build-type-add-args) " "
@@ -282,23 +282,23 @@ This function is called from `compilation-filter-hook'."
           (replace-match "" t t))))))
 
 
-(defvar rg/file-column-pattern-nogroup-with-column
+(defvar rg-file-column-pattern-nogroup-with-column
   "^\\(.+?\\):\\([1-9][0-9]*\\):\\([1-9][0-9]*\\):"
   "A regexp pattern that groups output into filename, line number and column number.")
 
-(defvar rg/file-column-pattern-nogroup-no-column
+(defvar rg-file-column-pattern-nogroup-no-column
   "^\\(.+?\\):\\([1-9][0-9]*\\):"
   "A regexp pattern that groups output into filename, line number.")
 
-(defvar rg/file-column-pattern-group
+(defvar rg-file-column-pattern-group
   "^\\([[:digit:]]+\\):\\([[:digit:]]+\\):"
   "A regexp pattern to match line number and column number with grouped output.")
 
-(defvar rg/file-column-pattern-group-no-column
+(defvar rg-file-column-pattern-group-no-column
   "^\\([[:digit:]]+\\):"
   "A regexp pattern to match line number with grouped output.")
 
-(defun rg/compilation-match-grouped-filename ()
+(defun rg-match-grouped-filename ()
   "Match filename backwards when a line/column match is found in grouped output mode."
   (save-match-data
     (save-excursion
@@ -322,15 +322,15 @@ Commands:
   (set (make-local-variable 'compilation-error-face)
        grep-hit-face)
   (set (make-local-variable 'compilation-error-regexp-alist)
-       '(compilation-rg-nogroup-with-column compilation-rg-group compilation-rg-group-no-column  compilation-rg-nogroup-no-column))
+       '(rg-nogroup-with-column rg-group rg-group-no-column  rg-nogroup-no-column))
 
   (set (make-local-variable 'compilation-error-regexp-alist-alist)
-       (list (cons 'compilation-rg-nogroup-with-column  (list rg/file-column-pattern-nogroup-with-column 1 2 3))
-             (cons 'compilation-rg-nogroup-no-column  (list rg/file-column-pattern-nogroup-no-column 1 2))
-             (cons 'compilation-rg-group  (list rg/file-column-pattern-group
-                                                'rg/compilation-match-grouped-filename 1 2))
-	     (cons 'compilation-rg-group-no-column  (list rg/file-column-pattern-group-no-column
-							  'rg/compilation-match-grouped-filename 1))))
+       (list (cons 'rg-nogroup-with-column  (list rg-file-column-pattern-nogroup-with-column 1 2 3))
+             (cons 'rg-nogroup-no-column  (list rg-file-column-pattern-nogroup-no-column 1 2))
+             (cons 'rg-group  (list rg-file-column-pattern-group
+				    'rg-match-grouped-filename 1 2))
+	     (cons 'rg-group-no-column  (list rg-file-column-pattern-group-no-column
+					      'rg-match-grouped-filename 1))))
 
   ;; compilation-directory-matcher can't be nil, so we set it to a regexp that
   ;; can never match.
