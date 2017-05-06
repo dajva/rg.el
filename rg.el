@@ -81,15 +81,21 @@
   :group 'tools
   :group 'external)
 
+(defgroup rg-face nil
+  "Settings for rg faces."
+  :group 'rg)
+
 (defcustom rg-custom-type-aliases
   '(("gn" .    "*.gn *.gni")
     ("gyp" .    "*.gyp *.gypi"))
   "Alist of file type aliases that are added to the 'rg' built in aliases."
-  :type '(alist :key-type string :value-type string))
+  :type '(alist :key-type string :value-type string)
+  :group 'rg)
 
 (defcustom rg-command-line-flags nil
   "List of command line flags for rg."
-  :type '(repeat string))
+  :type '(repeat string)
+  :group 'rg)
 
 (defcustom rg-group-result nil
     "Group matches in the same file together.
