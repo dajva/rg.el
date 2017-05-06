@@ -265,8 +265,7 @@ This function is called from `compilation-filter-hook'."
       (when (< (point) end)
         (setq end (copy-marker end))
 	;; Add File: in front of filename
-	(if rg-group-result
-	    (progn
+	(when rg-group-result
 	  (while (re-search-forward "^\033\\[m\033\\[35m\\(.*?\\)\033\\[m$" end 1)
 	    (replace-match (concat (propertize "File:"
 					       'face nil 'font-lock-face 'rg-file-tag-face)
@@ -274,7 +273,7 @@ This function is called from `compilation-filter-hook'."
 				   (propertize (match-string 1)
 					       'face nil 'font-lock-face 'rg-filename-face))
 			   t t))
-	      (goto-char beg)))
+	  (goto-char beg))
 
         ;; Highlight rg matches and delete marking sequences.
         (while (re-search-forward "\033\\[m\033\\[31m\033\\[1m\\(.*?\\)\033\\[m" end 1)
