@@ -111,7 +111,7 @@ If nil, the file name is repeated at the beginning of every match line."
 (defconst rg-builtin-type-aliases nil
   "Cache for 'rg --type-list'.")
 
-(defconst rg-command "rg --no-heading --color always --colors match:fg:red"
+(defconst rg-command "rg --color always --colors match:fg:red"
   "Command string for invoking rg.")
 
 (defconst rg-last-search nil
@@ -183,9 +183,9 @@ will be added.  Optional CUSTOM is a file matching pattern that will be
 added as a '--type-add' parameter to the rg command line."
   (concat
    rg-command " "
-   (when rg-group-result
+   (if rg-group-result
        "--heading "
-     "")
+       "--no-heading ")
    (when rg-show-columns
        "--column ")
    (mapconcat 'identity rg-command-line-flags " ") " "
@@ -267,13 +267,13 @@ This function is called from `compilation-filter-hook'."
 	;; Add File: in front of filename
 	(if rg-group-result
 	    (progn
-	      (while (re-search-forward "^\033\\[m\033\\[35m\\(.*?\\)\033\\[m$" end 1)
-		(replace-match (concat (propertize "File:"
-						   'face nil 'font-lock-face 'rg-file-tag-face)
-				       " "
-				       (propertize (match-string 1)
-						   'face nil 'font-lock-face 'rg-filename-face))
-			       t t))
+	  (while (re-search-forward "^\033\\[m\033\\[35m\\(.*?\\)\033\\[m$" end 1)
+	    (replace-match (concat (propertize "File:"
+					       'face nil 'font-lock-face 'rg-file-tag-face)
+				   " "
+				   (propertize (match-string 1)
+					       'face nil 'font-lock-face 'rg-filename-face))
+			   t t))
 	      (goto-char beg)))
 
         ;; Highlight rg matches and delete marking sequences.
