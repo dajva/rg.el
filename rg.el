@@ -99,7 +99,6 @@
 
 (defcustom rg-group-result nil
     "Group matches in the same file together.
-
 If nil, the file name is repeated at the beginning of every match line."
   :type 'boolean
   :group 'rg)
@@ -109,16 +108,16 @@ If nil, the file name is repeated at the beginning of every match line."
   :type 'boolean
   :group 'rg)
 
-(defvar rg-builtin-type-aliases nil
+(defconst rg-builtin-type-aliases nil
   "Cache for 'rg --type-list'.")
 
-(defvar rg-command "rg --no-heading --color always --colors match:fg:red"
+(defconst rg-command "rg --no-heading --color always --colors match:fg:red"
   "Command string for invoking rg.")
 
-(defvar rg-last-search nil
+(defconst rg-last-search nil
   "Stores parameters of last search.  Becomes buffer local in rg-mode buffers.")
 
-(defvar rg-toggle-command-line-flags nil
+(defconst rg-toggle-command-line-flags nil
   "List of command line flags defined by `rg-define-toggle' macro.")
 
 (defconst rg-special-type-aliases
@@ -184,10 +183,10 @@ will be added.  Optional CUSTOM is a file matching pattern that will be
 added as a '--type-add' parameter to the rg command line."
   (concat
    rg-command " "
-   (if rg-group-result
+   (when rg-group-result
        "--heading "
      "")
-   (if rg-show-columns
+   (when rg-show-columns
        "--column ")
    (mapconcat 'identity rg-command-line-flags " ") " "
    (mapconcat 'identity rg-toggle-command-line-flags " ") " "
