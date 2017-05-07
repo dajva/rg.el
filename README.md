@@ -82,7 +82,7 @@ search for quick reruns with refined parameters.
 
 ## Customize
 
-### rg-custom-type-aliases
+### `rg-custom-type-aliases`
 Custom type patterns as for rgrep are supported via customizing of
 `rg-custom-type-aliases`.
 
@@ -92,11 +92,22 @@ Custom type patterns as for rgrep are supported via customizing of
     ("baz" .    "*.baz *.qux")))
 ```
 
-### rg-command-line-flags
+### `rg-command-line-flags`
 Additional command line flags that will be appended to the ripgrep
 command line.
 
-### rg-define-toggle
+### `rg-group-result`
+Controls the layout of the results buffer. If non `nil`, each file
+name is displayed once and matches are grouped under that filename
+instead of repeating the filename on each match. This is essentially
+the layout of the `--no-heading` ripgrep command line flag.
+Default value is `nil` (off).
+
+### `rg-show-columns`
+Controls if column numbers are used in the search result.
+Default value is `nil` (off).
+
+### `rg-define-toggle`
 This is a macro that can be used to define custom `ripgrep` flag
 toggling functions in the rg result buffer. The macro takes the flag
 (and potential value) as an argument and optionally binds the toggle
