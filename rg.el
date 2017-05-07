@@ -168,8 +168,8 @@ for special purposes.")
   :group 'rg-face)
 
 (defun rg-build-type-add-args ()
-"Build a string of --type-add: 'foo:*.foo' flags for each type in `rg-custom-type-aliases'."
-  (mapconcat
+"Build a list of --type-add: 'foo:*.foo' flags for each type in `rg-custom-type-aliases'."
+  (mapcar
    (lambda (typedef)
      (let ((name (car typedef))
            (globs (cdr typedef)))
@@ -177,28 +177,29 @@ for special purposes.")
         (lambda (glob)
           (concat "--type-add '" name ":" glob "'"))
         (split-string globs) " ")))
-   rg-custom-type-aliases " "))
+   rg-custom-type-aliases))
 
 (defun rg-build-template(&optional type custom)
 "Create command line template.  When TYPE is non nil, type flag template
 will be added.  Optional CUSTOM is a file matching pattern that will be
 added as a '--type-add' parameter to the rg command line."
-  (concat
-   rg-command " "
-   (if rg-group-result
-       "--heading "
-     "--no-heading ")
-   (when rg-show-columns
-     "--column ")
-   (mapconcat 'identity rg-command-line-flags " ") " "
-   (mapconcat 'identity rg-toggle-command-line-flags " ") " "
-   (rg-build-type-add-args) " "
-   (when type
-     (concat
+  (let ((args (append
+               (list (if rg-group-result
+                         "--heading"
+                       "--no-heading"))
+               (rg-build-type-add-args)
+               rg-command-line-flags
+               rg-toggle-command-line-flags
+               (list "<R>"))))
+    (when rg-show-columns
+      (setq args (cons "--column" args)))
+    (when type
+      (setq args (cons "--type <F>" args))
       (when custom
-        (concat "--type-add 'custom:" custom "' "))
-      "--type <F> "))
-   "<R>"))
+        (setq args (cons
+                    (concat "--type-add 'custom:" custom "'")
+                    args))))
+    (mapconcat 'identity (cons rg-command args) " ")))
 
 (defun rg-list-builtin-type-aliases ()
 "Invokes rg --type-list and puts the result in an alist."
