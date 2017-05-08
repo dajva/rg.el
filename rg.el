@@ -81,10 +81,6 @@
   :group 'tools
   :group 'external)
 
-(defgroup rg-face nil
-  "Settings for rg faces."
-  :group 'rg)
-
 (defcustom rg-custom-type-aliases
   '(("gn" .    "*.gn *.gni")
     ("gyp" .    "*.gyp *.gypi"))
@@ -108,6 +104,45 @@ If nil, the file name is repeated at the beginning of every match line."
   :type 'boolean
   :group 'rg)
 
+(defgroup rg-face nil
+  "Settings for rg faces."
+  :group 'rg)
+
+(defface rg-match-face
+  `((t :inherit ,grep-match-face))
+  "face for match highlight"
+  :group 'rg-face)
+
+(defface rg-error-face
+  `((t :inherit ,grep-error-face))
+  "face for error"
+  :group 'rg-face)
+
+(defface rg-context-face
+  `((t :inherit ,grep-context-face))
+  "face for context lines"
+  :group 'rg-face)
+
+(defface rg-info-face
+  '((t :inherit compilation-info))
+  "face for info"
+  :group 'rg-face)
+
+(defface rg-warning-face
+  '((t :inherit compilation-warning))
+  "face for warning"
+  :group 'rg-face)
+
+(defface rg-filename-face
+  '((t :inherit rg-info-face))
+  "face for filename"
+  :group 'rg-face)
+
+(defface rg-file-tag-face
+  '((t :inherit font-lock-function-name-face))
+  "face for file tag in grouped layout"
+  :group 'rg-face)
+
 (defvar rg-builtin-type-aliases nil
   "Cache for 'rg --type-list'.")
 
@@ -129,22 +164,22 @@ for special purposes.")
 (defconst rg-mode-font-lock-keywords
   '(;; Command output lines.
     (": \\(.+\\): \\(?:Permission denied\\|No such \\(?:file or directory\\|device or address\\)\\)$"
-     1 grep-error-face)
+     1 'rg-error-face)
     ;; remove match from grep-regexp-alist before fontifying
     ("^rg[/a-zA-z]* started.*"
      (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t))
     ("^rg[/a-zA-z]* finished \\(?:(\\(matches found\\))\\|with \\(no matches found\\)\\).*"
      (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t)
-     (1 compilation-info-face nil t)
-     (2 compilation-warning-face nil t))
+     (1 'rg-info-face nil t)
+     (2 'rg-warning-face nil t))
     ("^rg[/a-zA-z]* \\(exited abnormally\\|interrupt\\|killed\\|terminated\\)\\(?:.*with code \\([0-9]+\\)\\)?.*"
      (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t)
-     (1 grep-error-face)
-     (2 grep-error-face nil t))
+     (1 'rg-error-face)
+     (2 'rg-error-face nil t))
     ;; "filename-linenumber-" format is used for context lines in GNU
     ;; grep and rg,
     ;; "filename=linenumber=" for lines with function names in "git grep -p".
-    ("^.+?[-=][0-9]+[-=].*\n" (0 grep-context-face))))
+    ("^.+?[-=][0-9]+[-=].*\n" (0 'rg-context-face))))
 
 (defvar rg-mode-map
   (let ((map (copy-keymap grep-mode-map)))
@@ -156,16 +191,6 @@ for special purposes.")
     (define-key map "s" 'rg-save-search-as-name)
     (define-key map "S" 'rg-save-search)
     map))
-
-(defface rg-filename-face
-  '((t :inherit compilation-info))
-  "face for filename"
-  :group 'rg-face)
-
-(defface rg-file-tag-face
-  '((t :inherit 'font-lock-function-name-face))
-  "face for filename"
-  :group 'rg-face)
 
 (defun rg-build-type-add-args ()
 "Build a list of --type-add: 'foo:*.foo' flags for each type in `rg-custom-type-aliases'."
@@ -283,7 +308,7 @@ This function is called from `compilation-filter-hook'."
         ;; Highlight rg matches and delete marking sequences.
         (while (re-search-forward "\033\\[m\033\\[31m\033\\[1m\\(.*?\\)\033\\[m" end 1)
           (replace-match (propertize (match-string 1)
-                                     'face nil 'font-lock-face grep-match-face)
+                                     'face nil 'font-lock-face 'rg-match-face)
                          t t))
         ;; Delete all remaining escape sequences
         (goto-char beg)
@@ -332,7 +357,7 @@ Commands:
   (setq grep-last-buffer (current-buffer))
   (set (make-local-variable 'tool-bar-map) grep-mode-tool-bar-map)
   (set (make-local-variable 'compilation-error-face)
-       grep-hit-face)
+       'rg-filename-face)
   (set (make-local-variable 'compilation-error-regexp-alist)
        '(rg-group-with-column rg-nogroup-with-column rg-group-no-column  rg-nogroup-no-column))
 
