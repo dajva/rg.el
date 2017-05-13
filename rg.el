@@ -294,16 +294,16 @@ This function is called from `compilation-filter-hook'."
       ;; escape sequence in one chunk and the rest in another.
       (when (< (point) end)
         (setq end (copy-marker end))
-	;; Add File: in front of filename
-	(when rg-group-result
-	  (while (re-search-forward "^\033\\[m\033\\[35m\\(.*?\\)\033\\[m$" end 1)
-	    (replace-match (concat (propertize "File:"
-					       'face nil 'font-lock-face 'rg-file-tag-face)
-				   " "
-				   (propertize (match-string 1)
-					       'face nil 'font-lock-face 'rg-filename-face))
-			   t t))
-	  (goto-char beg))
+        ;; Add File: in front of filename
+        (when rg-group-result
+          (while (re-search-forward "^\033\\[m\033\\[35m\\(.*?\\)\033\\[m$" end 1)
+            (replace-match (concat (propertize "File:"
+                                               'face nil 'font-lock-face 'rg-file-tag-face)
+                                   " "
+                                   (propertize (match-string 1)
+                                               'face nil 'font-lock-face 'rg-filename-face))
+                           t t))
+          (goto-char beg))
 
         ;; Highlight rg matches and delete marking sequences.
         (while (re-search-forward "\033\\[m\033\\[31m\033\\[1m\\(.*?\\)\033\\[m" end 1)
@@ -360,12 +360,11 @@ Commands:
        'rg-filename-face)
   (set (make-local-variable 'compilation-error-regexp-alist)
        '(rg-group-with-column rg-nogroup-with-column rg-group-no-column  rg-nogroup-no-column))
-
   (set (make-local-variable 'compilation-error-regexp-alist-alist)
-       (list (cons 'rg-nogroup-no-column  (list rg-file-line-pattern-nogroup 1 2))
-	     (cons 'rg-nogroup-with-column  (list rg-file-line-column-pattern-nogroup 1 2 3))
-            (cons 'rg-group-with-column  (list rg-file-line-column-pattern-group 'rg-match-grouped-filename 1 2))
-	     (cons 'rg-group-no-column  (list rg-file-line-pattern-group 'rg-match-grouped-filename 1))))
+       (list (cons 'rg-nogroup-no-column (list rg-file-line-pattern-nogroup 1 2))
+             (cons 'rg-nogroup-with-column (list rg-file-line-column-pattern-nogroup 1 2 3))
+             (cons 'rg-group-with-column (list rg-file-line-column-pattern-group 'rg-match-grouped-filename 1 2))
+             (cons 'rg-group-no-column (list rg-file-line-pattern-group 'rg-match-grouped-filename 1))))
 
   ;; compilation-directory-matcher can't be nil, so we set it to a regexp that
   ;; can never match.
