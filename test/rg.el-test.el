@@ -195,6 +195,58 @@ matching alias."
     (find-file "test/data/foo.baz")
     (should (equal (car (rg-default-alias)) "test"))))
 
+(ert-deftest rg-unit-test/single-font-lock-match ()
+"Test that `rg-single-font-lock-match' find font-lock-face matches correctly."
+  (let (pos limit)
+    (with-temp-buffer
+      (insert
+       "noproperty"
+       (propertize "match1" 'font-lock-face 'rg-file-tag-face)
+       (propertize "someotherproperty" 'face 'rg-match-face)
+       (propertize "othermatch" 'font-lock-face 'rg-filename-face)
+       (propertize "match2" 'font-lock-face 'rg-file-tag-face))
+      (setq pos (rg-single-font-lock-match 'rg-file-tag-face (point-min) (point-max) 1))
+      (goto-char pos)
+      (should (looking-at "match1"))
+      (setq pos (rg-single-font-lock-match 'rg-file-tag-face pos (point-max) 1))
+      (goto-char pos)
+      (should (looking-at "match2"))
+      (setq pos (rg-single-font-lock-match 'rg-file-tag-face pos (point-min) -1))
+      (goto-char pos)
+      (should (looking-at "match1"))
+      (setq pos (rg-single-font-lock-match 'rg-filename-face pos (point-max) 1))
+      (goto-char pos)
+      (should (looking-at "othermatch"))
+      (setq limit (+ pos 4))
+      (setq pos (rg-single-font-lock-match 'rg-file-tag-face pos limit 1))
+      (should (eq pos limit)))))
+
+(ert-deftest rg-unit/next-prev-file ()
+"Test that `rg-next-file' and `rg-prev-file' dispatch calls as it should."
+  (let (called arg)
+    (noflet ((rg-navigate-file-group (n) (setq
+                                          called 'rg-navigate-file-group
+                                          arg  n))
+             (compilation-next-error (n) (setq
+                                          called 'compilation-next-error
+                                          arg n))
+             (compilation-previous-error (n) (setq
+                                              called 'compilation-previous-error
+                                              arg n)))
+            (let ((rg-group-result t))
+              (rg-next-file 1)
+              (should (eq called 'rg-navigate-file-group))
+              (should (eq arg 1))
+              (rg-prev-file 1)
+              (should (eq called 'rg-navigate-file-group))
+              (should (eq arg (- 1))))
+            (let ((rg-group-result nil))
+              (rg-next-file 1)
+              (should (eq called 'compilation-next-error))
+              (should (eq arg 1))
+              (rg-prev-file 1)
+              (should (eq called 'compilation-previous-error))
+              (should (eq arg 1))))))
 
 ;; Integration tests
 
@@ -288,6 +340,46 @@ matching alias."
   (should (equal (expand-file-name
                   (rg-project-root "/tmp/foo.el"))
                  "/tmp/")))
+
+(ert-deftest rg-integration/navigate-file-group-in-grouped-result () :tags '(need-rg)
+"Test group navigation in grouped result."
+  (let ((rg-group-result t)
+        (files '("foo.el" "bar.el"))
+        first-file
+        second-file
+        pos)
+    (rg "hello" "elisp" (concat default-directory "test/data"))
+    (with-current-buffer "*rg*"
+      (should (rg-wait-for-search-result))
+      (goto-char (point-min))
+      (rg-navigate-file-group 1)
+      ;; The order of results is non deterministic
+      ;; First match any of the files in `files'.
+      (should (looking-at
+               (concat "File: \\(" (mapconcat 'identity files "\\|") "\\)")))
+      (setq first-file (match-string 1))
+      ;; Filter out the already matched file.
+      (setq second-file
+            (car (seq-filter
+                  (lambda (elm) (not (equal first-file elm))) files)))
+      (rg-navigate-file-group 1)
+      (should (looking-at (concat "File: " second-file)))
+      (compilation-next-error 1)
+      (setq pos (point))
+      (rg-navigate-file-group -3)
+      (should (eq pos (point)))
+      (rg-navigate-file-group -2)
+      (should (looking-at (concat "File: " first-file))))))
+
+(ert-deftest rg-integration/navigate-file-group-in-ungrouped-result () :tags '(need-rg)
+"Test group navigation in ungrouped result."
+  (let ((rg-group-result nil))
+    (rg "hello" "elisp" (concat default-directory "test/data"))
+    (with-current-buffer "*rg*"
+      (should (rg-wait-for-search-result))
+      (goto-char (point-min))
+      (rg-navigate-file-group 1)
+      (should (eq (point) (point-min))))))
 
 (provide 'rg.el-test)
 

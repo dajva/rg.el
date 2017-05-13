@@ -41,7 +41,7 @@
 
 ;; There are also other entry points for easy searching:
 ;; `rg-project' - Search in a project.
-;; `rg-dwim' - Handsfree search. Search thing at point in project in
+;; `rg-dwim' - Handsfree search.  Search thing at point in project in
 ;; files matching the type alias of the current buffer file name.
 
 ;; The `rg' results buffer has bindings for modification of
@@ -65,7 +65,7 @@
 ;;     ("baz" .    "*.baz *.qux")))
 
 ;; The `rg-define-toggle' macro can be used to define a toggleable
-;; flag for the rg command line. Such flags can then be toggled from
+;; flag for the rg command line.  Such flags can then be toggled from
 ;; the results buffer to repeat the search with updated flags.
 
 ;;; Code:
@@ -190,6 +190,8 @@ for special purposes.")
     (define-key map "d" 'rg-rerun-change-dir)
     (define-key map "s" 'rg-save-search-as-name)
     (define-key map "S" 'rg-save-search)
+    (define-key map "\C-n" 'rg-next-file)
+    (define-key map "\C-p" 'rg-prev-file)
     map))
 
 (defun rg-build-type-add-args ()
@@ -482,6 +484,39 @@ uppercase letters, case sensitive search is forced."
     (when (member "-i" rg-toggle-command-line-flags)
       (setq rg-toggle-command-line-flags (delete "-i" rg-toggle-command-line-flags)))))
 
+(defun rg-single-font-lock-match (face pos limit direction)
+"Return position of next match of 'font-lock-face property that
+equals FACE.  POS is the start position of the search and LIMIT is
+the limit of the search.  If FACE is not found within LIMIT, LIMIT is
+returned. If DIRECTION is positive search forward in the buffer,
+otherwise search backward."
+  (let ((single-property-change-func
+         (if (> direction 0)
+             'next-single-property-change
+           'previous-single-property-change)))
+    (while
+        (progn
+          (setq pos (funcall single-property-change-func pos 'font-lock-face nil limit))
+          (and (not (equal pos limit))
+               (not (eq (get-text-property pos 'font-lock-face) face))))))
+  pos)
+
+(defun rg-navigate-file-group (steps)
+"Move point to the a matched result group in the compilation
+buffer.  STEPS decides how many groups to move past.  Negative value
+means backwards and positive means forwards."
+  (let ((pos (point))
+        (steps-left (abs steps))
+        (limit
+         (if (< steps 0)
+             (point-min)
+           (point-max))))
+    (while  (and (> steps-left 0) (not (equal pos limit)))
+      (setq pos (rg-single-font-lock-match 'rg-file-tag-face pos limit steps))
+      (setq steps-left (- steps-left 1)))
+    (unless (equal pos limit)
+      (goto-char pos))))
+
 (defalias 'kill-rg 'kill-compilation)
 
 ;;;###autoload
@@ -556,6 +591,26 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
   (rg-rerun-with-changes (:dir dir)
     (setq dir (read-directory-name "In directory: "
                                    dir nil))))
+
+(defun rg-next-file (n)
+"Move point to next file with a match.  Prefix arg N decides how many
+files to navigate.  When `rg-group-result' is nil this is the same as
+invoking `compilation-next-error', otherwise this will navigate to the
+next file with grouped matches."
+  (interactive "p")
+  (if rg-group-result
+      (rg-navigate-file-group n)
+    (compilation-next-error n)))
+
+(defun rg-prev-file (n)
+"Move point to previous file with a match.  Prefix arg N decides how many
+files to navigate.  When `rg-group-result' is nil this is the same as
+invoking `compilation-previous-error', otherwise this will navigate to the
+previous file with grouped matches."
+  (interactive "p")
+  (if rg-group-result
+      (rg-navigate-file-group (- n))
+    (compilation-previous-error n)))
 
 (defun rg-save-search-as-name (newname)
 "Save the search result in current *rg* result buffer.  The result
