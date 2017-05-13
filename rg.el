@@ -68,6 +68,11 @@
 ;; flag for the rg command line.  Such flags can then be toggled from
 ;; the results buffer to repeat the search with updated flags.
 
+;; The default configuration of this package is compatible with `wgrep'.
+;; If grouped mode and/or show columns is enabled you need to install
+;; the wgrep-ag package from MELPA and configure it like this:
+;; (add-hook 'rg-mode-hook 'wgrep-ag-setup)
+
 ;;; Code:
 
 (require 'cl-lib)

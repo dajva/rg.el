@@ -33,6 +33,18 @@ load path and add this to `init.el`
 `rg` is an autoloaded symbol so it's also possible to defer loading if
 you have autoloading setup.
 
+### wgrep
+
+The default configuration of this package is compatible with `wgrep`.
+If grouped mode and/or show columns is enabled you need to install the
+[wgrep-ag](http://melpa.org/#/wgrep-ag) package from MELPA and
+configure it like this:
+
+``` el
+(add-hook 'rg-mode-hook 'wgrep-ag-setup)
+```
+
+
 
 ## Usage
 
@@ -79,6 +91,7 @@ search for quick reruns with refined parameters.
 | c | Toggle case insensitive setting |
 | s | Save search result to unique name |
 | S | Save search result, prompt for name |
+| w | Switch to `wgrep-mode` |
 
 ## Customize
 
