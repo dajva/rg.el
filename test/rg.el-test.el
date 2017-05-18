@@ -381,6 +381,22 @@ matching alias."
       (rg-navigate-file-group 1)
       (should (eq (point) (point-min))))))
 
+(defun rg-test-highlight-match (grouped)
+"Helper for highlight testing.  If GROUPED is is non nil grouped
+result are used."
+  (let ((rg-group-result grouped)
+        pos)
+    (rg "hello" "elisp" (concat default-directory "test/data"))
+    (with-current-buffer "*rg*"
+      (should (rg-wait-for-search-result))
+      (setq pos (rg-single-font-lock-match 'rg-match-face (point-min) (point-max) 1))
+      (should (not (eq (point-max) pos))))))
+
+(ert-deftest rg-integration/highlight-match-group () :tags '(need-rg)
+"Test that highlighting of matches works."
+  (rg-test-highlight-match t)
+  (rg-test-highlight-match nil))
+
 (provide 'rg.el-test)
 
 ;;; rg.el-test.el ends here
