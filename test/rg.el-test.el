@@ -248,6 +248,21 @@ matching alias."
               (should (eq called 'compilation-previous-error))
               (should (eq arg 1))))))
 
+(ert-deftest rg-unit/match-grouped-filename ()
+"Test that `rg-match-grouped-filename' finds correct match and restores state."
+  (let (saved-pos)
+    (with-temp-buffer
+      (insert
+       "some random text\n"
+       "File: matched/text/file.foo\n"
+       "4:1: 	Some matched text")
+      (goto-char (point-min))
+      (re-search-forward "Some match")
+      (setq saved-pos (point))
+      (should (equal "matched/text/file.foo" (car (rg-match-grouped-filename))))
+      (should (equal "Some match" (match-string 0)))
+      (should (eq saved-pos (point))))))
+
 ;; Integration tests
 
 (ert-deftest rg-integration-test/search-alias-builtin () :tags '(need-rg)
@@ -396,6 +411,22 @@ result are used."
 "Test that highlighting of matches works."
   (rg-test-highlight-match t)
   (rg-test-highlight-match nil))
+
+(defun rg-file-tag-face-exist-in-result (grouped)
+"Make a search and return non nil if 'rg-file-tag-face exist in buffer, i.e. 'File:'."
+  (let((rg-group-result grouped)
+       pos)
+    (rg "hello" "elisp" (concat default-directory "test/data"))
+    (with-current-buffer "*rg*"
+      (should (rg-wait-for-search-result))
+      (setq pos (rg-single-font-lock-match 'rg-file-tag-face (point-min) (point-max) 1))
+      (not (eq (point-max) pos)))))
+
+(ert-deftest rg-integration/group-result-variable () :tags '(need-rg)
+"Test that grouped result is triggered if `rg-group-result' is non nil
+and ungrouped otherwise."
+  (should (not (rg-file-tag-face-exist-in-result nil)))
+  (should (rg-file-tag-face-exist-in-result t)))
 
 (provide 'rg.el-test)
 
