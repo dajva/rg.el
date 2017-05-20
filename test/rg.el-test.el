@@ -30,7 +30,7 @@
 ;; Unit tests
 
 (ert-deftest rg-unit-test/case-expand-template ()
-  "Test that `rg-set-case-sensitivity' handles case settings correctly."
+"Test that `rg-set-case-sensitivity' handles case settings correctly."
   (let (rg-toggle-command-line-flags)
     (let ((case-fold-search t))
       (rg-set-case-sensitivity "foo")
@@ -304,8 +304,7 @@ matching alias."
 "Test that rg builtin aliases works."
   (let ((case-fold-search t))
     (rg "hello" "elisp" (concat default-directory "test/data"))
-    (with-current-buffer "*rg*"
-      (should (rg-wait-for-search-result))
+    (rg-with-current-result
       (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
         (should (= 3 (s-count-matches "foo.el.*hello" bufstr)))
         (should (= 3 (s-count-matches "bar.el.*hello" bufstr)))
@@ -317,8 +316,7 @@ matching alias."
   (let ((case-fold-search t)
         (rg-custom-type-aliases '(("test" . "*.baz"))))
     (rg "hello" "test" (concat default-directory "test/data"))
-    (with-current-buffer "*rg*"
-      (should (rg-wait-for-search-result))
+    (rg-with-current-result
       (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
         (should (= 0 (s-count-matches "foo.el.*hello" bufstr)))
         (should (= 0 (s-count-matches "bar.el.*hello" bufstr)))
@@ -331,8 +329,7 @@ matching alias."
   (let ((case-fold-search t)
         (rg-custom-type-aliases '(("test" . "*.baz"))))
     (rg "hello" "all" (concat default-directory "test/data"))
-    (with-current-buffer "*rg*"
-      (should (rg-wait-for-search-result))
+    (rg-with-current-result
       (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
         (should (= 3 (s-count-matches "foo.el.*hello" bufstr)))
         (should (= 3 (s-count-matches "bar.el.*hello" bufstr)))
@@ -343,8 +340,7 @@ matching alias."
 "Test that custom file pattern that is not an alias works."
   (let ((case-fold-search t))
     (rg "hello" "*.baz" (concat default-directory "test/data"))
-    (with-current-buffer "*rg*"
-      (should (rg-wait-for-search-result))
+    (rg-with-current-result
       (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
         (should (= 0 (s-count-matches "foo.el.*hello" bufstr)))
         (should (= 0 (s-count-matches "bar.el.*hello" bufstr)))
@@ -355,8 +351,7 @@ matching alias."
 "Test that uppercase search triggers case sensitive search."
   (let ((case-fold-search t))
     (rg "Hello" "all" (concat default-directory "test/data"))
-    (with-current-buffer "*rg*"
-      (should (rg-wait-for-search-result))
+    (rg-with-current-result
       (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
         (should (= 1 (s-count-matches "foo.el.*hello" bufstr)))
         (should (= 1 (s-count-matches "bar.el.*hello" bufstr)))))))
@@ -365,8 +360,7 @@ matching alias."
 "Test explicit case sensitive search."
   (let ((case-fold-search nil))
     (rg "hello" "all" (concat default-directory "test/data")))
-  (with-current-buffer "*rg*"
-    (should (rg-wait-for-search-result))
+  (rg-with-current-result
     (let ((case-fold-search t)
           (bufstr (buffer-substring-no-properties (point-min) (point-max))))
       (should (= 1 (s-count-matches "foo.el.*hello" bufstr)))
@@ -399,8 +393,7 @@ matching alias."
         second-file
         pos)
     (rg "hello" "elisp" (concat default-directory "test/data"))
-    (with-current-buffer "*rg*"
-      (should (rg-wait-for-search-result))
+    (rg-with-current-result
       (goto-char (point-min))
       (rg-navigate-file-group 1)
       ;; The order of results is non deterministic
@@ -425,8 +418,7 @@ matching alias."
 "Test group navigation in ungrouped result."
   (let ((rg-group-result nil))
     (rg "hello" "elisp" (concat default-directory "test/data"))
-    (with-current-buffer "*rg*"
-      (should (rg-wait-for-search-result))
+    (rg-with-current-result
       (goto-char (point-min))
       (rg-navigate-file-group 1)
       (should (eq (point) (point-min))))))
@@ -437,8 +429,7 @@ result are used."
   (let ((rg-group-result grouped)
         pos)
     (rg "hello" "elisp" (concat default-directory "test/data"))
-    (with-current-buffer "*rg*"
-      (should (rg-wait-for-search-result))
+    (rg-with-current-result
       (setq pos (rg-single-font-lock-match 'rg-match-face (point-min) (point-max) 1))
       (should (not (eq (point-max) pos))))))
 
@@ -452,8 +443,7 @@ result are used."
   (let((rg-group-result grouped)
        pos)
     (rg "hello" "elisp" (concat default-directory "test/data"))
-    (with-current-buffer "*rg*"
-      (should (rg-wait-for-search-result))
+    (rg-with-current-result
       (setq pos (rg-single-font-lock-match 'rg-file-tag-face (point-min) (point-max) 1))
       (not (eq (point-max) pos)))))
 

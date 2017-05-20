@@ -61,4 +61,13 @@ repository."
                               (concat default-directory "/test/rg.el-test.el")))
            (expand-file-name default-directory))))
 
+(defmacro rg-with-current-result (&rest body)
+"Evaluate BODY in current result buffer when search has finished."
+  (declare (indent 0))
+  `(with-current-buffer "*rg*"
+     (should (rg-wait-for-search-result))
+     (let ((result (progn ,@body)))
+       (kill-buffer "*rg*")
+       result)))
+
 ;;; test-helper.el ends here
