@@ -63,6 +63,13 @@ or a `vc-backend`.
 `M-x rg-dwim` searches for _thing at point_ in a project in all files
 with the same type alias as the current buffer file.
 
+### Saving searches
+A search result buffer can be saved by invoking `rg-save-search` or
+`rg-save-search-as-name`. The former will give the saved buffer a
+unique name and the latter will prompt the user for a name. The
+`rg-list-searches` command will open a buffer with all active
+`rg-mode` buffers showing basic information about each search.
+
 ### Type aliases
 
 [ripgrep](https://github.com/BurntSushi/ripgrep) has its own built in
@@ -84,11 +91,12 @@ search for quick reruns with refined parameters.
 
 | Binding | Description |
 |-----|--------|
+| c | Toggle case insensitive setting |
 | d | Change directory |
 | f | Change file pattern |
-| r | Change search string |
 | i | Toggle `--no-ignore` flag |
-| c | Toggle case insensitive setting |
+| l | List search buffers in a separate buffer |
+| r | Change search string |
 | s | Save search result to unique name |
 | S | Save search result, prompt for name |
 | w | Switch to `wgrep-mode` |

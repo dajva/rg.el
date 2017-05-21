@@ -77,6 +77,8 @@
 
 (require 'cl-lib)
 (require 'grep)
+(require 'ibuf-ext)
+(require 'ibuffer)
 (require 's)
 (require 'seq)
 (require 'vc-hooks)
@@ -108,6 +110,15 @@ If nil, the file name is repeated at the beginning of every match line."
   "If t, show the columns of the matches in the output buffer."
   :type 'boolean
   :group 'rg)
+
+(defvar rg-filter-hook nil
+  "This hook is called every time the rg buffer has been updated with
+new content and filtered through the `rg-filter' funcion.")
+
+(defvar rg-finished-functions nil
+  "Functions to call when a search is finished. Each function is
+  called with two arguments: the compilation buffer,and a string
+  describing how the process finished.")
 
 (defgroup rg-face nil
   "Settings for rg faces."
@@ -157,6 +168,9 @@ If nil, the file name is repeated at the beginning of every match line."
 (defvar rg-last-search nil
   "Stores parameters of last search.  Becomes buffer local in rg-mode buffers.")
 
+(defvar rg-hit-count 0
+  "Stores number of hits in a search.")
+
 (defvar rg-toggle-command-line-flags nil
   "List of command line flags defined by `rg-define-toggle' macro.")
 
@@ -185,14 +199,17 @@ for special purposes.")
     ;; context lines in rg
     ("^\\(?:.+?-\\)?[0-9]+-.*\n" (0 'rg-context-face))))
 
+(defconst rg-search-list-buffer-name "*Searches rg*")
+
 (defvar rg-mode-map
   (let ((map (copy-keymap grep-mode-map)))
     (define-key map "c" 'rg-rerun-toggle-case)
+    (define-key map "d" 'rg-rerun-change-dir)
+    (define-key map "f" 'rg-rerun-change-files)
     (define-key map "g" 'rg-recompile)
     (define-key map "i" 'rg-rerun-toggle-ignore)
+    (define-key map "l" 'rg-list-searches)
     (define-key map "r" 'rg-rerun-change-regexp)
-    (define-key map "f" 'rg-rerun-change-files)
-    (define-key map "d" 'rg-rerun-change-dir)
     (define-key map "s" 'rg-save-search-as-name)
     (define-key map "S" 'rg-save-search)
     (define-key map "\C-n" 'rg-next-file)
@@ -318,11 +335,13 @@ This function is called from `compilation-filter-hook'."
         (while (re-search-forward "\033\\[m\033\\[31m\033\\[1m\\(.*?\\)\033\\[m" end 1)
           (replace-match (propertize (match-string 1)
                                      'face nil 'font-lock-face 'rg-match-face)
-                         t t))
+                         t t)
+          (setq rg-hit-count (+ rg-hit-count 1)))
         ;; Delete all remaining escape sequences
         (goto-char beg)
         (while (re-search-forward "\033\\[[0-9;]*[mK]" end 1)
-          (replace-match "" t t))))))
+          (replace-match "" t t))))
+    (run-hooks 'rg-filter-hook)))
 
 ;; The regexp and filter functions below were taken from ag.el
 ;; Kudos to the people from https://github.com/Wilfred/ag.el for these.
@@ -383,6 +402,7 @@ Commands:
   (set (make-local-variable 'compilation-disable-input) t)
   (set (make-local-variable 'compilation-error-screen-columns) nil)
   (make-local-variable 'rg-last-search)
+  (make-local-variable 'rg-hit-count)
   (make-local-variable 'rg-toggle-command-line-flags)
   (add-hook 'compilation-filter-hook 'rg-filter nil t) )
 
@@ -669,6 +689,64 @@ buffer in which case the saved buffer will be reused."
   ;; sure the result is saved.
   (when (equal (buffer-name) "*rg*")
     (rename-uniquely)))
+
+(defun rg-kill-saved-searches ()
+"Kill all saved rg buffers. The default *rg* buffer will be kept."
+  (interactive)
+  (dolist (buf (buffer-list))
+    (when (and (eq (with-current-buffer buf major-mode) 'rg-mode)
+               (not (equal (buffer-name buf) "*rg*")))
+      (kill-buffer buf))))
+
+(defun rg-ibuffer-search-updated()
+  (let ((list-buffer (get-buffer rg-search-list-buffer-name)))
+    (when list-buffer
+      (with-current-buffer list-buffer
+        (ibuffer-update nil t)))))
+
+(defun rg-ibuffer-buffer-killed ()
+  (remove-hook 'buffer-list-update-hook #'rg-ibuffer-search-updated)
+  (remove-hook 'rg-filter-hook #'rg-ibuffer-search-updated))
+
+(define-ibuffer-column rg-search-term
+  (:name "Search" :props ('face 'rg-match-face))
+  (ignore mark)
+  (car rg-last-search))
+
+(define-ibuffer-column rg-hit-count
+  (:name "Hits")
+  (ignore mark)
+  (number-to-string rg-hit-count))
+
+(define-ibuffer-column rg-search-dir
+  (:name "Directory" :props ('face 'rg-filename-face))
+  (ignore mark)
+  (nth 2 rg-last-search))
+
+(define-ibuffer-column rg-file-types
+  (:name "Type")
+  (ignore mark)
+  (nth 1 rg-last-search))
+
+;;;###autoload
+(defun rg-list-searches ()
+  "List all `rg-mode' buffers in `ibuffer'."
+  (interactive)
+  (let ((other-window (equal current-prefix-arg '(4))))
+    (ibuffer other-window rg-search-list-buffer-name '((mode . rg-mode)) nil nil nil
+             '((mark " "
+                (name 16 16 nil :elide) " "
+                (rg-search-term 18 18 nil :elide) " "
+                (rg-hit-count 7 7) " "
+                (rg-file-types 7 7) " "
+                (process 10 10)
+                (rg-search-dir 20 -1 nil :elide) " ")))
+    (add-hook 'rg-filter-hook #'rg-ibuffer-search-updated)
+    (add-hook 'buffer-list-update-hook #'rg-ibuffer-search-updated)
+    (with-current-buffer rg-search-list-buffer-name
+      (set (make-local-variable 'ibuffer-use-header-line) nil)
+      (ibuffer-clear-filter-groups)
+      (add-hook 'kill-buffer-hook #'rg-ibuffer-buffer-killed nil t))))
 
 ;;;###autoload
 (defun rg-project ()

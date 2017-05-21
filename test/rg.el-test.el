@@ -474,6 +474,17 @@ and ungrouped otherwise."
               (should (cl-every 'equal '("--text") rg-toggle-command-line-flags))))))
 
 
+(ert-deftest rg-integration/list-searches ()
+  "Test `rg-list-searches'."
+  :tags '(need-rg)
+  (rg-run "hello" "all" (concat default-directory "test/data"))
+  (rg-with-current-result
+   (rg-list-searches)
+   (with-current-buffer rg-search-list-buffer-name
+     (ibuffer-forward-line)
+     (search-forward "hello"))
+   (kill-buffer rg-search-list-buffer-name)))
+
 (provide 'rg.el-test)
 
 ;;; rg.el-test.el ends here
