@@ -181,10 +181,9 @@ for special purposes.")
      (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t)
      (1 'rg-error-face)
      (2 'rg-error-face nil t))
-    ;; "filename-linenumber-" format is used for context lines in GNU
-    ;; grep and rg,
-    ;; "filename=linenumber=" for lines with function names in "git grep -p".
-    ("^.+?[-=][0-9]+[-=].*\n" (0 'rg-context-face))))
+    ;; "filename-linenumber-" or "linenumber-" format is used for
+    ;; context lines in rg
+    ("^\\(?:.+?-\\)*?[0-9]+-.*\n" (0 'rg-context-face))))
 
 (defvar rg-mode-map
   (let ((map (copy-keymap grep-mode-map)))
