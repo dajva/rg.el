@@ -80,7 +80,7 @@
 (ert-deftest rg-unit-test/rerun-change-regexp ()
 "Test result of `rg-rerun-change-regexp'."
   (let ((rg-last-search '("regexp" "elisp" "/tmp/test")))
-    (noflet ((rg-recompile (&rest _) nil)
+    (noflet ((rg-rerun () nil)
              (rg-read-regexp (&rest _) "new-regexp"))
             (rg-rerun-change-regexp)
             (should (cl-every 'equal '("new-regexp" "elisp" "/tmp/test") rg-last-search)))))
@@ -108,7 +108,7 @@ on emacs version."
 (ert-deftest rg-unit-test/rerun-change-files ()
 "Test result of `rg-rerun-change-files'."
   (let ((rg-last-search '("regexp" "elisp" "/tmp/test")))
-    (noflet ((rg-recompile (&rest _) nil)
+    (noflet ((rg-rerun () nil)
              (completing-read (&rest _) "cpp"))
             (rg-rerun-change-files)
             (should (cl-every 'equal '("regexp" "cpp" "/tmp/test") rg-last-search)))))
@@ -116,7 +116,7 @@ on emacs version."
 (ert-deftest rg-unit-test/rerun-change-dir ()
 "Test result of `rg-rerun-change-dir'."
   (let ((rg-last-search '("regexp" "elisp" "/tmp/test")))
-    (noflet ((rg-recompile (&rest _) nil)
+    (noflet ((rg-rerun () nil)
              (read-directory-name (&rest _) "/tmp/new"))
             (rg-rerun-change-dir)
             (should (cl-every 'equal '("regexp" "elisp" "/tmp/new") rg-last-search)))))
@@ -124,7 +124,7 @@ on emacs version."
 (ert-deftest rg-unit-test/custom-toggle ()
 "Test `rg-define-toggle' macro."
   (let ((rg-last-search '("regexp" "elisp" "/tmp/test")))
-    (noflet ((rg-recompile (&rest _) nil))
+    (noflet ((rg-rerun () nil))
             (rg-define-toggle "--foo")
             (should (functionp 'rg-custom-toggle-flag-foo))
             (rg-define-toggle "--bar" nil t)
@@ -262,6 +262,22 @@ matching alias."
       (should (equal "matched/text/file.foo" (car (rg-match-grouped-filename))))
       (should (equal "Some match" (match-string 0)))
       (should (eq saved-pos (point))))))
+
+(ert-deftest rg-unit/save-vars ()
+"Test `rg-save-vars' macro."
+  (let ((first "value1")
+        (second "value2")
+        (third "value3"))
+    (rg-save-vars (first)
+      (setq first "new value1"))
+    (should (equal first "value1"))
+    (rg-save-vars (first second)
+      (setq second first)
+      (setq first third)
+      (setq third "newvalue"))
+    (should (equal first "value1"))
+    (should (equal second "value2"))
+    (should (not (equal third "value3")))))
 
 ;; Integration tests
 
@@ -427,6 +443,27 @@ result are used."
 and ungrouped otherwise."
   (should (not (rg-file-tag-face-exist-in-result nil)))
   (should (rg-file-tag-face-exist-in-result t)))
+
+(ert-deftest rg-integration/recompile () :tags '(need-rg)
+"Make sure that `rg-recompile' preserves search parameters."
+  (let ((parent-dir (concat (expand-file-name default-directory) "test/")))
+    (rg "hello" "elisp" (concat parent-dir "data"))
+    (with-current-buffer "*rg*"
+      (should (rg-wait-for-search-result))
+      (noflet ((rg-read-regexp (&rest _) "Hello"))
+              (rg-rerun-with-changes (:files files :dir dir :regexp regexp :flags flags)
+                (setq files "all")
+                (setq regexp "Hello")
+                (setq dir parent-dir)
+                (setq flags '("--text")))
+              (should (rg-wait-for-search-result))
+              (should (cl-every 'equal `("Hello" "all" ,parent-dir) rg-last-search))
+              (should (cl-every 'equal '("--text") rg-toggle-command-line-flags))
+              (rg-recompile)
+              (should (rg-wait-for-search-result))
+              (should (cl-every 'equal `("Hello" "all" ,parent-dir) rg-last-search))
+              (should (cl-every 'equal '("--text") rg-toggle-command-line-flags))))))
+
 
 (provide 'rg.el-test)
 

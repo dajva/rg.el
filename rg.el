@@ -188,6 +188,7 @@ for special purposes.")
 (defvar rg-mode-map
   (let ((map (copy-keymap grep-mode-map)))
     (define-key map "c" 'rg-rerun-toggle-case)
+    (define-key map "g" 'rg-recompile)
     (define-key map "i" 'rg-rerun-toggle-ignore)
     (define-key map "r" 'rg-rerun-change-regexp)
     (define-key map "f" 'rg-rerun-change-files)
@@ -422,15 +423,18 @@ Commands:
    regexp
    files))
 
-(defun rg-recompile (regexp files dir)
-"Run `recompile' with supplied search parameters (REGEXP, FILES, DIR)."
-  (setcar compilation-arguments
-          (rg-build-command regexp files))
-  ;; compilation-directory is used as search dir and
-  ;; default-directory is used as the base for file paths.
-  (setq compilation-directory dir)
-  (setq default-directory compilation-directory)
-  (recompile))
+(defun rg-rerun ()
+"Run `rg-recompile' with `compilation-arguments' taken from `rg-last-search'."
+  (let ((regexp (nth 0 rg-last-search))
+        (files (nth 1 rg-last-search))
+        (dir (nth 2 rg-last-search)))
+    (setcar compilation-arguments
+            (rg-build-command regexp files))
+    ;; compilation-directory is used as search dir and
+    ;; default-directory is used as the base for file paths.
+    (setq compilation-directory dir)
+    (setq default-directory compilation-directory)
+    (rg-recompile)))
 
 (defmacro rg-rerun-with-changes (varplist &rest body)
 "Rerun last search with changed parameters.  VARPLIST is a property
@@ -459,11 +463,8 @@ Example:
        (let ((,flags rg-toggle-command-line-flags))
          ,@body
          (setq rg-toggle-command-line-flags ,flags)
-         (rg-recompile ,regexp ,files ,dir)
-         ;; Buffer locals will be reset in recompile so we need to reset
-         ;; the values here.
          (setq rg-last-search (list ,regexp ,files ,dir))
-         (setq rg-toggle-command-line-flags ,flags)))))
+         (rg-rerun)))))
 
 (defun rg-read-regexp (prompt default history)
 "Read regexp argument from user.  PROMPT is the read prompt, DEFAULT is the
@@ -530,7 +531,7 @@ buffer.
 
 This will create a function with prefix 'rg-custom-toggle-flag-'
 concatenated with the FLAG name, stripped of any leading dashes.  Flag
-must be a form that will be evaluated to a string a macro expansion
+must be a form that will be evaluated to a string at macro expansion
 time.  For instance, if FLAG is '--invert-match' the function name
 will be 'rg-custom-toggle-flag-invert-match.  If the flag contains a
 value that will be excluded from the function name.
@@ -554,6 +555,26 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
          (interactive)
          (rg-rerun-with-changes (:flags flags)
            (setq flags (rg-toggle-command-flag ,flagvalue flags)))))))
+
+(defmacro rg-save-vars (varlist &rest body)
+"Save variables in VARLIST and restore them to original values after
+BODY has been run."
+  (declare (indent 1))
+  (let ((set-pairs
+         (cl-loop for var in varlist
+               collect `(,(cl-gensym) ,var))))
+    `(let ,set-pairs
+       ,@body
+       ,@(cl-loop for pair in set-pairs
+               collect `(setq ,@(reverse pair))))))
+
+(defun rg-recompile ()
+"Run `recompile' while preserving buffer some local variables."
+  (interactive)
+  ;; Buffer locals will be reset in recompile so we need save them
+  ;; here.
+  (rg-save-vars (rg-last-search rg-toggle-command-line-flags)
+    (recompile)))
 
 (defun rg-rerun-toggle-case ()
 "Rerun last search with toggled case sensitivity setting."
