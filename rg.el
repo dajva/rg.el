@@ -207,7 +207,8 @@ for special purposes.")
            (globs (cdr typedef)))
        (mapconcat
         (lambda (glob)
-          (concat "--type-add '" name ":" glob "'"))
+          (concat "--type-add "
+                  (shell-quote-argument (concat name ":" glob))))
         (split-string globs) " ")))
    rg-custom-type-aliases))
 
@@ -413,15 +414,16 @@ Commands:
 
 (defun rg-build-command (regexp files)
 "Create the command for REGEXP and FILES."
-  (grep-expand-template
-   (rg-build-template
-    (not (equal files "everything"))
-    (unless (assoc files (rg-get-type-aliases))
-      (let ((pattern files))
-        (setq files "custom")
-        pattern)))
-   regexp
-   files))
+  (concat (grep-expand-template
+           (rg-build-template
+            (not (equal files "everything"))
+            (unless (assoc files (rg-get-type-aliases))
+              (let ((pattern files))
+                (setq files "custom")
+                pattern)))
+           regexp
+           files)
+          " ."))
 
 (defun rg-rerun ()
 "Run `rg-recompile' with `compilation-arguments' taken from `rg-last-search'."
