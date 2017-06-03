@@ -7,7 +7,7 @@
 ;; Author: David Landell <david.landell@sunnyhill.email>
 ;;         Roland McGrath <roland@gnu.org>
 ;; Version: 1.3.0
-;; Homepage: https://github.com/davja/rg.el
+;; Homepage: https://github.com/dajva/rg.el
 ;; Package-Requires: ((cl-lib "0.5") (emacs "24") (s "1.10.0") (seq "2.19"))
 ;; Keywords: matching, tools
 
