@@ -52,12 +52,17 @@
         (custom-template (rg-build-template t "glob")))
     (should (s-matches? (rg-regexp-last "<R>") notype-template))
     (should-not (s-matches? (rg-regexp-anywhere-but-last "--type <F>") notype-template))
-    (should-not (s-matches? (rg-regexp-anywhere-but-last "--type-add 'custom:") notype-template))
+    ;; on Windows, the argument to --type-add would get double-quoted, but on
+    ;; Unix, it would have metacharacters escaped via backslash
+    (should-not (s-matches? (rg-regexp-anywhere-but-last "--type-add \\(\"custom:\\|custom\\:\\)")
+                            notype-template))
 
     (should (s-matches? (rg-regexp-anywhere-but-last "--type <F>") type-template))
-    (should-not (s-matches? (rg-regexp-anywhere-but-last "--type-add 'custom:") type-template))
+    (should-not (s-matches? (rg-regexp-anywhere-but-last "--type-add \\(\"custom:\\|custom\\:\\)")
+                            type-template))
 
-    (should (s-matches? (rg-regexp-anywhere-but-last "--type-add 'custom: *glob'") custom-template))
+    (should (s-matches? (rg-regexp-anywhere-but-last "--type-add \\(\"custom: *glob\"\\|custom\\\\:[\\ ]*glob\\)")
+                                                     custom-template))
     (should (s-matches? (rg-regexp-anywhere-but-last "--type <F>") custom-template))))
 
 (ert-deftest rg-unit-test/custom-command-line-flags ()
@@ -182,7 +187,10 @@ alias."
     (setq full-command (rg-build-command "foo" "everything"))
     (should-not (s-matches? "rg.*? +--type.*? +foo" full-command))
     (setq full-command (rg-build-command "foo" "bar"))
-    (should (s-matches? "rg.*? +--type-add +'custom:bar' +--type +custom.*? +foo" full-command))))
+    (should (s-matches? (concat "rg.*? +--type-add +"
+                                (regexp-quote (shell-quote-argument "custom:bar"))
+                                " +--type +\"?custom.*? +foo")
+                        full-command))))
 
 (ert-deftest rg-unit-test/default-alias ()
 "Test that `rg-default-alias' detects the current file and selects
