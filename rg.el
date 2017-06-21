@@ -151,7 +151,7 @@ If nil, the file name is repeated at the beginning of every match line."
 (defvar rg-builtin-type-aliases nil
   "Cache for 'rg --type-list'.")
 
-(defvar rg-command "rg --color always --colors match:fg:red"
+(defvar rg-command "rg --color always --colors match:fg:red -n"
   "Command string for invoking rg.")
 
 (defvar rg-last-search nil
@@ -230,7 +230,8 @@ added as a '--type-add' parameter to the rg command line."
       (setq args (cons "--type <F>" args))
       (when custom
         (setq args (cons
-                    (concat "--type-add 'custom:" custom "'")
+                    (concat "--type-add "
+                            (shell-quote-argument (concat "custom:" custom)))
                     args))))
     (mapconcat 'identity (cons rg-command args) " ")))
 
