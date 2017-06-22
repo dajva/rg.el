@@ -49,21 +49,21 @@
         (rg-custom-type-aliases nil)
         (notype-template (rg-build-template))
         (type-template (rg-build-template t))
-        (custom-template (rg-build-template t "glob")))
+        (custom-template (rg-build-template t "glob"))
+        (type-pattern (rg-regexp-anywhere-but-last "--type <F>"))
+        (type-add-pattern (rg-regexp-anywhere-but-last
+                           (concat
+                            "--type-add "
+                            (s-replace "----" "[^ ]+"
+                                       (regexp-quote
+                                        (shell-quote-argument "custom:----")))))))
     (should (s-matches? (rg-regexp-last "<R>") notype-template))
-    (should-not (s-matches? (rg-regexp-anywhere-but-last "--type <F>") notype-template))
-    ;; on Windows, the argument to --type-add would get double-quoted, but on
-    ;; Unix, it would have metacharacters escaped via backslash
-    (should-not (s-matches? (rg-regexp-anywhere-but-last "--type-add \\(\"custom:\\|custom\\:\\)")
-                            notype-template))
-
-    (should (s-matches? (rg-regexp-anywhere-but-last "--type <F>") type-template))
-    (should-not (s-matches? (rg-regexp-anywhere-but-last "--type-add \\(\"custom:\\|custom\\:\\)")
-                            type-template))
-
-    (should (s-matches? (rg-regexp-anywhere-but-last "--type-add \\(\"custom: *glob\"\\|custom\\\\:[\\ ]*glob\\)")
-                                                     custom-template))
-    (should (s-matches? (rg-regexp-anywhere-but-last "--type <F>") custom-template))))
+    (should-not (s-matches? type-pattern notype-template))
+    (should-not (s-matches? type-add-pattern notype-template))
+    (should (s-matches? type-pattern type-template))
+    (should-not (s-matches? type-add-pattern type-template))
+    (should (s-matches? type-add-pattern custom-template))
+    (should (s-matches? type-pattern custom-template))))
 
 (ert-deftest rg-unit-test/custom-command-line-flags ()
 "Test that `rg-command-line-flags' is added to the template."
@@ -285,7 +285,7 @@ matching alias."
       (setq third "newvalue"))
     (should (equal first "value1"))
     (should (equal second "value2"))
-    (should (not (equal third "value3")))))
+    (should-not (equal third "value3"))))
 
 (ert-deftest rg-unit/regexp-quote ()
   "Test `rg-regexp-quote' with some 'random' strings."
@@ -431,7 +431,7 @@ result are used."
     (rg "hello" "elisp" (concat default-directory "test/data"))
     (rg-with-current-result
       (setq pos (rg-single-font-lock-match 'rg-match-face (point-min) (point-max) 1))
-      (should (not (eq (point-max) pos))))))
+      (should-not (eq (point-max) pos)))))
 
 (ert-deftest rg-integration/highlight-match-group () :tags '(need-rg)
 "Test that highlighting of matches works."
@@ -450,7 +450,7 @@ result are used."
 (ert-deftest rg-integration/group-result-variable () :tags '(need-rg)
 "Test that grouped result is triggered if `rg-group-result' is non nil
 and ungrouped otherwise."
-  (should (not (rg-file-tag-face-exist-in-result nil)))
+  (should-not (rg-file-tag-face-exist-in-result nil))
   (should (rg-file-tag-face-exist-in-result t)))
 
 (ert-deftest rg-integration/recompile () :tags '(need-rg)
