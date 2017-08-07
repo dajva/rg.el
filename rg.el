@@ -223,7 +223,7 @@ added as a '--type-add' parameter to the rg command line."
                (rg-build-type-add-args)
                rg-command-line-flags
                rg-toggle-command-line-flags
-               (list "<R>"))))
+               (list "-e" "<R>"))))
     (when rg-show-columns
       (setq args (cons "--column" args)))
     (when type
