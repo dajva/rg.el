@@ -183,7 +183,7 @@ for special purposes.")
      (2 'rg-error-face nil t))
     ;; "filename-linenumber-" or "linenumber-" format is used for
     ;; context lines in rg
-    ("^\\(?:.+?-\\)*?[0-9]+-.*\n" (0 'rg-context-face))))
+    ("^\\(?:.+?-\\)?[0-9]+-.*\n" (0 'rg-context-face))))
 
 (defvar rg-mode-map
   (let ((map (copy-keymap grep-mode-map)))
