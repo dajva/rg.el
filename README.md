@@ -128,6 +128,17 @@ Default value is `nil` (off).
 Controls if column numbers are used in the search result.
 Default value is `nil` (off).
 
+### `rg-ignore-case`
+Variable that controls when case sensitive search is made or not.
+The following values can be set:
+
+| Symbol | Description |
+|-----|--------|
+| `'case-fold-search` | Smart search based on `case-fold-search` setting. |
+| `'smart` | Smart search. Case sensitive if at least one character is uppercase, otherwise ignore case. |
+| `'force` | Force ignore case. |
+| `nil` | Always case sensitive search. |
+
 ### `rg-define-toggle`
 This is a macro that can be used to define custom `ripgrep` flag
 toggling functions in the rg result buffer. The macro takes the flag

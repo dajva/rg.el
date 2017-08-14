@@ -50,12 +50,10 @@
 ;; '--no-ignore' flag, change directory, change file pattern and change
 ;; search string.  See `rg-mode' for details.
 
-;; This package (just as grep.el) use the setting of
+;; This package by default use the setting of
 ;; `case-fold-search' variable to decide whether to do a case
-;; sensitive search or not.  The behavior is similar to the ripgrep
-;; '--smart-case' flag in that the search will be case insensitive if
-;; `case-fold-search' is non nil and search pattern is all lowercase.
-;; Otherwise it's case sensitive
+;; sensitive search or not, similar to the '--smart-case' rg flag.
+;; This can be changed by changing the `rg-ignore-case' variable.
 
 ;; ripgrep has built in type aliases that can be selected on
 ;; invocation of `rg'.  Customize `rg-custom-type-aliases' to add your
@@ -109,6 +107,23 @@ If nil, the file name is repeated at the beginning of every match line."
 (defcustom rg-show-columns nil
   "If t, show the columns of the matches in the output buffer."
   :type 'boolean
+  :group 'rg)
+
+(defcustom rg-ignore-case 'case-fold-search
+  "Decides which mode of case intensitive search that is enabled.
+CASE-FOLD-SEARCH means that the variable `case-fold-search' will
+trigger smart-case functionality if non nil.
+SMART means that case insensitive search will be triggered if the
+search pattern contains only lower case. If the pattern contains upper
+case letters, case sensitive search will be performed. This is similar
+to the rg '--smart-case' flag.
+FORCE will force case insensitive search regardless of the content of
+the search pattern.
+NIL means case sensitive search will be forced."
+  :type '(choice (const :tag "Case Fold Search" case-fold-search)
+		 (const :tag "Smart" smart)
+		 (const :tag "Force" force)
+		 (const :tag "Off" nil))
   :group 'rg)
 
 (defvar rg-filter-hook nil
@@ -508,10 +523,13 @@ default regexp and HISTORY is search history list."
       (read-regexp prompt default history))))
 
 (defun rg-set-case-sensitivity (regexp)
-"Make sure -i is added to the command if needed.  If REGEXP contain
-uppercase letters, case sensitive search is forced."
-  (if (and case-fold-search
-           (isearch-no-upper-case-p regexp t))
+"Make sure -i is added to the command if needed.  The value of the
+`rg-ignore-case' variable and the case of the supplied REGEXP influences
+the result. See `rg-ignore-case' for more detailed info."
+  (if (or (eq rg-ignore-case 'force)
+          (and (or (eq rg-ignore-case 'smart)
+                   (and (eq rg-ignore-case 'case-fold-search) case-fold-search))
+               (isearch-no-upper-case-p regexp t)))
       (when (not (member "-i" rg-toggle-command-line-flags))
         (push "-i" rg-toggle-command-line-flags))
     (when (member "-i" rg-toggle-command-line-flags)
@@ -789,11 +807,6 @@ Collect output in a buffer.  While ripgrep runs asynchronously, you
 can use \\[next-error] (M-x next-error), or \\<grep-mode-map>\\[compile-goto-error] \
 in the grep output buffer,
 to go to the lines where grep found matches.
-
-This command use the setting of `case-fold-search' variable to decide
-whether to do a case sensitive search or not.  If the search regexp
-contains uppercase characters the setting is overridden and case
-sensitive search is performed.
 
 This command shares argument histories with \\[rgrep] and \\[grep]."
   (interactive

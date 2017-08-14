@@ -36,12 +36,27 @@
       (rg-set-case-sensitivity "foo")
       (should (member  "-i" rg-toggle-command-line-flags))
       (rg-set-case-sensitivity "fOo")
-      (should-not (member  "-i" rg-toggle-command-line-flags))
+      (should-not (member "-i" rg-toggle-command-line-flags)))
     (let ((case-fold-search nil))
       (rg-set-case-sensitivity "foo")
-      (should-not (member  "-i" rg-toggle-command-line-flags))
+      (should-not (member "-i" rg-toggle-command-line-flags))
       (rg-set-case-sensitivity "fOo")
-      (should-not (member  "-i" rg-toggle-command-line-flags))))))
+      (should-not (member "-i" rg-toggle-command-line-flags)))
+    (let ((rg-ignore-case 'smart))
+      (rg-set-case-sensitivity "foo")
+      (should (member "-i" rg-toggle-command-line-flags))
+      (rg-set-case-sensitivity "fOo")
+      (should-not (member "-i" rg-toggle-command-line-flags)))
+    (let ((rg-ignore-case 'force))
+      (rg-set-case-sensitivity "foo")
+      (should (member "-i" rg-toggle-command-line-flags))
+      (rg-set-case-sensitivity "fOo")
+      (should (member "-i" rg-toggle-command-line-flags)))
+    (let ((rg-ignore-case nil))
+      (rg-set-case-sensitivity "foo")
+      (should-not (member "-i" rg-toggle-command-line-flags))
+      (rg-set-case-sensitivity "fOo")
+      (should-not (member "-i" rg-toggle-command-line-flags)))))
 
 (ert-deftest rg-unit-test/build-template ()
 "Test `rg-build-template' template creation."
@@ -302,7 +317,7 @@ matching alias."
 
 (ert-deftest rg-integration-test/search-alias-builtin () :tags '(need-rg)
 "Test that rg builtin aliases works."
-  (let ((case-fold-search t))
+  (let ((rg-ignore-case 'force))
     (rg "hello" "elisp" (concat default-directory "test/data"))
     (rg-with-current-result
       (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
@@ -313,7 +328,7 @@ matching alias."
 
 (ert-deftest rg-integration-test/search-alias-custom () :tags '(need-rg)
 "Test that aliases defined in `rg-custom-type-aliases' works if explicitly selected."
-  (let ((case-fold-search t)
+  (let ((rg-ignore-case 'force)
         (rg-custom-type-aliases '(("test" . "*.baz"))))
     (rg "hello" "test" (concat default-directory "test/data"))
     (rg-with-current-result
@@ -326,7 +341,7 @@ matching alias."
 (ert-deftest rg-integration-test/search-alias-all-custom () :tags '(need-rg)
 "Test that aliases defined in `rg-custom-type-aliases' works if
   implicitly selected via '--type all'."
-  (let ((case-fold-search t)
+  (let ((rg-ignore-case 'force)
         (rg-custom-type-aliases '(("test" . "*.baz"))))
     (rg "hello" "all" (concat default-directory "test/data"))
     (rg-with-current-result
@@ -338,7 +353,7 @@ matching alias."
 
 (ert-deftest rg-integration-test/search-no-alias() :tags '(need-rg)
 "Test that custom file pattern that is not an alias works."
-  (let ((case-fold-search t))
+  (let ((rg-ignore-case 'force))
     (rg "hello" "*.baz" (concat default-directory "test/data"))
     (rg-with-current-result
       (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
@@ -349,7 +364,7 @@ matching alias."
 
 (ert-deftest rg-integration-test/search-uppercase-regexp () :tags '(need-rg)
 "Test that uppercase search triggers case sensitive search."
-  (let ((case-fold-search t))
+  (let ((rg-ignore-case 'smart))
     (rg "Hello" "all" (concat default-directory "test/data"))
     (rg-with-current-result
       (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
@@ -358,11 +373,10 @@ matching alias."
 
 (ert-deftest rg-integration-test/search-case-sensitive-regexp () :tags '(need-rg)
 "Test explicit case sensitive search."
-  (let ((case-fold-search nil))
+  (let ((rg-ignore-case 'nil))
     (rg "hello" "all" (concat default-directory "test/data")))
   (rg-with-current-result
-    (let ((case-fold-search t)
-          (bufstr (buffer-substring-no-properties (point-min) (point-max))))
+    (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
       (should (= 1 (s-count-matches "foo.el.*hello" bufstr)))
       (should (= 1 (s-count-matches "bar.el.*hello" bufstr))))))
 
