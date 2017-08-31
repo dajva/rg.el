@@ -1,4 +1,4 @@
-;;; rg.el --- A ripgrep frontend, similar to built in grep.el. -*- lexical-binding: t; -*-
+;;; rg.el --- A search tool based on ripgrep. -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 1985-1987, 1993-1999, 2001-2015 Free Software
 ;; Foundation, Inc.
@@ -31,20 +31,24 @@
 ;;; Commentary:
 
 ;; This package is a frontend to ripgrep (rg) and works in a similar
-;; way to Emacs built in `rgrep' command.  It depends on and reuse parts
-;; of built in grep with adjustments to ripgrep and is compatible with
-;; `wgrep'.
+;; way to Emacs built in `rgrep' command or external `ag' if you like.
+;; It depends on and reuse parts of built in grep with adjustments to
+;; ripgrep and is compatible with `wgrep'.
 
-;; Install the package and bind the main entry point `rg':
-;; (eval-after-load
-;;   (global-set-key (kbd "M-s") 'rg))
+;; Install the package and and use the default key bindings:
+;; (rg-enable-default-bindings)
+;;
+;; The default key binding prefix is C-c s but can be changed by
+;; supplying a prefix of choice to the above function call:
+;; (rg-enable-default-bindings "\M-s")
 
-;; There are also other entry points for easy searching:
+;; `rg' is the main entry point but there are functions for easy
+;; searching:
 ;; `rg-project' - Search in a project.
 ;; `rg-dwim' - Handsfree search.  Search thing at point in project in
 ;; files matching the type alias of the current buffer file name.
 
-;; The `rg' results buffer has bindings for modification of
+;; The search results buffer has bindings for modification of
 ;; the last search for quick reruns with refined parameters.
 ;; Possible refinements are: toggle case insensitive search, toggle
 ;; '--no-ignore' flag, change directory, change file pattern and change
@@ -65,6 +69,11 @@
 ;; The `rg-define-toggle' macro can be used to define a toggleable
 ;; flag for the rg command line.  Such flags can then be toggled from
 ;; the results buffer to repeat the search with updated flags.
+
+;; The two `rg-save-search' functions will allow for saving search
+;; result buffers with or without custom naming.
+;; `rg-list-searches' will display a list of all search buffers with
+;; search info and allow jumping to results.
 
 ;; The default configuration of this package is compatible with `wgrep'.
 ;; If grouped mode and/or show columns is enabled you need to install
