@@ -70,4 +70,16 @@ repository."
        (kill-buffer "*rg*")
        result)))
 
+(defmacro rg-with-temp-global-keymap (&rest body)
+"Evaluate BODY with a temporary keymap as global map and then restore
+the original global kemap"
+  (declare (indent 0))
+  (let ((saved-global-map (cl-gensym))
+        (temp-global-map (cl-gensym)))
+    `(let ((,saved-global-map (current-global-map))
+           (,temp-global-map (make-sparse-keymap)))
+       (use-global-map ,temp-global-map)
+       ,@body
+       (use-global-map ,saved-global-map))))
+
 ;;; test-helper.el ends here

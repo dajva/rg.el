@@ -83,6 +83,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'edmacro)
 (require 'grep)
 (require 'ibuf-ext)
 (require 'ibuffer)
@@ -133,6 +134,11 @@ NIL means case sensitive search will be forced."
 		 (const :tag "Smart" smart)
 		 (const :tag "Force" force)
 		 (const :tag "Off" nil))
+  :group 'rg)
+
+(defcustom rg-keymap-prefix "\C-cs"
+  "Prefix for global `rg' keymap."
+  :type 'string
   :group 'rg)
 
 (defvar rg-filter-hook nil
@@ -238,7 +244,17 @@ for special purposes.")
     (define-key map "S" 'rg-save-search)
     (define-key map "\C-n" 'rg-next-file)
     (define-key map "\C-p" 'rg-prev-file)
-    map))
+    map)
+  "The keymap for `rg-mode'.")
+
+(defvar rg-global-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "d" 'rg-dwim)
+    (define-key map "l" 'rg-list-searches)
+    (define-key map "p" 'rg-project)
+    (define-key map "r" 'rg)
+    map)
+  "The global keymap for `rg'.")
 
 (defun rg-build-type-add-args ()
 "Build a list of --type-add: 'foo:*.foo' flags for each type in `rg-custom-type-aliases'."
@@ -774,6 +790,17 @@ buffer in which case the saved buffer will be reused."
       (set (make-local-variable 'ibuffer-use-header-line) nil)
       (ibuffer-clear-filter-groups)
       (add-hook 'kill-buffer-hook #'rg-ibuffer-buffer-killed nil t))))
+
+;;;###autoload
+(defun rg-enable-default-bindings(&optional prefix)
+"Enable the global `rg' default key bindings under PREFIX key. If
+prefix is not supplied `rg-keymap-prefix' is used."
+  (interactive)
+  (setq prefix (or prefix rg-keymap-prefix))
+    (when prefix
+      (global-set-key prefix rg-global-map)
+      (message "Global key bindings for `rg' enabled with prefix: %s"
+               (edmacro-format-keys prefix))))
 
 ;;;###autoload
 (defun rg-project ()

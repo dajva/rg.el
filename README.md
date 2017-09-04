@@ -27,11 +27,11 @@ load path and add this to `init.el`
 
 ``` el
 (require 'rg)
-(global-set-key (kbd "M-s") 'rg)
+(rg-enable-default-bindings (kbd "M-s"))
 ```
 
-`rg` is an autoloaded symbol so it's also possible to defer loading if
-you have autoloading setup.
+`rg` and friends is an autoloaded symbol so it's also possible to
+defer loading if you have autoloading setup.
 
 ### wgrep
 
@@ -85,21 +85,39 @@ There are some aliases with special meanings in `rg.el`.
 | _everything_ | all files, i.e. running rg without `--type` flag |
 | _custom_ | used internally in ``rg.el`` for mapping custom globs. Do not use this in `rg-custom-type-aliases` |
 
+### Key bindings
+This package comes with a set of predefined key bindings that can be
+enabled by calling `rg-enable-default-bindings` with an optional
+prefix key of choice. The default prefix is `C-c s` and can be
+customized with [rg-keymap-prefix](#rg-keymap-prefix).
+It is also possible to set the prefix when invoking `rg-enable-default-bindings`.
+
+```el
+(rg-enable-default-bindings "\M-s")
+```
+
+| Key | Binding |
+|-----|--------|
+| `<prefix> d` | `rg-dwim` |
+| `<prefix> l` | `rg-list-searches` |
+| `<prefix> p` | `rg-project` |
+| `<prefix> r` | `rg` |
+
 ### The \*rg\* buffer
 The `rg` results buffer has bindings for modification of the last
 search for quick reruns with refined parameters.
 
-| Binding | Description |
+| Key | Description |
 |-----|--------|
-| c | Toggle case insensitive setting |
-| d | Change directory |
-| f | Change file pattern |
-| i | Toggle `--no-ignore` flag |
-| l | List search buffers in a separate buffer |
-| r | Change search string |
-| s | Save search result to unique name |
-| S | Save search result, prompt for name |
-| w | Switch to `wgrep-mode` |
+| `c` | Toggle case insensitive setting |
+| `d` | Change directory |
+| `f` | Change file pattern |
+| `i` | Toggle `--no-ignore` flag |
+| `l` | List search buffers in a separate buffer |
+| `r` | Change search string |
+| `s` | Save search result to unique name |
+| `S` | Save search result, prompt for name |
+| `w` | Switch to `wgrep-mode` |
 
 ## Customize
 
@@ -138,6 +156,11 @@ The following values can be set:
 | `'smart` | Smart search. Case sensitive if at least one character is uppercase, otherwise ignore case. |
 | `'force` | Force ignore case. |
 | `nil` | Always case sensitive search. |
+
+### `rg-keymap-prefix`
+This variable sets the default prefix used for the global key
+bindings. Note that `rg-enable-default-bindings` needs to be invoked
+for the bindings to be enabled.
 
 ### `rg-define-toggle`
 This is a macro that can be used to define custom `ripgrep` flag
