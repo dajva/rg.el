@@ -102,6 +102,8 @@ It is also possible to set the prefix when invoking `rg-enable-default-bindings`
 | `<prefix> l` | `rg-list-searches` |
 | `<prefix> p` | `rg-project` |
 | `<prefix> r` | `rg` |
+| `<prefix> s` | `rg-save-search` |
+| `<prefix> S` | `rg-save-search-as-name` |
 
 ### The \*rg\* buffer
 The `rg` results buffer has bindings for modification of the last

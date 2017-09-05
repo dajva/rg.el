@@ -253,6 +253,8 @@ for special purposes.")
     (define-key map "l" 'rg-list-searches)
     (define-key map "p" 'rg-project)
     (define-key map "r" 'rg)
+    (define-key map "s" 'rg-save-search)
+    (define-key map "S" 'rg-save-search-as-name)
     map)
   "The global keymap for `rg'.")
 
@@ -593,6 +595,14 @@ means backwards and positive means forwards."
     (unless (equal pos limit)
       (goto-char pos))))
 
+(defun rg-rename-target ()
+"Return the buffer that will be target for renaming."
+  (let ((buffer (if (eq major-mode 'rg-mode)
+                   (current-buffer)
+                 (get-buffer "*rg*"))))
+    (or buffer
+      (error "Current buffer is not an rg-mode buffer and no buffer with name '*rg*'."))))
+
 (defalias 'kill-rg 'kill-compilation)
 
 ;;;###autoload
@@ -714,9 +724,9 @@ buffer will be renamed to *rg NEWNAME*.  New searches will use the
 standard *rg* buffer unless the search is done from a saved buffer in
 which case the saved buffer will be reused."
   (interactive "sSave search as name: ")
-  (unless (eq major-mode 'rg-mode)
-    (error "Not an rg-mode buffer"))
-  (rename-buffer (concat "*rg " newname "*")))
+  (let ((buffer (rg-rename-target)))
+    (with-current-buffer buffer
+      (rename-buffer (concat "*rg " newname "*")))))
 
 (defun rg-save-search ()
 "Save the search result in current *rg* result buffer.  The result
@@ -725,13 +735,13 @@ custom name, use `rg-save-search-as-name' instead.  New searches will
 use the standard *rg* buffer unless the search is done from a saved
 buffer in which case the saved buffer will be reused."
   (interactive)
-  (unless (eq major-mode 'rg-mode)
-    (error "Not an rg-mode buffer"))
-  (rename-uniquely)
-  ;; If the new buffer name became '*rg*', just rename again to make
-  ;; sure the result is saved.
-  (when (equal (buffer-name) "*rg*")
-    (rename-uniquely)))
+  (let ((buffer (rg-rename-target)))
+    (with-current-buffer buffer
+      (rename-uniquely)
+      ;; If the new buffer name became '*rg*', just rename again to make
+      ;; sure the result is saved.
+      (when (equal (buffer-name) "*rg*")
+        (rename-uniquely)))))
 
 (defun rg-kill-saved-searches ()
 "Kill all saved rg buffers. The default *rg* buffer will be kept."
