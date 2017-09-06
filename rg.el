@@ -250,6 +250,7 @@ for special purposes.")
 (defvar rg-global-map
   (let ((map (make-sparse-keymap)))
     (define-key map "d" 'rg-dwim)
+    (define-key map "k" 'rg-kill-saved-searches)
     (define-key map "l" 'rg-list-searches)
     (define-key map "p" 'rg-project)
     (define-key map "r" 'rg)
@@ -746,10 +747,11 @@ buffer in which case the saved buffer will be reused."
 (defun rg-kill-saved-searches ()
 "Kill all saved rg buffers. The default *rg* buffer will be kept."
   (interactive)
-  (dolist (buf (buffer-list))
-    (when (and (eq (with-current-buffer buf major-mode) 'rg-mode)
-               (not (equal (buffer-name buf) "*rg*")))
-      (kill-buffer buf))))
+  (when (y-or-n-p "Confirm kill all saved rg searches? ")
+    (dolist (buf (buffer-list))
+      (when (and (eq (with-current-buffer buf major-mode) 'rg-mode)
+                 (not (equal (buffer-name buf) "*rg*")))
+        (kill-buffer buf)))))
 
 (defun rg-ibuffer-search-updated()
   (let ((list-buffer (get-buffer rg-search-list-buffer-name)))
