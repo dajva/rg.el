@@ -500,8 +500,7 @@ and ungrouped otherwise."
 "Make sure that `rg-recompile' preserves search parameters."
   (let ((parent-dir (concat (expand-file-name default-directory) "test/")))
     (rg "hello" "elisp" (concat parent-dir "data"))
-    (with-current-buffer "*rg*"
-      (should (rg-wait-for-search-result))
+    (rg-with-current-result
       (noflet ((rg-read-regexp (&rest _) "Hello"))
               (rg-rerun-with-changes (:files files :dir dir :regexp regexp :flags flags)
                 (setq files "all")
@@ -516,6 +515,16 @@ and ungrouped otherwise."
               (should (cl-every 'equal `("Hello" "all" ,parent-dir) rg-last-search))
               (should (cl-every 'equal '("--text") rg-toggle-command-line-flags))))))
 
+(ert-deftest rg-integration/display-exit-message () :tags '(need-rg)
+"Verify exit messages."
+  (rg "foo" "*.baz" (concat default-directory "test/data"))
+  (with-current-buffer "*rg*"
+    (rg-wait-for-search-result)
+    (s-matches-p "no matches found" (buffer-substring-no-properties (point-min) (point-max))))
+  (rg "hello" "*.baz" (concat default-directory "test/data"))
+  (rg-with-current-result
+    (should (equal rg-hit-count 6))
+    (s-matches-p "(6 matches found)" (buffer-substring-no-properties (point-min) (point-max)))))
 
 (ert-deftest rg-integration/list-searches ()
   "Test `rg-list-searches'."

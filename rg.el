@@ -217,7 +217,7 @@ for special purposes.")
     ;; remove match from grep-regexp-alist before fontifying
     ("^rg[/a-zA-z]* started.*"
      (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t))
-    ("^rg[/a-zA-z]* finished \\(?:(\\(matches found\\))\\|with \\(no matches found\\)\\).*"
+    ("^rg[/a-zA-z]* finished \\(?:(\\([0-9]+ matches found\\))\\|with \\(no matches found\\)\\).*"
      (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t)
      (1 'rg-info-face nil t)
      (2 'rg-warning-face nil t))
@@ -258,6 +258,25 @@ for special purposes.")
     (define-key map "S" 'rg-save-search-as-name)
     map)
   "The global keymap for `rg'.")
+
+(defun rg-process-setup ()
+"Setup compilation variables and buffer for `rg'.
+Set up `compilation-exit-message-function' and run `grep-setup-hook'."
+  (set (make-local-variable 'compilation-exit-message-function)
+       (lambda (status code msg)
+         (if (eq status 'exit)
+             ;; This relies on the fact that `compilation-start'
+             ;; sets buffer-modified to nil before running the command,
+             ;; so the buffer is still unmodified if there is no output.
+             (cond ((and (zerop code) (buffer-modified-p))
+                    `(,(format "finished (%d matches found)\n" rg-hit-count) . "matched"))
+                   ((not (buffer-modified-p))
+                    '("finished with no matches found\n" . "no match"))
+                   (t
+                    (cons msg code)))
+           (cons msg code))))
+  ;; Run this hook to intergrate with wgrep
+  (run-hooks 'grep-setup-hook))
 
 (defun rg-build-type-add-args ()
 "Build a list of --type-add: 'foo:*.foo' flags for each type in `rg-custom-type-aliases'."
@@ -441,7 +460,7 @@ Commands:
   ;; can never match.
   (set (make-local-variable 'compilation-directory-matcher) '("\\`a\\`"))
   (set (make-local-variable 'compilation-process-setup-function)
-       'grep-process-setup)
+       'rg-process-setup)
   (set (make-local-variable 'compilation-disable-input) t)
   (set (make-local-variable 'compilation-error-screen-columns) nil)
   (make-local-variable 'rg-last-search)
