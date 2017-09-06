@@ -91,6 +91,8 @@
 (require 'seq)
 (require 'vc-hooks)
 
+
+;; Customizations/public vars
 (defgroup rg nil
   "Settings for rg."
   :group 'tools
@@ -150,6 +152,8 @@ new content and filtered through the `rg-filter' funcion.")
   called with two arguments: the compilation buffer,and a string
   describing how the process finished.")
 
+
+;; Faces
 (defgroup rg-face nil
   "Settings for rg faces."
   :group 'rg)
@@ -189,6 +193,8 @@ new content and filtered through the `rg-filter' funcion.")
   "face for file tag in grouped layout"
   :group 'rg-face)
 
+
+;; Internal vars
 (defvar rg-builtin-type-aliases nil
   "Cache for 'rg --type-list'.")
 
@@ -259,6 +265,8 @@ for special purposes.")
     map)
   "The global keymap for `rg'.")
 
+
+;; Defuns
 (defun rg-process-setup ()
 "Setup compilation variables and buffer for `rg'.
 Set up `compilation-exit-message-function' and run `grep-setup-hook'."

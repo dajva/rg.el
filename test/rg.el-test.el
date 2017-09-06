@@ -26,7 +26,7 @@
 
 ;;; Code:
 
-
+
 ;; Unit tests
 
 (ert-deftest rg-unit-test/case-expand-template ()
@@ -341,7 +341,7 @@ matching alias."
     (define-key rg-global-map "0" 'foo)
     (should (eq 'foo (lookup-key (current-global-map) "\C-cs0")))))
 
-
+
 ;; Integration tests
 
 (ert-deftest rg-integration-test/search-alias-builtin () :tags '(need-rg)
