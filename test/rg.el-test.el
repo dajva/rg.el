@@ -30,7 +30,7 @@
 ;; Unit tests
 
 (ert-deftest rg-unit-test/case-expand-template ()
-"Test that `rg-set-case-sensitivity' handles case settings correctly."
+  "Test that `rg-set-case-sensitivity' handles case settings correctly."
   (let (rg-toggle-command-line-flags)
     (let ((case-fold-search t))
       (rg-set-case-sensitivity "foo")
@@ -59,19 +59,19 @@
       (should-not (member "-i" rg-toggle-command-line-flags)))))
 
 (ert-deftest rg-unit-test/build-template ()
-"Test `rg-build-template' template creation."
+  "Test `rg-build-template' template creation."
   (let* ((rg-command "rg")
-        (rg-custom-type-aliases nil)
-        (notype-template (rg-build-template))
-        (type-template (rg-build-template t))
-        (custom-template (rg-build-template t "glob"))
-        (type-pattern (rg-regexp-anywhere-but-last "--type <F>"))
-        (type-add-pattern (rg-regexp-anywhere-but-last
-                           (concat
-                            "--type-add "
-                            (s-replace "----" "[^ ]+"
-                                       (regexp-quote
-                                        (shell-quote-argument "custom:----")))))))
+         (rg-custom-type-aliases nil)
+         (notype-template (rg-build-template))
+         (type-template (rg-build-template t))
+         (custom-template (rg-build-template t "glob"))
+         (type-pattern (rg-regexp-anywhere-but-last "--type <F>"))
+         (type-add-pattern (rg-regexp-anywhere-but-last
+                            (concat
+                             "--type-add "
+                             (s-replace "----" "[^ ]+"
+                                        (regexp-quote
+                                         (shell-quote-argument "custom:----")))))))
     (should (s-matches? (rg-regexp-last "<R>") notype-template))
     (should-not (s-matches? type-pattern notype-template))
     (should-not (s-matches? type-add-pattern notype-template))
@@ -81,15 +81,15 @@
     (should (s-matches? type-pattern custom-template))))
 
 (ert-deftest rg-unit-test/custom-command-line-flags ()
-"Test that `rg-command-line-flags' is added to the template."
+  "Test that `rg-command-line-flags' is added to the template."
   (let* ((rg-command "rg")
-        (rg-custom-type-aliases nil)
-        (rg-command-line-flags '("--foo" "--bar"))
-        (template (rg-build-template)))
+         (rg-custom-type-aliases nil)
+         (rg-command-line-flags '("--foo" "--bar"))
+         (template (rg-build-template)))
     (should (s-matches? (rg-regexp-anywhere-but-last "--foo --bar") template))))
 
 (ert-deftest rg-unit-test/toggle-command-flag ()
-"Test `rg-toggle-command-flag'."
+  "Test `rg-toggle-command-flag'."
   (let ((testflag "--foo")
         flaglist)
     (setq flaglist (rg-toggle-command-flag testflag flaglist))
@@ -98,7 +98,7 @@
     (should-not (member testflag flaglist))))
 
 (ert-deftest rg-unit-test/rerun-change-regexp ()
-"Test result of `rg-rerun-change-regexp'."
+  "Test result of `rg-rerun-change-regexp'."
   (let ((rg-last-search '("regexp" "elisp" "/tmp/test")))
     (noflet ((rg-rerun () nil)
              (rg-read-regexp (&rest _) "new-regexp"))
@@ -106,7 +106,7 @@
             (should (cl-every 'equal '("new-regexp" "elisp" "/tmp/test") rg-last-search)))))
 
 (ert-deftest rg-unit-test/read-regexp-correct-read-func ()
-"Test that `rg-read-regexp' choose the correct read function depending
+  "Test that `rg-read-regexp' choose the correct read function depending
 on emacs version."
   (let (called prompt-result)
     (noflet ((read-string (pr default &rest _)
@@ -126,7 +126,7 @@ on emacs version."
                 (should (equal prompt-result "Search for")))))))
 
 (ert-deftest rg-unit-test/rerun-change-files ()
-"Test result of `rg-rerun-change-files'."
+  "Test result of `rg-rerun-change-files'."
   (let ((rg-last-search '("regexp" "elisp" "/tmp/test")))
     (noflet ((rg-rerun () nil)
              (completing-read (&rest _) "cpp"))
@@ -134,7 +134,7 @@ on emacs version."
             (should (cl-every 'equal '("regexp" "cpp" "/tmp/test") rg-last-search)))))
 
 (ert-deftest rg-unit-test/rerun-change-dir ()
-"Test result of `rg-rerun-change-dir'."
+  "Test result of `rg-rerun-change-dir'."
   (let ((rg-last-search '("regexp" "elisp" "/tmp/test")))
     (noflet ((rg-rerun () nil)
              (read-directory-name (&rest _) "/tmp/new"))
@@ -142,7 +142,7 @@ on emacs version."
             (should (cl-every 'equal '("regexp" "elisp" "/tmp/new") rg-last-search)))))
 
 (ert-deftest rg-unit-test/custom-toggle ()
-"Test `rg-define-toggle' macro."
+  "Test `rg-define-toggle' macro."
   (let ((rg-last-search '("regexp" "elisp" "/tmp/test")))
     (noflet ((rg-rerun () nil))
             (rg-define-toggle "--foo")
@@ -164,7 +164,7 @@ on emacs version."
             (should (member "--bar" rg-toggle-command-line-flags)))))
 
 (ert-deftest rg-unit-test/custom-toggle-key-binding ()
-"Test `rg-define-toggle' macro key bindings."
+  "Test `rg-define-toggle' macro key bindings."
   (let ((rg-last-search '("regexp" "elisp" "/tmp/test")))
     (noflet ((rg-recompile (&rest _) nil))
             (rg-define-toggle "--baz" "b")
@@ -172,7 +172,7 @@ on emacs version."
             (should (eq 'rg-custom-toggle-flag-baz (lookup-key rg-mode-map "b"))))))
 
 (ert-deftest rg-unit-test/custom-toggle-double-definition ()
-"Test multiple clashing definitions of same flag and bindings in
+  "Test multiple clashing definitions of same flag and bindings in
 `rg-define-toggle' macro."
   (let ((rg-last-search '("regexp" "elisp" "/tmp/test")))
     (noflet ((rg-recompile (&rest _) nil))
@@ -192,7 +192,7 @@ on emacs version."
             (should-not (eq 'rg-custom-toggle-flag-qux (lookup-key rg-mode-map "q"))))))
 
 (ert-deftest rg-unit-test/build-command ()
-"Test that`rg-build-command' convert files argument to correct type
+  "Test that`rg-build-command' convert files argument to correct type
 alias."
   (let ((rg-command "rg")
         (rg-custom-type-aliases nil)
@@ -208,7 +208,7 @@ alias."
                         full-command))))
 
 (ert-deftest rg-unit-test/default-alias ()
-"Test that `rg-default-alias' detects the current file and selects
+  "Test that `rg-default-alias' detects the current file and selects
 matching alias."
   (find-file "test/data/foo.el")
   (should (equal (car (rg-default-alias)) "elisp"))
@@ -219,7 +219,7 @@ matching alias."
     (should (equal (car (rg-default-alias)) "test"))))
 
 (ert-deftest rg-unit-test/single-font-lock-match ()
-"Test that `rg-single-font-lock-match' find font-lock-face matches correctly."
+  "Test that `rg-single-font-lock-match' find font-lock-face matches correctly."
   (let (pos limit)
     (with-temp-buffer
       (insert
@@ -245,7 +245,7 @@ matching alias."
       (should (eq pos limit)))))
 
 (ert-deftest rg-unit/next-prev-file ()
-"Test that `rg-next-file' and `rg-prev-file' dispatch calls as it should."
+  "Test that `rg-next-file' and `rg-prev-file' dispatch calls as it should."
   (let (called arg)
     (noflet ((rg-navigate-file-group (n) (setq
                                           called 'rg-navigate-file-group
@@ -272,7 +272,7 @@ matching alias."
               (should (eq arg 1))))))
 
 (ert-deftest rg-unit/match-grouped-filename ()
-"Test that `rg-match-grouped-filename' finds correct match and restores state."
+  "Test that `rg-match-grouped-filename' finds correct match and restores state."
   (let (saved-pos)
     (with-temp-buffer
       (insert
@@ -287,7 +287,7 @@ matching alias."
       (should (eq saved-pos (point))))))
 
 (ert-deftest rg-unit/save-vars ()
-"Test `rg-save-vars' macro."
+  "Test `rg-save-vars' macro."
   (let ((first "value1")
         (second "value2")
         (third "value3"))
@@ -314,7 +314,7 @@ matching alias."
                  "\\^\\(\\.\\*\\)\\|\\{\\}")))
 
 (ert-deftest rg-unit-test/global-keymap ()
-"Test global keymap."
+  "Test global keymap."
   ;; Default prefix
   (rg-with-temp-global-keymap
     (rg-enable-default-bindings)
@@ -344,8 +344,9 @@ matching alias."
 
 ;; Integration tests
 
-(ert-deftest rg-integration-test/search-alias-builtin () :tags '(need-rg)
-"Test that rg builtin aliases works."
+(ert-deftest rg-integration-test/search-alias-builtin ()
+  "Test that rg builtin aliases works."
+  :tags '(need-rg)
   (let ((rg-ignore-case 'force))
     (rg "hello" "elisp" (concat default-directory "test/data"))
     (rg-with-current-result
@@ -355,8 +356,9 @@ matching alias."
         (should (= 0 (s-count-matches "foo.baz.*hello" bufstr)))
         (should (= 0 (s-count-matches "bar.baz.*hello" bufstr)))))))
 
-(ert-deftest rg-integration-test/search-alias-custom () :tags '(need-rg)
-"Test that aliases defined in `rg-custom-type-aliases' works if explicitly selected."
+(ert-deftest rg-integration-test/search-alias-custom ()
+  "Test that aliases defined in `rg-custom-type-aliases' works if explicitly selected."
+  :tags '(need-rg)
   (let ((rg-ignore-case 'force)
         (rg-custom-type-aliases '(("test" . "*.baz"))))
     (rg "hello" "test" (concat default-directory "test/data"))
@@ -367,9 +369,10 @@ matching alias."
         (should (= 3 (s-count-matches "foo.baz.*hello" bufstr)))
         (should (= 3 (s-count-matches "bar.baz.*hello" bufstr)))))))
 
-(ert-deftest rg-integration-test/search-alias-all-custom () :tags '(need-rg)
-"Test that aliases defined in `rg-custom-type-aliases' works if
+(ert-deftest rg-integration-test/search-alias-all-custom ()
+  "Test that aliases defined in `rg-custom-type-ailiases' works if
   implicitly selected via '--type all'."
+  :tags '(need-rg)
   (let ((rg-ignore-case 'force)
         (rg-custom-type-aliases '(("test" . "*.baz"))))
     (rg "hello" "all" (concat default-directory "test/data"))
@@ -380,8 +383,9 @@ matching alias."
         (should (= 3 (s-count-matches "foo.baz.*hello" bufstr)))
         (should (= 3 (s-count-matches "bar.baz.*hello" bufstr)))))))
 
-(ert-deftest rg-integration-test/search-no-alias() :tags '(need-rg)
-"Test that custom file pattern that is not an alias works."
+(ert-deftest rg-integration-test/search-no-alias()
+  "Test that custom file pattern that is not an alias works."
+  :tags '(need-rg)
   (let ((rg-ignore-case 'force))
     (rg "hello" "*.baz" (concat default-directory "test/data"))
     (rg-with-current-result
@@ -391,8 +395,9 @@ matching alias."
         (should (= 3 (s-count-matches "foo.baz.*hello" bufstr)))
         (should (= 3 (s-count-matches "bar.baz.*hello" bufstr)))))))
 
-(ert-deftest rg-integration-test/search-uppercase-regexp () :tags '(need-rg)
-"Test that uppercase search triggers case sensitive search."
+(ert-deftest rg-integration-test/search-uppercase-regexp ()
+  "Test that uppercase search triggers case sensitive search."
+  :tags '(need-rg)
   (let ((rg-ignore-case 'smart))
     (rg "Hello" "all" (concat default-directory "test/data"))
     (rg-with-current-result
@@ -400,8 +405,9 @@ matching alias."
         (should (= 1 (s-count-matches "foo.el.*hello" bufstr)))
         (should (= 1 (s-count-matches "bar.el.*hello" bufstr)))))))
 
-(ert-deftest rg-integration-test/search-case-sensitive-regexp () :tags '(need-rg)
-"Test explicit case sensitive search."
+(ert-deftest rg-integration-test/search-case-sensitive-regexp ()
+  "Test explicit case sensitive search."
+  :tags '(need-rg)
   (let ((rg-ignore-case 'nil))
     (rg "hello" "all" (concat default-directory "test/data")))
   (rg-with-current-result
@@ -410,7 +416,7 @@ matching alias."
       (should (= 1 (s-count-matches "bar.el.*hello" bufstr))))))
 
 (ert-deftest rg-integration-test/project-root ()
-"Test that all paths in `rt-project-root' gives valid results."
+  "Test that all paths in `rt-project-root' gives valid results."
   ;; projectile
   (rg-check-git-project-root)
   (eval-after-load 'projectile
@@ -428,8 +434,9 @@ matching alias."
                   (rg-project-root "/tmp/foo.el"))
                  "/tmp/")))
 
-(ert-deftest rg-integration/navigate-file-group-in-grouped-result () :tags '(need-rg)
-"Test group navigation in grouped result."
+(ert-deftest rg-integration/navigate-file-group-in-grouped-result ()
+  "Test group navigation in grouped result."
+  :tags '(need-rg)
   (let ((rg-group-result t)
         (files '("foo.el" "bar.el"))
         first-file
@@ -457,8 +464,9 @@ matching alias."
       (rg-navigate-file-group -2)
       (should (looking-at (concat "File: " first-file))))))
 
-(ert-deftest rg-integration/navigate-file-group-in-ungrouped-result () :tags '(need-rg)
-"Test group navigation in ungrouped result."
+(ert-deftest rg-integration/navigate-file-group-in-ungrouped-result ()
+  "Test group navigation in ungrouped result."
+  :tags '(need-rg)
   (let ((rg-group-result nil))
     (rg "hello" "elisp" (concat default-directory "test/data"))
     (rg-with-current-result
@@ -467,8 +475,8 @@ matching alias."
       (should (eq (point) (point-min))))))
 
 (defun rg-test-highlight-match (grouped)
-"Helper for highlight testing.  If GROUPED is is non nil grouped
-result are used."
+  "Helper for highlight testing.
+If GROUPED is is non nil grouped result are used."
   (let ((rg-group-result grouped)
         pos)
     (rg "hello" "elisp" (concat default-directory "test/data"))
@@ -476,13 +484,15 @@ result are used."
       (setq pos (rg-single-font-lock-match 'rg-match-face (point-min) (point-max) 1))
       (should-not (eq (point-max) pos)))))
 
-(ert-deftest rg-integration/highlight-match-group () :tags '(need-rg)
-"Test that highlighting of matches works."
+(ert-deftest rg-integration/highlight-match-group ()
+  "Test that highlighting of matches works."
+  :tags '(need-rg)
   (rg-test-highlight-match t)
   (rg-test-highlight-match nil))
 
 (defun rg-file-tag-face-exist-in-result (grouped)
-"Make a search and return non nil if 'rg-file-tag-face exist in buffer, i.e. 'File:'."
+  "Search and return non nil if 'rg-file-tag-face exist in buffer.
+GROUPED control if `rg-group-result' is used."
   (let((rg-group-result grouped)
        pos)
     (rg "hello" "elisp" (concat default-directory "test/data"))
@@ -490,14 +500,16 @@ result are used."
       (setq pos (rg-single-font-lock-match 'rg-file-tag-face (point-min) (point-max) 1))
       (not (eq (point-max) pos)))))
 
-(ert-deftest rg-integration/group-result-variable () :tags '(need-rg)
-"Test that grouped result is triggered if `rg-group-result' is non nil
+(ert-deftest rg-integration/group-result-variable ()
+  "Test that grouped result is triggered if `rg-group-result' is non nil
 and ungrouped otherwise."
+  :tags '(need-rg)
   (should-not (rg-file-tag-face-exist-in-result nil))
   (should (rg-file-tag-face-exist-in-result t)))
 
-(ert-deftest rg-integration/recompile () :tags '(need-rg)
-"Make sure that `rg-recompile' preserves search parameters."
+(ert-deftest rg-integration/recompile ()
+  "Make sure that `rg-recompile' preserves search parameters."
+  :tags '(need-rg)
   (let ((parent-dir (concat (expand-file-name default-directory) "test/")))
     (rg "hello" "elisp" (concat parent-dir "data"))
     (rg-with-current-result
@@ -515,8 +527,9 @@ and ungrouped otherwise."
               (should (cl-every 'equal `("Hello" "all" ,parent-dir) rg-last-search))
               (should (cl-every 'equal '("--text") rg-toggle-command-line-flags))))))
 
-(ert-deftest rg-integration/display-exit-message () :tags '(need-rg)
-"Verify exit messages."
+(ert-deftest rg-integration/display-exit-message ()
+  "Verify exit messages."
+  :tags '(need-rg)
   (rg "foo" "*.baz" (concat default-directory "test/data"))
   (with-current-buffer "*rg*"
     (rg-wait-for-search-result)
