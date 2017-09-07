@@ -24,6 +24,8 @@ env:
 matrix:
   allow_failures:
     - env: EVM_EMACS=emacs-git-snapshot-travis
+install:
+  - make deps
 script:
   - emacs --version
   - make test

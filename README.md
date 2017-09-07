@@ -193,7 +193,7 @@ default and bound to <kbd>C-c c</kbd> in `rg` result buffer.
 - Install dependencies:
 
 ``` Shell
-make install
+make deps
 ```
 - Run tests:
 

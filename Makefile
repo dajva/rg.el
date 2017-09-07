@@ -1,14 +1,24 @@
 PKG_NAME = $(shell cask info | head -1 | cut -f2 -d" ")
 PKG_VERSION = $(shell cask version)
 PKG_FULL_NAME = $(PKG_NAME)-$(PKG_VERSION)
+SOURCES = $(shell cask files)
+OBJECTS = $(SOURCES:.el=.elc)
+STYLE_CHECK= -L test -L . -l test/style-check.el
 
-all: install test
+all: deps test
 
-test: build-test package-test ert-test
+test: ert-test style-check package-lint build-test package-test
 
-build-test:
+build-test: clean build
 	cask clean-elc
-	cask emacs -batch -Q -eval "(progn (setq byte-compile-error-on-warn t) (batch-byte-compile))" *.el
+
+clean:
+	cask clean-elc
+
+build: $(OBJECTS)
+
+%.elc: %.el
+	cask emacs -batch -Q -eval "(progn (setq byte-compile-error-on-warn t) (batch-byte-compile))" $<
 
 package-test:
 	-@rm -r dist 2> /dev/null || true
@@ -16,6 +26,12 @@ package-test:
 	cask package
 	PKG_FULL_NAME=$(PKG_FULL_NAME) emacs -batch -Q -l test/package-bootstrap.el \
 		-eval "(package-install-file \"dist/$(PKG_FULL_NAME).el\") (rg \"rg\" \"elisp\" \"/tmp/$(PKG_FULL_NAME)-elpa\"))"
+
+style-check:
+	cask emacs -batch -Q $(STYLE_CHECK) -f run-emacs-lisp-flycheck-and-exit $(SOURCES)
+
+package-lint:
+	cask emacs -batch -Q $(STYLE_CHECK) -f run-package-lint-and-exit $(SOURCES)
 
 unit-test:
 	cask exec ert-runner --pattern rg-unit
@@ -26,7 +42,7 @@ integration-test:
 ert-test:
 	cask exec ert-runner --quiet
 
-install:
+deps:
 	cask install
 
-.PHONY: test build-test package-test unit-test integration-test ert-test install
+.PHONY: all test build-test clean package-test style-check package-lint unit-test integration-test ert-test deps
