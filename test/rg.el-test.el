@@ -303,7 +303,12 @@ matching alias."
       (setq third "newvalue"))
     (should (equal first "value1"))
     (should (equal second "value2"))
-    (should-not (equal third "value3"))))
+    (should-not (equal third "value3"))
+    (ignore-errors
+      (rg-save-vars (first)
+        (setq first "changed")
+        (error "Something went wrong")))
+    (should (equal first "value1"))))
 
 (ert-deftest rg-unit/regexp-quote ()
   "Test `rg-regexp-quote' with some 'random' strings."

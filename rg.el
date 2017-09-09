@@ -674,9 +674,10 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
          (cl-loop for var in varlist
                   collect `(,(cl-gensym) ,var))))
     `(let ,set-pairs
-       ,@body
-       ,@(cl-loop for pair in set-pairs
-                  collect `(setq ,@(reverse pair))))))
+       (unwind-protect
+           (progn ,@body)
+         ,@(cl-loop for pair in set-pairs
+                    collect `(setq ,@(reverse pair)))))))
 
 (defun rg-recompile ()
   "Run `recompile' while preserving buffer some local variables."
