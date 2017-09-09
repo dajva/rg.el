@@ -287,6 +287,17 @@ matching alias."
     (should (equal second "value2"))
     (should (not (equal third "value3")))))
 
+(ert-deftest rg-unit/regexp-quote ()
+  "Test `rg-regexp-quote' with some 'random' strings."
+  (should (equal (rg-regexp-quote ")-[abs|]^$_+=(^\?)")
+                 "\\)-\\[abs\\|\\]\\^\\$_\\+=\\(\\^\\?\\)"))
+  (should (equal (rg-regexp-quote "(?i)a+(?-i)b+")
+                 "\\(\\?i\\)a\\+\\(\\?-i\\)b\\+"))
+  (should (equal (rg-regexp-quote "AaAaAbbBBBb")
+                 "AaAaAbbBBBb"))
+  (should (equal (rg-regexp-quote "^(.*)|{}")
+                 "\\^\\(\\.\\*\\)\\|\\{\\}")))
+
 ;; Integration tests
 
 (ert-deftest rg-integration-test/search-alias-builtin () :tags '(need-rg)
