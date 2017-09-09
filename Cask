@@ -9,7 +9,6 @@
  (depends-on "cl-lib" "0.5")
  (depends-on "ert-runner")
  (depends-on "flycheck")
- (depends-on "noflet")
  (depends-on "package-lint")
  (depends-on "projectile")
  (depends-on "s")

@@ -28,7 +28,6 @@
 
 (require 'cl-lib)
 (require 'ert)
-(require 'noflet)
 (require 'rg)
 (require 's)
 

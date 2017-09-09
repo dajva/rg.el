@@ -702,13 +702,13 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
   "Rerun last search but prompt for new regexp."
   (interactive)
   (rg-rerun-with-changes (:regexp regexp)
-    (let ((read-from-minibuffer-orig (symbol-function 'read-from-minibuffer)))
-      ;; Override read-from-minibuffer in order to insert the original
-      ;; regexp in the input area.
-      (cl-letf (((symbol-function 'read-from-minibuffer)
-                 (lambda (prompt &optional _ &rest args)
-                   (apply read-from-minibuffer-orig prompt regexp args))))
-        (setq regexp (rg-read-regexp "Search for" regexp 'grep-regexp-history))))))
+    ;; Override read-from-minibuffer in order to insert the original
+    ;; regexp in the input area.
+    (cl-letf* ((read-from-minibuffer-orig (symbol-function 'read-from-minibuffer))
+               ((symbol-function #'read-from-minibuffer)
+                (lambda (prompt &optional _ &rest args)
+                  (apply read-from-minibuffer-orig prompt regexp args))))
+      (setq regexp (rg-read-regexp "Search for" regexp 'grep-regexp-history)))))
 
 (defun rg-rerun-change-files()
   "Rerun last search but prompt for new files."
