@@ -115,7 +115,7 @@ on emacs version."
               ((symbol-function #'read-regexp) (lambda (pr &rest _)
                                                  (setq called 'read-regexp)
                                                  (setq prompt-result pr))))
-      (rg-read-regexp "Search for" "foo" 'bar)
+      (rg-read-regexp "Search for" "foo")
       (if (and (<= emacs-major-version 24)
                (<= emacs-minor-version 2))
           (progn
@@ -402,6 +402,14 @@ matching alias."
         (should (= 0 (s-count-matches "bar.el.*hello" bufstr)))
         (should (= 3 (s-count-matches "foo.baz.*hello" bufstr)))
         (should (= 3 (s-count-matches "bar.baz.*hello" bufstr)))))))
+
+(ert-deftest rg-integration-test/search-history ()
+  "Test that `rg-history' gets updated."
+  :tags '(need-rg)
+  (let ((rg-history nil))
+    (rg-run "hello" "all" "/tmp/test")
+    (rg-with-current-result
+      (should (member (car compilation-arguments) rg-history)))))
 
 (ert-deftest rg-integration-test/search-uppercase-regexp ()
   "Test that uppercase search triggers case sensitive search."

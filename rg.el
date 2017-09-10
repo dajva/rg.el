@@ -211,6 +211,10 @@ a string describing how the process finished.")
 (defvar rg-toggle-command-line-flags nil
   "List of command line flags defined by `rg-define-toggle' macro.")
 
+(defvar rg-history nil "History for full rg commands.")
+(defvar rg-files-history nil "History for files args.")
+(defvar rg-regexp-history nil "History for regexp args.")
+
 (defconst rg-special-type-aliases
   '(("all" . "all defined type aliases") ; rg --type all
     ("everything" . "*")) ; rg without '--type' arg
@@ -377,7 +381,7 @@ included."
                   (cdr default-alias) ")"))
              ": ")
      (rg-get-type-aliases)
-     nil nil nil 'grep-files-history
+     nil nil nil 'rg-files-history
      (car default-alias))))
 
 (defun rg-filter ()
@@ -536,8 +540,8 @@ executing."
     (if confirm
         (setq confirmed
               (read-from-minibuffer "Confirm: "
-                                    command nil nil 'grep-history))
-      (add-to-history 'grep-history command))
+                                    command nil nil 'rg-history))
+      (add-to-history 'rg-history command))
     ;; If user changed command we can't know the parts of the
     ;; search and needs to disable result buffer modifications.
     (cond ((and confirmed (not (string= confirmed command)))
@@ -602,10 +606,12 @@ Example:
   "Return an 'rg' REGEXP string which match exactly STRING and nothing else."
   (replace-regexp-in-string "[][*.^\\|+?{}$()\]" "\\\\\\&" regexp))
 
-(defun rg-read-regexp (prompt default history)
+(defun rg-read-regexp (&optional prompt default)
   "Read regexp argument from user.
 PROMPT is the read prompt, DEFAULT is the default regexp and HISTORY
 is search history list."
+  (setq prompt (or prompt "Search for"))
+  (setq default (or default (grep-tag-default)))
   (with-no-warnings
     (if (and (= emacs-major-version 24)
              (< emacs-minor-version 3))
@@ -613,8 +619,8 @@ is search history list."
          (concat prompt
                  (if (and default (> (length default) 0))
                      (format " (default \"%s\"): " default) ": "))
-         default history)
-      (read-regexp prompt default history))))
+         default 'rg-regexp-history)
+      (read-regexp prompt default 'rg-regexp-history))))
 
 (defun rg-apply-case-flag (regexp)
   "Make sure -i is added to the command if needed.
@@ -746,7 +752,7 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
                ((symbol-function #'read-from-minibuffer)
                 (lambda (prompt &optional _ &rest args)
                   (apply read-from-minibuffer-orig prompt regexp args))))
-      (setq regexp (rg-read-regexp "Search for" regexp 'grep-regexp-history)))))
+      (setq regexp (rg-read-regexp nil regexp)))))
 
 (defun rg-rerun-change-files()
   "Rerun last search but prompt for new files."
@@ -755,7 +761,7 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
     (setq files (completing-read
                  (concat "Repeat search in files (default: [" files "]): ")
                  (rg-get-type-aliases)
-                 nil nil nil 'grep-files-history
+                 nil nil nil 'rg-files-history
                  files))))
 
 (defun rg-rerun-change-dir()
@@ -890,7 +896,7 @@ The project root will will be determined by either common project
 packages like projectile and `find-file-in-project' or the source
 version control system."
   (interactive)
-  (let* ((regexp (grep-read-regexp))
+  (let* ((regexp (rg-read-regexp))
          (files (rg-read-files regexp)))
     (rg-run regexp files (rg-project-root buffer-file-name))))
 
@@ -922,13 +928,10 @@ constructed shell command line before it is executed.
 
 Collect output in a buffer.  While ripgrep runs asynchronously, you
 can use \\[next-error] (M-x `next-error'), or \\<grep-mode-map>\\[compile-goto-error] \
-in the grep output buffer,
-to go to the lines where grep found matches.
-
-This command shares argument histories with \\[rgrep] and \\[grep]."
+in the rg output buffer, to go to the lines where rg found matches."
   (interactive
    (progn
-     (let* ((regexp (grep-read-regexp))
+     (let* ((regexp (rg-read-regexp))
             (files (rg-read-files regexp))
             (dir (read-directory-name "In directory: "
                                       nil default-directory t))
