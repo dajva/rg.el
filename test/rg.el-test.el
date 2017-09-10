@@ -30,32 +30,32 @@
 ;; Unit tests
 
 (ert-deftest rg-unit-test/case-expand-template ()
-  "Test that `rg-set-case-sensitivity' handles case settings correctly."
+  "Test that `rg-apply-case-flag' handles case settings correctly."
   (let (rg-toggle-command-line-flags)
     (let ((case-fold-search t))
-      (rg-set-case-sensitivity "foo")
+      (rg-apply-case-flag "foo")
       (should (member  "-i" rg-toggle-command-line-flags))
-      (rg-set-case-sensitivity "fOo")
+      (rg-apply-case-flag "fOo")
       (should-not (member "-i" rg-toggle-command-line-flags)))
     (let ((case-fold-search nil))
-      (rg-set-case-sensitivity "foo")
+      (rg-apply-case-flag "foo")
       (should-not (member "-i" rg-toggle-command-line-flags))
-      (rg-set-case-sensitivity "fOo")
+      (rg-apply-case-flag "fOo")
       (should-not (member "-i" rg-toggle-command-line-flags)))
     (let ((rg-ignore-case 'smart))
-      (rg-set-case-sensitivity "foo")
+      (rg-apply-case-flag "foo")
       (should (member "-i" rg-toggle-command-line-flags))
-      (rg-set-case-sensitivity "fOo")
+      (rg-apply-case-flag "fOo")
       (should-not (member "-i" rg-toggle-command-line-flags)))
     (let ((rg-ignore-case 'force))
-      (rg-set-case-sensitivity "foo")
+      (rg-apply-case-flag "foo")
       (should (member "-i" rg-toggle-command-line-flags))
-      (rg-set-case-sensitivity "fOo")
+      (rg-apply-case-flag "fOo")
       (should (member "-i" rg-toggle-command-line-flags)))
     (let ((rg-ignore-case nil))
-      (rg-set-case-sensitivity "foo")
+      (rg-apply-case-flag "foo")
       (should-not (member "-i" rg-toggle-command-line-flags))
-      (rg-set-case-sensitivity "fOo")
+      (rg-apply-case-flag "fOo")
       (should-not (member "-i" rg-toggle-command-line-flags)))))
 
 (ert-deftest rg-unit-test/build-template ()
@@ -356,7 +356,7 @@ matching alias."
   "Test that rg builtin aliases works."
   :tags '(need-rg)
   (let ((rg-ignore-case 'force))
-    (rg "hello" "elisp" (concat default-directory "test/data"))
+    (rg-run "hello" "elisp" (concat default-directory "test/data"))
     (rg-with-current-result
       (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
         (should (= 3 (s-count-matches "foo.el.*hello" bufstr)))
@@ -369,7 +369,7 @@ matching alias."
   :tags '(need-rg)
   (let ((rg-ignore-case 'force)
         (rg-custom-type-aliases '(("test" . "*.baz"))))
-    (rg "hello" "test" (concat default-directory "test/data"))
+    (rg-run "hello" "test" (concat default-directory "test/data"))
     (rg-with-current-result
       (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
         (should (= 0 (s-count-matches "foo.el.*hello" bufstr)))
@@ -383,7 +383,7 @@ matching alias."
   :tags '(need-rg)
   (let ((rg-ignore-case 'force)
         (rg-custom-type-aliases '(("test" . "*.baz"))))
-    (rg "hello" "all" (concat default-directory "test/data"))
+    (rg-run "hello" "all" (concat default-directory "test/data"))
     (rg-with-current-result
       (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
         (should (= 3 (s-count-matches "foo.el.*hello" bufstr)))
@@ -395,7 +395,7 @@ matching alias."
   "Test that custom file pattern that is not an alias works."
   :tags '(need-rg)
   (let ((rg-ignore-case 'force))
-    (rg "hello" "*.baz" (concat default-directory "test/data"))
+    (rg-run "hello" "*.baz" (concat default-directory "test/data"))
     (rg-with-current-result
       (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
         (should (= 0 (s-count-matches "foo.el.*hello" bufstr)))
@@ -407,7 +407,7 @@ matching alias."
   "Test that uppercase search triggers case sensitive search."
   :tags '(need-rg)
   (let ((rg-ignore-case 'smart))
-    (rg "Hello" "all" (concat default-directory "test/data"))
+    (rg-run "Hello" "all" (concat default-directory "test/data"))
     (rg-with-current-result
       (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
         (should (= 1 (s-count-matches "foo.el.*hello" bufstr)))
@@ -417,7 +417,7 @@ matching alias."
   "Test explicit case sensitive search."
   :tags '(need-rg)
   (let ((rg-ignore-case 'nil))
-    (rg "hello" "all" (concat default-directory "test/data")))
+    (rg-run "hello" "all" (concat default-directory "test/data")))
   (rg-with-current-result
     (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
       (should (= 1 (s-count-matches "foo.el.*hello" bufstr)))
@@ -450,7 +450,7 @@ matching alias."
         first-file
         second-file
         pos)
-    (rg "hello" "elisp" (concat default-directory "test/data"))
+    (rg-run "hello" "elisp" (concat default-directory "test/data"))
     (rg-with-current-result
       (goto-char (point-min))
       (rg-navigate-file-group 1)
@@ -476,7 +476,7 @@ matching alias."
   "Test group navigation in ungrouped result."
   :tags '(need-rg)
   (let ((rg-group-result nil))
-    (rg "hello" "elisp" (concat default-directory "test/data"))
+    (rg-run "hello" "elisp" (concat default-directory "test/data"))
     (rg-with-current-result
       (goto-char (point-min))
       (rg-navigate-file-group 1)
@@ -487,7 +487,7 @@ matching alias."
 If GROUPED is is non nil grouped result are used."
   (let ((rg-group-result grouped)
         pos)
-    (rg "hello" "elisp" (concat default-directory "test/data"))
+    (rg-run "hello" "elisp" (concat default-directory "test/data"))
     (rg-with-current-result
       (setq pos (rg-single-font-lock-match 'rg-match-face (point-min) (point-max) 1))
       (should-not (eq (point-max) pos)))))
@@ -503,7 +503,7 @@ If GROUPED is is non nil grouped result are used."
 GROUPED control if `rg-group-result' is used."
   (let((rg-group-result grouped)
        pos)
-    (rg "hello" "elisp" (concat default-directory "test/data"))
+    (rg-run "hello" "elisp" (concat default-directory "test/data"))
     (rg-with-current-result
       (setq pos (rg-single-font-lock-match 'rg-file-tag-face (point-min) (point-max) 1))
       (not (eq (point-max) pos)))))
@@ -519,7 +519,7 @@ and ungrouped otherwise."
   "Make sure that `rg-recompile' preserves search parameters."
   :tags '(need-rg)
   (let ((parent-dir (concat (expand-file-name default-directory) "test/")))
-    (rg "hello" "elisp" (concat parent-dir "data"))
+    (rg-run "hello" "elisp" (concat parent-dir "data"))
     (rg-with-current-result
       (cl-letf (((symbol-function #'rg-read-regexp) #'ignore))
         (rg-rerun-with-changes (:files files :dir dir :regexp regexp :flags flags)
@@ -538,11 +538,11 @@ and ungrouped otherwise."
 (ert-deftest rg-integration/display-exit-message ()
   "Verify exit messages."
   :tags '(need-rg)
-  (rg "foo" "*.baz" (concat default-directory "test/data"))
+  (rg-run "foo" "*.baz" (concat default-directory "test/data"))
   (with-current-buffer "*rg*"
     (rg-wait-for-search-result)
     (s-matches-p "no matches found" (buffer-substring-no-properties (point-min) (point-max))))
-  (rg "hello" "*.baz" (concat default-directory "test/data"))
+  (rg-run "hello" "*.baz" (concat default-directory "test/data"))
   (rg-with-current-result
     (should (equal rg-hit-count 6))
     (s-matches-p "(6 matches found)" (buffer-substring-no-properties (point-min) (point-max)))))

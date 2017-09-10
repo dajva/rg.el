@@ -325,6 +325,8 @@ added as a '--type-add' parameter to the rg command line."
 
 (defun rg-list-builtin-type-aliases ()
   "Invokes rg --type-list and puts the result in an alist."
+  (unless (executable-find "rg")
+    (error "'rg' is not in path"))
   (mapcar
    (lambda (item)
      (let ((association (split-string item ":" t)))
@@ -517,6 +519,32 @@ Commands:
            files)
           " ."))
 
+(defun rg-run (regexp files dir &optional confirm)
+  "Execute rg command with supplied REGEXP, FILES and DIR.
+CONFIRM allows the user to confirm and modify the command before
+executing."
+  (unless (executable-find "rg")
+    (error "'rg' is not in path"))
+  (unless (and (stringp regexp) (> (length regexp) 0))
+    (error "Empty string: No search done"))
+  (unless (and (file-directory-p dir) (file-readable-p dir))
+    (setq dir default-directory))
+  (rg-apply-case-flag regexp)
+  (let ((command (rg-build-command regexp files)))
+    (setq dir (file-name-as-directory (expand-file-name dir)))
+    (if confirm
+        (setq command
+              (read-from-minibuffer "Confirm: "
+                                    command nil nil 'grep-history))
+      (add-to-history 'grep-history command))
+    (setq-default rg-last-search (list regexp files dir))
+    (let ((default-directory dir))
+      ;; Setting process-setup-function makes exit-message-function work
+      ;; even when async processes aren't supported.
+      (compilation-start command 'rg-mode))
+    (if (eq next-error-last-buffer (current-buffer))
+        (setq default-directory dir))))
+
 (defun rg-rerun ()
   "Run `rg-recompile' with `compilation-arguments' taken from `rg-last-search'."
   (let ((regexp (nth 0 rg-last-search))
@@ -579,7 +607,7 @@ is search history list."
          default history)
       (read-regexp prompt default history))))
 
-(defun rg-set-case-sensitivity (regexp)
+(defun rg-apply-case-flag (regexp)
   "Make sure -i is added to the command if needed.
 The value of the `rg-ignore-case' variable and the case of the
 supplied REGEXP influences the result.  See `rg-ignore-case' for more
@@ -855,7 +883,7 @@ version control system."
   (interactive)
   (let* ((regexp (grep-read-regexp))
          (files (rg-read-files regexp)))
-    (rg regexp files (rg-project-root buffer-file-name))))
+    (rg-run regexp files (rg-project-root buffer-file-name))))
 
 ;;;###autoload
 (defun rg-dwim ()
@@ -871,7 +899,7 @@ instead of project root."
          (files (car (rg-default-alias)))
          (dir (or (when curdir default-directory)
                   (rg-project-root buffer-file-name))))
-    (rg regexp files dir)))
+    (rg-run regexp files dir)))
 
 ;;;###autoload
 (defun rg (regexp &optional files dir confirm)
@@ -882,7 +910,6 @@ ripgrep builtin type aliases, e.g.  entering `elisp' is equivalent to `*.el'.
 
 With \\[universal-argument] prefix (CONFIRM), you can edit the
 constructed shell command line before it is executed.
-With two \\[universal-argument] prefixes, directly edit and run `rg-command'.
 
 Collect output in a buffer.  While ripgrep runs asynchronously, you
 can use \\[next-error] (M-x `next-error'), or \\<grep-mode-map>\\[compile-goto-error] \
@@ -892,43 +919,13 @@ to go to the lines where grep found matches.
 This command shares argument histories with \\[rgrep] and \\[grep]."
   (interactive
    (progn
-     (unless (executable-find "rg")
-       (error "'rg' is not in path"))
-     (grep-compute-defaults)
-     (cond
-      ((and rg-command (equal current-prefix-arg '(16)))
-       (list (read-from-minibuffer "Run: " rg-command
-                                   nil nil 'grep-history)))
-      (t (let* ((regexp (grep-read-regexp))
-                (files (rg-read-files regexp))
-                (dir (read-directory-name "In directory: "
-                                          nil default-directory t))
-                (confirm (equal current-prefix-arg '(4))))
-           (list regexp files dir confirm))))))
-  (when (and (stringp regexp) (> (length regexp) 0))
-    (unless (and dir (file-directory-p dir) (file-readable-p dir))
-      (setq dir default-directory))
-    (let ((command regexp))
-      (if (null files)
-          (if (string= command rg-command)
-              (setq command nil))
-        (setq dir (file-name-as-directory (expand-file-name dir)))
-        (rg-set-case-sensitivity regexp)
-        (setq command (rg-build-command regexp files))
-        (when command
-          (if confirm
-              (setq command
-                    (read-from-minibuffer "Confirm: "
-                                          command nil nil 'grep-history))
-            (add-to-history 'grep-history command))))
-      (when command
-        (setq-default rg-last-search (list regexp files dir))
-        (let ((default-directory dir))
-          ;; Setting process-setup-function makes exit-message-function work
-          ;; even when async processes aren't supported.
-          (compilation-start command 'rg-mode))
-        (if (eq next-error-last-buffer (current-buffer))
-            (setq default-directory dir))))))
+     (let* ((regexp (grep-read-regexp))
+            (files (rg-read-files regexp))
+            (dir (read-directory-name "In directory: "
+                                      nil default-directory t))
+            (confirm (equal current-prefix-arg '(4))))
+       (list regexp files dir confirm))))
+  (rg-run regexp files dir confirm))
 
 (provide 'rg)
 
