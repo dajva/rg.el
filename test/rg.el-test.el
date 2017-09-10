@@ -558,6 +558,42 @@ and ungrouped otherwise."
      (search-forward "hello"))
    (kill-buffer rg-search-list-buffer-name)))
 
+(ert-deftest rg-integration/run-confirm-unchanged-command ()
+  "Test confirm and full command search"
+  :tags '(need-rg)
+  (cl-letf ((rg-history nil)
+            (called-prompt nil) (called-history nil)
+            ((symbol-function #'read-from-minibuffer)
+             (lambda (prompt command _ign1 _ign2 history)
+               (setq called-prompt prompt)
+               (setq called-history history)
+               command)))
+    (rg-run "hello" "all" "tmp/test" nil 'confirm)
+    (should (eq called-history 'rg-history))
+    (should (equal called-prompt "Confirm: "))
+    (should-not (null rg-last-search))
+    ;; We use the stub about which does not update the history
+    (should (null rg-history))
+    (rg-with-current-result)))
+
+(ert-deftest rg-integration/run-confirm-changed-command ()
+  "Test confirm and full command search"
+  :tags '(need-rg)
+  (cl-letf ((rg-history nil)
+            (changed-command nil) (original-command nil)
+            ((symbol-function #'read-from-minibuffer)
+             (lambda (_ign1 command _ign2 _ign3 _ign4)
+               (setq changed-command (concat command " world"))
+               (setq original-command command)
+               changed-command)))
+    (message "foo")
+    (rg-run "hello" "all" "tmp/test" nil 'confirm)
+    (should (equal changed-command (concat original-command " world")))
+    (should (null rg-last-search))
+    ;; We use the stub about which does not update the history
+    (should (null rg-history))
+    (rg-with-current-result)))
+
 (provide 'rg.el-test)
 
 ;;; rg.el-test.el ends here

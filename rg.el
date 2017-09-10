@@ -530,14 +530,21 @@ executing."
   (unless (and (file-directory-p dir) (file-readable-p dir))
     (setq dir default-directory))
   (rg-apply-case-flag regexp)
-  (let ((command (rg-build-command regexp files)))
+  (let ((command (rg-build-command regexp files))
+        confirmed)
     (setq dir (file-name-as-directory (expand-file-name dir)))
     (if confirm
-        (setq command
+        (setq confirmed
               (read-from-minibuffer "Confirm: "
                                     command nil nil 'grep-history))
       (add-to-history 'grep-history command))
-    (setq-default rg-last-search (list regexp files dir))
+    ;; If user changed command we can't know the parts of the
+    ;; search and needs to disable result buffer modifications.
+    (cond ((and confirmed (not (string= confirmed command)))
+           (setq-default rg-last-search nil)
+           (setq command confirmed))
+          (t
+           (setq-default rg-last-search (list regexp files dir))))
     (let ((default-directory dir))
       ;; Setting process-setup-function makes exit-message-function work
       ;; even when async processes aren't supported.
@@ -582,12 +589,14 @@ Example:
         (files (or (plist-get varplist :files) (cl-gensym)))
         (dir (or (plist-get varplist :dir) (cl-gensym)))
         (flags (or (plist-get varplist :flags) (cl-gensym))))
-    `(cl-destructuring-bind (,regexp ,files ,dir) rg-last-search
-       (let ((,flags rg-toggle-command-line-flags))
-         ,@body
-         (setq rg-toggle-command-line-flags ,flags)
-         (setq rg-last-search (list ,regexp ,files ,dir))
-         (rg-rerun)))))
+    `(if rg-last-search
+         (cl-destructuring-bind (,regexp ,files ,dir) rg-last-search
+           (let ((,flags rg-toggle-command-line-flags))
+             ,@body
+             (setq rg-toggle-command-line-flags ,flags)
+             (setq rg-last-search (list ,regexp ,files ,dir))
+             (rg-rerun)))
+       (message "Can't refine search since full command line search was used."))))
 
 (defun rg-regexp-quote (regexp)
   "Return an 'rg' REGEXP string which match exactly STRING and nothing else."
@@ -826,7 +835,7 @@ from a saved buffer in which case the saved buffer will be reused."
 (define-ibuffer-column rg-search-term
   (:name "Search" :props ('face 'rg-match-face))
   (ignore mark)
-  (car rg-last-search))
+  (or (car rg-last-search) "N/A"))
 
 (define-ibuffer-column rg-hit-count
   (:name "Hits")
@@ -836,12 +845,12 @@ from a saved buffer in which case the saved buffer will be reused."
 (define-ibuffer-column rg-search-dir
   (:name "Directory" :props ('face 'rg-filename-face))
   (ignore mark)
-  (nth 2 rg-last-search))
+  (or (nth 2 rg-last-search) "N/A"))
 
 (define-ibuffer-column rg-file-types
   (:name "Type")
   (ignore mark)
-  (nth 1 rg-last-search))
+  (or (nth 1 rg-last-search) "N/A"))
 
 ;;;###autoload
 (defun rg-list-searches ()
