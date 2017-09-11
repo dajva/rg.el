@@ -207,12 +207,15 @@ a string describing how the process finished.")
 (defvar rg-hit-count 0
   "Stores number of hits in a search.")
 
+(defvar rg-literal nil
+  "If non nil do literal search instead of regexp search.")
+
 (defvar rg-toggle-command-line-flags nil
   "List of command line flags defined by `rg-define-toggle' macro.")
 
 (defvar rg-history nil "History for full rg commands.")
 (defvar rg-files-history nil "History for files args.")
-(defvar rg-regexp-history nil "History for regexp args.")
+(defvar rg-pattern-history nil "History for search patterns.")
 
 (defconst rg-special-type-aliases
   '(("all" . "all defined type aliases") ; rg --type all
@@ -252,6 +255,7 @@ These are not produced by 'rg --type-list' but we need them anyway.")
     (define-key map "r" 'rg-rerun-change-regexp)
     (define-key map "s" 'rg-save-search)
     (define-key map "S" 'rg-save-search-as-name)
+    (define-key map "t" 'rg-rerun-change-literal)
     (define-key map "\C-n" 'rg-next-file)
     (define-key map "\C-p" 'rg-prev-file)
     map)
@@ -266,6 +270,7 @@ These are not produced by 'rg --type-list' but we need them anyway.")
     (define-key map "r" 'rg)
     (define-key map "s" 'rg-save-search)
     (define-key map "S" 'rg-save-search-as-name)
+    (define-key map "t" 'rg-literal)
     map)
   "The global keymap for `rg'.")
 
@@ -315,6 +320,8 @@ added as a '--type-add' parameter to the rg command line."
                rg-command-line-flags
                rg-toggle-command-line-flags
                (list "-e" "<R>"))))
+    (when rg-literal
+      (setq args (cons "--fixed-strings" args)))
     (when rg-show-columns
       (setq args (cons "--column" args)))
     (when type
@@ -324,7 +331,7 @@ added as a '--type-add' parameter to the rg command line."
                     (concat "--type-add "
                             (shell-quote-argument (concat "custom:" custom)))
                     args))))
-    (mapconcat 'identity (cons rg-command args) " ")))
+    (mapconcat 'identity (cons rg-command (delete-dups args)) " ")))
 
 (defun rg-list-builtin-type-aliases ()
   "Invokes rg --type-list and puts the result in an alist."
@@ -368,11 +375,20 @@ included."
            (rg-get-type-aliases t)))
      '("all" . "*"))))
 
-(defun rg-read-files (regexp)
-  "Read files argument for interactive rg.  REGEXP is the search string."
+(defun rg-read-input (&optional literal)
+  "Prompt user for input and return a list of the results.
+If LITERAL is non nil prompt for literal pattern."
+  (let* ((pattern (rg-read-pattern nil literal))
+         (files (rg-read-files pattern))
+         (dir (read-directory-name "In directory: "
+                                   nil default-directory t)))
+    (list pattern files dir)))
+
+(defun rg-read-files (pattern)
+  "Read files argument for interactive rg.  PATTERN is the search string."
   (let ((default-alias (rg-default-alias)))
     (completing-read
-     (concat "Search for \"" regexp
+     (concat "Search for \"" pattern
              "\" in files"
              (if default-alias
                  (concat
@@ -382,6 +398,26 @@ included."
      (rg-get-type-aliases)
      nil nil nil 'rg-files-history
      (car default-alias))))
+
+(defun rg-read-pattern (&optional default literal)
+  "Read search pattern argument from user.
+DEFAULT is the default pattern to use at the prompt.  If LITERAL is
+  non nil prompt for literal string."
+  (let ((default (or default (grep-tag-default)))
+        (prompt (concat
+                 (if (or literal rg-literal)
+                     "Literal"
+                   "Regexp")
+                 " search for")))
+    (with-no-warnings
+      (if (and (= emacs-major-version 24)
+               (< emacs-minor-version 3))
+          (read-string
+           (concat prompt
+                   (if (and default (> (length default) 0))
+                       (format " (default \"%s\"): " default) ": "))
+           default 'rg-pattern-history)
+        (read-regexp prompt default 'rg-pattern-history)))))
 
 (defun rg-filter ()
   "Handle match highlighting escape sequences inserted by the rg process.
@@ -450,7 +486,8 @@ Commands:
 \\<rg-mode-map>
 \\[rg-rerun-change-dir]\t Repeat this search in another directory (`rg-rerun-change-dir').
 \\[rg-rerun-change-files]\t Repeat this search with another file pattern (`rg-rerun-change-files').
-\\[rg-rerun-change-regexp]\t Change the search string for the current search (`rg-rerun-change-regexp').
+\\[rg-rerun-change-regexp]\t Change the search regexp for the current search (`rg-rerun-change-regexp').
+\\[rg-rerun-change-literal]\t Change the search literal for the current search (`rg-rerun-change-literal').
 \\[rg-rerun-toggle-ignore]\t Repeat search with toggled '--no-ignore' flag (`rg-rerun-toggle-ignore').
 \\[rg-rerun-toggle-case]\t Repeat search with toggled case insensitive setting (`rg-rerun-toggle-case').
 \\[rg-save-search-as-name]\t Save search result, prompt for new name (`rg-save-search-as-name').
@@ -480,22 +517,24 @@ Commands:
   (make-local-variable 'rg-last-search)
   (make-local-variable 'rg-hit-count)
   (make-local-variable 'rg-toggle-command-line-flags)
+  (make-local-variable 'rg-literal)
   (add-hook 'compilation-filter-hook 'rg-filter nil t) )
 
 (defun rg-project-root (file)
   "Find the project root of the given FILE."
-  (when file
-    (let ((backend (vc-backend file)))
-      (or
-       (when (and (require 'projectile nil t)
-                  (fboundp 'projectile-project-root))
-         (projectile-project-root))
-       (when (and (require 'find-file-in-project nil t)
-                  (fboundp 'ffip-project-root))
-         (ffip-project-root))
-       (when backend
-         (vc-call-backend backend 'root file))
-       (file-name-directory file)))))
+  (or (when file
+        (let ((backend (vc-backend file)))
+          (or
+           (when (and (require 'projectile nil t)
+                      (fboundp 'projectile-project-root))
+             (projectile-project-root))
+           (when (and (require 'find-file-in-project nil t)
+                      (fboundp 'ffip-project-root))
+             (ffip-project-root))
+           (when backend
+             (vc-call-backend backend 'root file))
+           (file-name-directory file))))
+      default-directory))
 
 (defun rg-list-toggle (elem list)
   "Remove ELEM from LIST if present or add it if not present.
@@ -518,31 +557,33 @@ Returns the new list."
       (delete elem list)
     list))
 
-(defun rg-build-command (regexp files)
-  "Create the command for REGEXP and FILES."
+(defun rg-build-command (pattern files)
+  "Create the command for PATTERN and FILES."
   (concat (grep-expand-template
            (rg-build-template
             (not (equal files "everything"))
             (unless (assoc files (rg-get-type-aliases))
-              (let ((pattern files))
+              (let ((glob files))
                 (setq files "custom")
-                pattern)))
-           regexp
+                glob)))
+           pattern
            files)
           " ."))
 
-(defun rg-run (regexp files dir &optional confirm)
-  "Execute rg command with supplied REGEXP, FILES and DIR.
+(defun rg-run (pattern files dir &optional literal  confirm)
+  "Execute rg command with supplied PATTERN, FILES and DIR.
+If LITERAL is nil interpret PATTERN as regexp, otherwise as a literal.
 CONFIRM allows the user to confirm and modify the command before
 executing."
   (unless (executable-find "rg")
     (error "'rg' is not in path"))
-  (unless (and (stringp regexp) (> (length regexp) 0))
+  (unless (and (stringp pattern) (> (length pattern) 0))
     (error "Empty string: No search done"))
   (unless (and (file-directory-p dir) (file-readable-p dir))
     (setq dir default-directory))
-  (rg-apply-case-flag regexp)
-  (let ((command (rg-build-command regexp files))
+  (setq rg-literal literal)
+  (rg-apply-case-flag pattern)
+  (let ((command (rg-build-command pattern files))
         confirmed)
     (setq dir (file-name-as-directory (expand-file-name dir)))
     (if confirm
@@ -556,7 +597,7 @@ executing."
            (setq-default rg-last-search nil)
            (setq command confirmed))
           (t
-           (setq-default rg-last-search (list regexp files dir))))
+           (setq-default rg-last-search (list pattern files dir))))
     (let ((default-directory dir))
       ;; Setting process-setup-function makes exit-message-function work
       ;; even when async processes aren't supported.
@@ -566,11 +607,11 @@ executing."
 
 (defun rg-rerun ()
   "Run `rg-recompile' with `compilation-arguments' taken from `rg-last-search'."
-  (let ((regexp (nth 0 rg-last-search))
+  (let ((pattern (nth 0 rg-last-search))
         (files (nth 1 rg-last-search))
         (dir (nth 2 rg-last-search)))
     (setcar compilation-arguments
-            (rg-build-command regexp files))
+            (rg-build-command pattern files))
     ;; compilation-directory is used as search dir and
     ;; default-directory is used as the base for file paths.
     (setq compilation-directory dir)
@@ -587,26 +628,26 @@ corresponding symbols.
 BODY can modify the exposed parameters and these will be used together
 with the non exposed unmodified parameters to rerun the the search.
 
-Supported properties are :regexp, :files, :dir and :flags, where the
+Supported properties are :pattern, :files, :dir and :flags, where the
 three first are bound to the corresponding parameters in `rg' from
 `rg-last-search' and :flags is bound to
 `rg-toggle-command-line-flags'.
 
 Example:
-\(rg-rerun-with-changes \(:regexp searchstring\)
+\(rg-rerun-with-changes \(:pattern searchstring\)
   \(setq searchstring \"new string\"\)\)"
   (declare (debug ((&rest symbolp symbolp) body))
            (indent 1))
-  (let ((regexp (or (plist-get varplist :regexp) (cl-gensym)))
+  (let ((pattern (or (plist-get varplist :pattern) (cl-gensym)))
         (files (or (plist-get varplist :files) (cl-gensym)))
         (dir (or (plist-get varplist :dir) (cl-gensym)))
         (flags (or (plist-get varplist :flags) (cl-gensym))))
     `(if rg-last-search
-         (cl-destructuring-bind (,regexp ,files ,dir) rg-last-search
+         (cl-destructuring-bind (,pattern ,files ,dir) rg-last-search
            (let ((,flags rg-toggle-command-line-flags))
              ,@body
              (setq rg-toggle-command-line-flags ,flags)
-             (setq rg-last-search (list ,regexp ,files ,dir))
+             (setq rg-last-search (list ,pattern ,files ,dir))
              (rg-rerun)))
        (message "Can't refine search since full command line search was used."))))
 
@@ -614,31 +655,15 @@ Example:
   "Return an 'rg' REGEXP string which match exactly STRING and nothing else."
   (replace-regexp-in-string "[][*.^\\|+?{}$()\]" "\\\\\\&" regexp))
 
-(defun rg-read-regexp (&optional prompt default)
-  "Read regexp argument from user.
-PROMPT is the read prompt, DEFAULT is the default regexp and HISTORY
-is search history list."
-  (setq prompt (or prompt "Search for"))
-  (setq default (or default (grep-tag-default)))
-  (with-no-warnings
-    (if (and (= emacs-major-version 24)
-             (< emacs-minor-version 3))
-        (read-string
-         (concat prompt
-                 (if (and default (> (length default) 0))
-                     (format " (default \"%s\"): " default) ": "))
-         default 'rg-regexp-history)
-      (read-regexp prompt default 'rg-regexp-history))))
-
-(defun rg-apply-case-flag (regexp)
+(defun rg-apply-case-flag (pattern)
   "Make sure -i is added to the command if needed.
 The value of the `rg-ignore-case' variable and the case of the
-supplied REGEXP influences the result.  See `rg-ignore-case' for more
+supplied PATTERN influences the result.  See `rg-ignore-case' for more
 detailed info."
   (if (or (eq rg-ignore-case 'force)
           (and (or (eq rg-ignore-case 'smart)
                    (and (eq rg-ignore-case 'case-fold-search) case-fold-search))
-               (isearch-no-upper-case-p regexp t)))
+               (isearch-no-upper-case-p pattern t)))
       (setq rg-toggle-command-line-flags
             (rg-push-uniq "-i" rg-toggle-command-line-flags))
     (setq rg-toggle-command-line-flags
@@ -730,11 +755,11 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
                     collect `(setq ,@(reverse pair)))))))
 
 (defun rg-recompile ()
-  "Run `recompile' while preserving buffer some local variables."
+  "Run `recompile' while preserving some buffer local variables."
   (interactive)
   ;; Buffer locals will be reset in recompile so we need save them
   ;; here.
-  (rg-save-vars (rg-last-search rg-toggle-command-line-flags)
+  (rg-save-vars (rg-literal rg-last-search rg-toggle-command-line-flags)
     (recompile)))
 
 (defun rg-rerun-toggle-case ()
@@ -749,17 +774,28 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
   (rg-rerun-with-changes (:flags flags)
     (setq flags (rg-list-toggle "--no-ignore" flags))))
 
-(defun rg-rerun-change-regexp()
-  "Rerun last search but prompt for new regexp."
-  (interactive)
-  (rg-rerun-with-changes (:regexp regexp)
+(defun rg-rerun-change-search-string ()
+  "Rerun last search but prompt for new search pattern."
+  (rg-rerun-with-changes (:pattern pattern)
     ;; Override read-from-minibuffer in order to insert the original
-    ;; regexp in the input area.
+    ;; pattern in the input area.
     (cl-letf* ((read-from-minibuffer-orig (symbol-function 'read-from-minibuffer))
                ((symbol-function #'read-from-minibuffer)
                 (lambda (prompt &optional _ &rest args)
-                  (apply read-from-minibuffer-orig prompt regexp args))))
-      (setq regexp (rg-read-regexp nil regexp)))))
+                  (apply read-from-minibuffer-orig prompt pattern args))))
+      (setq pattern (rg-read-pattern pattern)))))
+
+(defun rg-rerun-change-regexp ()
+  "Rerun last search but prompt for new regexp."
+  (interactive)
+  (setq rg-literal nil)
+  (rg-rerun-change-search-string))
+
+(defun rg-rerun-change-literal ()
+  "Rerun last search but prompt for new literal."
+  (interactive)
+  (setq rg-literal t)
+  (rg-rerun-change-search-string))
 
 (defun rg-rerun-change-files()
   "Rerun last search but prompt for new files."
@@ -897,19 +933,21 @@ prefix is not supplied `rg-keymap-prefix' is used."
              (edmacro-format-keys prefix))))
 
 ;;;###autoload
-(defun rg-project ()
-  "Run ripgrep in current project.
+(defun rg-project (regexp files)
+  "Run ripgrep in current project searching for REGEXP in FILES.
 The project root will will be determined by either common project
 packages like projectile and `find-file-in-project' or the source
 version control system."
-  (interactive)
-  (let* ((regexp (rg-read-regexp))
-         (files (rg-read-files regexp)))
-    (rg-run regexp files (rg-project-root buffer-file-name))))
+  (interactive
+   (progn
+     (let* ((regexp (rg-read-pattern))
+            (files (rg-read-files regexp)))
+       (list regexp files))))
+  (rg-run regexp files (rg-project-root buffer-file-name)))
 
 ;;;###autoload
 (defun rg-dwim ()
-  "Run rg without user interaction figuring out the intention by magic(!).
+  "Run ripgrep without user interaction figuring out the intention by magic(!).
 The default magic searches for thing at point in files matching
 current file under project root directory.
 
@@ -917,18 +955,30 @@ With \\[universal-argument] prefix, search is done in current dir
 instead of project root."
   (interactive)
   (let* ((curdir (equal current-prefix-arg '(4)))
-         (regexp (rg-regexp-quote (grep-tag-default)))
+         (literal (grep-tag-default))
          (files (car (rg-default-alias)))
          (dir (or (when curdir default-directory)
                   (rg-project-root buffer-file-name))))
-    (rg-run regexp files dir)))
+    (rg-run literal files dir 'literal)))
+
+(defun rg-literal (pattern files dir &optional confirm)
+  "Run ripgrep, searching for literal PATTERN in FILES in directory DIR.
+With \\[universal-argument] prefix (CONFIRM), you can edit the
+constructed shell command line before it is executed."
+  (interactive
+   (progn
+     (append (rg-read-input 'literal)
+             (list (equal current-prefix-arg '(4))))))
+  (rg-run pattern files dir 'literal confirm))
 
 ;;;###autoload
-(defun rg (regexp &optional files dir confirm)
+(defun rg (regexp files dir &optional confirm)
   "Run ripgrep, searching for REGEXP in FILES in directory DIR.
 The search is limited to file names matching shell pattern FILES.
 FILES may use abbreviations defined in `rg-custom-type-aliases' or
 ripgrep builtin type aliases, e.g.  entering `elisp' is equivalent to `*.el'.
+
+REGEXP is a regexp as defined by the ripgrep executable.
 
 With \\[universal-argument] prefix (CONFIRM), you can edit the
 constructed shell command line before it is executed.
@@ -938,13 +988,9 @@ can use \\[next-error] (M-x `next-error'), or \\<grep-mode-map>\\[compile-goto-e
 in the rg output buffer, to go to the lines where rg found matches."
   (interactive
    (progn
-     (let* ((regexp (rg-read-regexp))
-            (files (rg-read-files regexp))
-            (dir (read-directory-name "In directory: "
-                                      nil default-directory t))
-            (confirm (equal current-prefix-arg '(4))))
-       (list regexp files dir confirm))))
-  (rg-run regexp files dir confirm))
+     (append (rg-read-input)
+             (list (equal current-prefix-arg '(4))))))
+  (rg-run regexp files dir nil confirm))
 
 (provide 'rg)
 

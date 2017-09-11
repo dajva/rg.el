@@ -97,17 +97,25 @@
     (setq flaglist (rg-list-toggle testflag flaglist))
     (should-not (member testflag flaglist))))
 
-(ert-deftest rg-unit-test/rerun-change-regexp ()
-  "Test result of `rg-rerun-change-regexp'."
-  (let ((rg-last-search '("regexp" "elisp" "/tmp/test")))
+(ert-deftest rg-unit-test/rerun-change-regexp-literal ()
+  "Test result of `rg-rerun-change-regexp' and `rg-rerun-change-literal'."
+  (let ((rg-last-search '("pattern" "elisp" "/tmp/test")))
     (cl-letf (((symbol-function #'rg-rerun) #'ignore)
-              ((symbol-function #'rg-read-regexp) (lambda (&rest _) "new-regexp")))
+              ((symbol-function #'rg-read-pattern) (lambda (&rest _) "new-pattern")))
       (rg-rerun-change-regexp)
-      (should (cl-every 'equal '("new-regexp" "elisp" "/tmp/test") rg-last-search)))))
+      (should (cl-every 'equal '("new-pattern" "elisp" "/tmp/test") rg-last-search))
+      (should (eq rg-literal nil))
+      (setq rg-last-search '("pattern" "elisp" "/tmp/test"))
+      (rg-rerun-change-literal)
+      (should (cl-every 'equal '("new-pattern" "elisp" "/tmp/test") rg-last-search))
+      (should (eq rg-literal t))
+      (rg-rerun-change-regexp)
+      (should (eq rg-literal nil)))))
 
-(ert-deftest rg-unit-test/read-regexp-correct-read-func ()
-  "Test that `rg-read-regexp' choose the correct read function depending
+(ert-deftest rg-unit-test/read-pattern-correct-read-func ()
+  "Test that `rg-read-pattern' choose the correct read function depending
 on emacs version."
+  (setq rg-literal nil)
   (let (called prompt-result)
     (cl-letf (((symbol-function #'read-string) (lambda (pr default &rest _)
                                                  (setq called 'read-string)
@@ -115,15 +123,15 @@ on emacs version."
               ((symbol-function #'read-regexp) (lambda (pr &rest _)
                                                  (setq called 'read-regexp)
                                                  (setq prompt-result pr))))
-      (rg-read-regexp "Search for" "foo")
+      (rg-read-pattern "foo")
       (if (and (<= emacs-major-version 24)
                (<= emacs-minor-version 2))
           (progn
             (should (eq called 'read-string))
-            (should (equal prompt-result "Search for (default \"foo\"): ")))
+            (should (equal prompt-result "Regexp search for (default \"foo\"): ")))
         (progn
           (should (eq called 'read-regexp))
-          (should (equal prompt-result "Search for")))))))
+          (should (equal prompt-result "Regexp search for")))))))
 
 (ert-deftest rg-unit-test/rerun-change-files ()
   "Test result of `rg-rerun-change-files'."
@@ -529,10 +537,10 @@ and ungrouped otherwise."
   (let ((parent-dir (concat (expand-file-name default-directory) "test/")))
     (rg-run "hello" "elisp" (concat parent-dir "data"))
     (rg-with-current-result
-      (cl-letf (((symbol-function #'rg-read-regexp) #'ignore))
-        (rg-rerun-with-changes (:files files :dir dir :regexp regexp :flags flags)
+      (cl-letf (((symbol-function #'rg-read-pattern) #'ignore))
+        (rg-rerun-with-changes (:files files :dir dir :pattern pattern :flags flags)
           (setq files "all")
-          (setq regexp "Hello")
+          (setq pattern "Hello")
           (setq dir parent-dir)
           (setq flags '("--text")))
         (should (rg-wait-for-search-result))
