@@ -89,12 +89,12 @@
     (should (s-matches? (rg-regexp-anywhere-but-last "--foo --bar") template))))
 
 (ert-deftest rg-unit-test/toggle-command-flag ()
-  "Test `rg-toggle-command-flag'."
+  "Test `rg-list-toggle'."
   (let ((testflag "--foo")
         flaglist)
-    (setq flaglist (rg-toggle-command-flag testflag flaglist))
+    (setq flaglist (rg-list-toggle testflag flaglist))
     (should (member testflag flaglist))
-    (setq flaglist (rg-toggle-command-flag testflag flaglist))
+    (setq flaglist (rg-list-toggle testflag flaglist))
     (should-not (member testflag flaglist))))
 
 (ert-deftest rg-unit-test/rerun-change-regexp ()

@@ -8,7 +8,7 @@
 ;;         Roland McGrath <roland@gnu.org>
 ;; Version: 1.4.0
 ;; URL: https://github.com/dajva/rg.el
-;; Package-Requires: ((cl-lib "0.5") (emacs "24") (s "1.10.0") (seq "2.19"))
+;; Package-Requires: ((cl-lib "0.5") (emacs "24") (s "1.10.0"))
 ;; Keywords: matching, tools
 
 ;; This file is not part of GNU Emacs.
@@ -88,7 +88,6 @@
 (require 'ibuf-ext)
 (require 'ibuffer)
 (require 's)
-(require 'seq)
 (require 'vc-hooks)
 
 
@@ -498,17 +497,26 @@ Commands:
          (vc-call-backend backend 'root file))
        (file-name-directory file)))))
 
-(defun rg-toggle-command-flag (flag flaglist)
-  "Remove FLAG from FLAGLIST line if present or add it if not present."
-  (let (removed)
-    (setq flaglist
-          (seq-remove (lambda (enabled-flag)
-                        (when (equal enabled-flag flag)
-                          (setq removed t)))
-                      flaglist))
-    (unless removed
-      (setq flaglist (cons flag flaglist))))
-  flaglist)
+(defun rg-list-toggle (elem list)
+  "Remove ELEM from LIST if present or add it if not present.
+Returns the new list."
+  (if (member elem list)
+      (delete elem list)
+    (push elem list)))
+
+(defun rg-push-uniq (elem list)
+  "Add ELEM to LIST if not present.
+Returns the new list."
+  (if (member elem list)
+      list
+    (push elem list)))
+
+(defun rg-delete-uniq (elem list)
+  "Remove ELEM from LIST if present.
+Returns the new list."
+  (if (member elem list)
+      (delete elem list)
+    list))
 
 (defun rg-build-command (regexp files)
   "Create the command for REGEXP and FILES."
@@ -631,10 +639,10 @@ detailed info."
           (and (or (eq rg-ignore-case 'smart)
                    (and (eq rg-ignore-case 'case-fold-search) case-fold-search))
                (isearch-no-upper-case-p regexp t)))
-      (when (not (member "-i" rg-toggle-command-line-flags))
-        (push "-i" rg-toggle-command-line-flags))
-    (when (member "-i" rg-toggle-command-line-flags)
-      (setq rg-toggle-command-line-flags (delete "-i" rg-toggle-command-line-flags)))))
+      (setq rg-toggle-command-line-flags
+            (rg-push-uniq "-i" rg-toggle-command-line-flags))
+    (setq rg-toggle-command-line-flags
+          (rg-delete-uniq "-i" rg-toggle-command-line-flags))))
 
 (defun rg-single-font-lock-match (face pos limit direction)
   "Return position of next match of 'font-lock-face property that equals FACE.
@@ -697,18 +705,17 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
          (funname (concat "rg-custom-toggle-flag-" flagname)))
     `(progn
        ,(if default
-            `(unless (member ,flagvalue rg-toggle-command-line-flags)
-               (push ,flagvalue rg-toggle-command-line-flags))
-          `(when (member ,flagvalue rg-toggle-command-line-flags)
-             (setq rg-toggle-command-line-flags
-                   (delete ,flagvalue rg-toggle-command-line-flags))))
+            `(setq rg-toggle-command-line-flags
+                   (rg-push-uniq ,flagvalue rg-toggle-command-line-flags))
+          `(setq rg-toggle-command-line-flags
+                 (rg-delete-uniq ,flagvalue rg-toggle-command-line-flags)))
        ,(when key
           `(define-key rg-mode-map ,key (quote ,(intern funname))))
        (defun ,(intern funname) ()
          ,(format "Rerun last search with flag '%s' toggled." flagvalue)
          (interactive)
          (rg-rerun-with-changes (:flags flags)
-           (setq flags (rg-toggle-command-flag ,flagvalue flags)))))))
+           (setq flags (rg-list-toggle ,flagvalue flags)))))))
 
 (defmacro rg-save-vars (varlist &rest body)
   "Save variables in VARLIST and restore them to original values after BODY has been run."
@@ -734,13 +741,13 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
   "Rerun last search with toggled case sensitivity setting."
   (interactive)
   (rg-rerun-with-changes (:flags flags)
-    (setq flags (rg-toggle-command-flag "-i" flags))))
+    (setq flags (rg-list-toggle "-i" flags))))
 
 (defun rg-rerun-toggle-ignore ()
   "Rerun last search with toggled '--no-ignore' flag."
   (interactive)
   (rg-rerun-with-changes (:flags flags)
-    (setq flags (rg-toggle-command-flag "--no-ignore" flags))))
+    (setq flags (rg-list-toggle "--no-ignore" flags))))
 
 (defun rg-rerun-change-regexp()
   "Rerun last search but prompt for new regexp."
