@@ -357,6 +357,25 @@ matching alias."
     (define-key rg-global-map "0" 'foo)
     (should (eq 'foo (lookup-key (current-global-map) "\C-cs0")))))
 
+(ert-deftest rg-unit/literal-search ()
+  "Test `rg-literal'."
+  (cl-letf ((called-literal nil)
+            ((symbol-function #'rg-run)
+             (lambda (_pattern _files _dir &optional literal _)
+               (setq called-literal literal))))
+    (rg-literal "foo" "elisp" "/tmp/test")
+    (should-not (eq called-literal nil))))
+
+(ert-deftest rg-unit/regexp-search ()
+  "Test `rg'."
+  (cl-letf ((called-literal nil)
+            ((symbol-function #'rg-run)
+             (lambda (_pattern _files _dir &optional literal _)
+               (setq called-literal literal))))
+    (rg "foo" "elisp" "/tmp/test")
+    (should (eq called-literal nil))))
+
+
 
 ;; Integration tests
 
@@ -609,6 +628,48 @@ and ungrouped otherwise."
     ;; We use the stub about which does not update the history
     (should (null rg-history))
     (rg-with-current-result)))
+
+(ert-deftest rg-integration/dwim-search ()
+  "Test `rg-dwim'."
+  (cl-letf ((called-pattern nil)
+            (called-files nil)
+            (called-dir nil)
+            (called-literal nil)
+            (project-dir (expand-file-name default-directory))
+            ((symbol-function #'rg-run)
+             (lambda (pattern files dir &optional literal _)
+               (setq called-pattern pattern)
+               (setq called-files files)
+               (setq called-dir dir)
+               (setq called-literal literal))))
+    (find-file "test/data/foo.el")
+    (rg-dwim)
+    (should (equal called-pattern "hello"))
+    (should (equal called-files "elisp"))
+    (should (equal (expand-file-name called-dir) project-dir))
+    (should-not (eq called-literal nil))
+    (rg-dwim 'curdir)
+    (should (equal (expand-file-name called-dir) (expand-file-name default-directory)))))
+
+(ert-deftest rg-integration/project-search ()
+  "Test `rg-project'."
+  (cl-letf ((called-pattern nil)
+            (called-files nil)
+            (called-dir nil)
+            (called-literal nil)
+            (project-dir (expand-file-name default-directory))
+            ((symbol-function #'rg-run)
+             (lambda (pattern files dir &optional literal _)
+               (setq called-pattern pattern)
+               (setq called-files files)
+               (setq called-dir dir)
+               (setq called-literal literal))))
+    (find-file "test/data/foo.baz")
+    (rg-project "hello" "elisp")
+    (should (equal called-pattern "hello"))
+    (should (equal called-files "elisp"))
+    (should (equal (expand-file-name called-dir) project-dir))
+    (should (eq called-literal nil))))
 
 (provide 'rg.el-test)
 

@@ -578,7 +578,7 @@ executing."
   (unless (executable-find "rg")
     (error "'rg' is not in path"))
   (unless (and (stringp pattern) (> (length pattern) 0))
-    (error "Empty string: No search done"))
+    (signal 'user-error '("Empty string: No search done")))
   (unless (and (file-directory-p dir) (file-readable-p dir))
     (setq dir default-directory))
   (setq rg-literal literal)
@@ -943,19 +943,21 @@ version control system."
      (let* ((regexp (rg-read-pattern))
             (files (rg-read-files regexp)))
        (list regexp files))))
-  (rg-run regexp files (rg-project-root buffer-file-name)))
+  (let ((root (rg-project-root buffer-file-name)))
+    (if root
+        (rg-run regexp files root)
+      (signal 'user-error '("No project root found")))))
 
 ;;;###autoload
-(defun rg-dwim ()
+(defun rg-dwim (&optional curdir)
   "Run ripgrep without user interaction figuring out the intention by magic(!).
 The default magic searches for thing at point in files matching
 current file under project root directory.
 
-With \\[universal-argument] prefix, search is done in current dir
+With \\[universal-argument] prefix (CURDIR), search is done in current dir
 instead of project root."
-  (interactive)
-  (let* ((curdir (equal current-prefix-arg '(4)))
-         (literal (grep-tag-default))
+  (interactive "P")
+  (let* ((literal (grep-tag-default))
          (files (car (rg-default-alias)))
          (dir (or (when curdir default-directory)
                   (rg-project-root buffer-file-name))))
