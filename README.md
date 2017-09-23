@@ -64,6 +64,9 @@ or a `vc-backend`.
 `M-x rg-dwim` searches for _thing at point_ in a project in all files
 with the same type alias as the current buffer file.
 
+### Literal search - `rg-literal`
+`M-x rg-literal` is a non regexp version of `rg`.
+
 ### Saving searches
 A search result buffer can be saved by invoking `rg-save-search` or
 `rg-save-search-as-name`. The former will give the saved buffer a
@@ -100,11 +103,13 @@ It is also possible to set the prefix when invoking `rg-enable-default-bindings`
 | Key | Binding |
 |-----|--------|
 | `<prefix> d` | `rg-dwim` |
+| `<prefix> k` | `rg-kill-saved-searches` |
 | `<prefix> l` | `rg-list-searches` |
 | `<prefix> p` | `rg-project` |
 | `<prefix> r` | `rg` |
 | `<prefix> s` | `rg-save-search` |
 | `<prefix> S` | `rg-save-search-as-name` |
+| `<prefix> t` | `rg-literal` |
 
 ### The \*rg\* buffer
 The `rg` results buffer has bindings for modification of the last
@@ -115,11 +120,13 @@ search for quick reruns with refined parameters.
 | `c` | Toggle case insensitive setting |
 | `d` | Change directory |
 | `f` | Change file pattern |
+| `g` | Rerun search |
 | `i` | Toggle `--no-ignore` flag |
 | `l` | List search buffers in a separate buffer |
-| `r` | Change search string |
+| `r` | Edit search string as regexp |
 | `s` | Save search result to unique name |
 | `S` | Save search result, prompt for name |
+| `t` | Edit search string as literal |
 | `w` | Switch to `wgrep-mode` |
 
 ## Customize
@@ -164,6 +171,11 @@ The following values can be set:
 This variable sets the default prefix used for the global key
 bindings. Note that `rg-enable-default-bindings` needs to be invoked
 for the bindings to be enabled.
+
+### `rg-show-header`
+Controls if the search info header is shown in the result
+buffer. This is enabled by default but can be disabled by setting this
+variable to `nil`.
 
 ### `rg-define-toggle`
 This is a macro that can be used to define custom `ripgrep` flag
