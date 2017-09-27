@@ -538,7 +538,7 @@ Commands:
   (make-local-variable 'rg-hit-count)
   (make-local-variable 'rg-toggle-command-line-flags)
   (make-local-variable 'rg-literal)
-  (rg-update-header-line)
+  (rg-create-header-line)
   (add-hook 'compilation-filter-hook 'rg-filter nil t) )
 
 (defun rg-project-root (file)
@@ -591,47 +591,57 @@ Returns the new list."
            files)
           " ."))
 
-(defun rg-header-render-label (name &optional nameface)
+(defun rg-header-render-label (labelform)
   "Return a fontified header label.
-NAME is the label text NAMEFACE is a custom face that will be applied
-to NAME."
-  (concat (propertize "[" 'font-lock-face `(header-line bold))
-          (propertize name 'font-lock-face `(,nameface header-line bold ))
-          (propertize "]" 'font-lock-face `(header-line bold))
-          ": "))
-
-(defun rg-header-render-value (value)
-  "Return a fontified header VALUE."
-  (propertize value 'font-lock-face '(header-line)))
+LABELFORM is either a string to render or a form where the `car' is a
+conditional and the two following items are then and else specs.
+Specs are lists where the the `car' is the labels string and the
+`cadr' is font to use for that string."
+  (list '(:propertize "[" font-lock-face (header-line bold))
+        (cond
+         ((stringp labelform)
+          `(:propertize ,labelform font-lock-face (header-line bold)))
+         ((listp labelform)
+          (let* ((condition (nth 0 labelform))
+                 (then (nth 1 labelform))
+                 (else (nth 2 labelform)))
+            `(,condition
+              (:propertize ,(nth 0 then) font-lock-face (,(nth 1 then) header-line bold))
+              (:propertize ,(nth 0 else) font-lock-face (,(nth 1 else) header-line bold)))))
+         (t (error "Not a string or list")))
+        '(:propertize "]" font-lock-face (header-line bold))
+        '(": ")))
 
 (defun rg-header-render-toggle (on)
   "Return a fontified toggle symbol.
-If ON is render \"on\" string, otherwise render \"off\"."
-  (let ((value (if on "on " "off"))
-        (face (if on 'rg-toggle-on-face 'rg-toggle-off-face)))
-    (propertize value 'font-lock-face `(bold ,face))))
+If ON is non nil, render \"on\" string, otherwise render \"off\"
+string."
+    `(:eval (let* ((on ,on)
+                   (value (if on "on " "off"))
+                   (face (if on 'rg-toggle-on-face 'rg-toggle-off-face)))
+      (propertize value 'font-lock-face `(bold ,face)))))
 
-;; TODO: Improve header structure to alloow for auto updates
-(defun rg-update-header-line ()
-  "Update the header line if `rg-show-header' is enabled."
+(defun rg-create-header-line ()
+  "Create the header line if `rg-show-header' is enabled."
   (when rg-show-header
-    (let ((type (if rg-literal "literal" "regexp"))
-          (typeface (if rg-literal 'rg-literal-face 'rg-regexp-face))
-          (itemspace "  "))
+    (let ((itemspace "  "))
       (setq header-line-format
             (if (null rg-last-search)
-                (concat
-                 (rg-header-render-label "command line")
-                 (rg-header-render-value "no refinement"))
-              (concat
-               (rg-header-render-label type typeface)
-               (rg-header-render-value (nth 0 rg-last-search)) itemspace
+                (list (rg-header-render-label "command line") "no refinement")
+              (list
+               (rg-header-render-label '(rg-literal ("literal" rg-literal-face)
+                                                    ("regexp" rg-regexp-face)))
+               '(:eval (nth 0 rg-last-search)) itemspace
                (rg-header-render-label "files")
-               (rg-header-render-value (nth 1 rg-last-search)) itemspace
+               '(:eval (nth 1 rg-last-search)) itemspace
                (rg-header-render-label "case")
-               (rg-header-render-toggle (not (member "-i" rg-toggle-command-line-flags))) itemspace
+               (rg-header-render-toggle
+               '(not (member "-i" rg-toggle-command-line-flags))) itemspace
                (rg-header-render-label "ign")
-               (rg-header-render-toggle (not (member "--no-ignore" rg-toggle-command-line-flags)))))))))
+               (rg-header-render-toggle
+               '(not (member "--no-ignore" rg-toggle-command-line-flags))) itemspace
+               (rg-header-render-label "hits")
+               '(:eval (format "%d" rg-hit-count))))))))
 
 (defun rg-run (pattern files dir &optional literal  confirm)
   "Execute rg command with supplied PATTERN, FILES and DIR.
@@ -679,8 +689,7 @@ executing."
     ;; default-directory is used as the base for file paths.
     (setq compilation-directory dir)
     (setq default-directory compilation-directory)
-    (rg-recompile)
-    (rg-update-header-line)))
+    (rg-recompile)))
 
 (defmacro rg-rerun-with-changes (varplist &rest body)
   "Rerun last search with changed parameters.
