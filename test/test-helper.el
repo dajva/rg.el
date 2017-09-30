@@ -33,6 +33,7 @@
 (require 'ert)
 (require 'rg)
 (require 's)
+(require 'seq)
 
 (defun rg-regexp-anywhere (needle)
   (s-replace "%%%%" needle "\\( \\|^\\)%%%%\\( \\|$\\)"))
