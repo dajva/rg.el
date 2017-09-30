@@ -142,6 +142,11 @@ NIL means case sensitive search will be forced."
   :type 'string
   :group 'rg)
 
+(defcustom rg-show-header t
+  "Show header in results buffer if non nil."
+  :type 'boolean
+  :group 'rg)
+
 (defvar rg-filter-hook nil
   "Hook for new content in the rg buffer.
 This hook is called every time the rg buffer has been updated with
@@ -191,6 +196,26 @@ a string describing how the process finished.")
 (defface rg-file-tag-face
   '((t :inherit font-lock-function-name-face))
   "face for file tag in grouped layout"
+  :group 'rg-face)
+
+(defface rg-toggle-on-face
+  '((t :inherit rg-file-tag-face))
+  "face for toggle 'on' text in header."
+  :group 'rg-face)
+
+(defface rg-toggle-off-face
+  '((t :inherit rg-error-face))
+  "face for toggle 'off' text in header."
+  :group 'rg-face)
+
+(defface rg-literal-face
+  '((t :inherit rg-filename-face))
+  "face for literal label in header."
+  :group 'rg-face)
+
+(defface rg-regexp-face
+  '((t :inherit compilation-line-number))
+  "face for regexp label in header."
   :group 'rg-face)
 
 
@@ -518,6 +543,7 @@ Commands:
   (make-local-variable 'rg-hit-count)
   (make-local-variable 'rg-toggle-command-line-flags)
   (make-local-variable 'rg-literal)
+  (rg-update-header-line)
   (add-hook 'compilation-filter-hook 'rg-filter nil t) )
 
 (defun rg-project-root (file)
@@ -570,6 +596,48 @@ Returns the new list."
            files)
           " ."))
 
+(defun rg-header-render-label (name &optional nameface)
+  "Return a fontified header label.
+NAME is the label text NAMEFACE is a custom face that will be applied
+to NAME."
+  (concat (propertize "[" 'font-lock-face `(header-line bold))
+          (propertize name 'font-lock-face `(,nameface header-line bold ))
+          (propertize "]" 'font-lock-face `(header-line bold))
+          ": "))
+
+(defun rg-header-render-value (value)
+  "Return a fontified header VALUE."
+  (propertize value 'font-lock-face '(header-line)))
+
+(defun rg-header-render-toggle (on)
+  "Return a fontified toggle symbol.
+If ON is render \"on\" string, otherwise render \"off\"."
+  (let ((value (if on "on " "off"))
+        (face (if on 'rg-toggle-on-face 'rg-toggle-off-face)))
+    (propertize value 'font-lock-face `(bold ,face))))
+
+;; TODO: Improve header structure to alloow for auto updates
+(defun rg-update-header-line ()
+  "Update the header line if `rg-show-header' is enabled."
+  (when rg-show-header
+    (let ((type (if rg-literal "literal" "regexp"))
+          (typeface (if rg-literal 'rg-literal-face 'rg-regexp-face))
+          (itemspace "  "))
+      (setq header-line-format
+            (if (null rg-last-search)
+                (concat
+                 (rg-header-render-label "command line")
+                 (rg-header-render-value "no refinement"))
+              (concat
+               (rg-header-render-label type typeface)
+               (rg-header-render-value (nth 0 rg-last-search)) itemspace
+               (rg-header-render-label "files")
+               (rg-header-render-value (nth 1 rg-last-search)) itemspace
+               (rg-header-render-label "case")
+               (rg-header-render-toggle (not (member "-i" rg-toggle-command-line-flags))) itemspace
+               (rg-header-render-label "ign")
+               (rg-header-render-toggle (not (member "--no-ignore" rg-toggle-command-line-flags)))))))))
+
 (defun rg-run (pattern files dir &optional literal  confirm)
   "Execute rg command with supplied PATTERN, FILES and DIR.
 If LITERAL is nil interpret PATTERN as regexp, otherwise as a literal.
@@ -616,7 +684,8 @@ executing."
     ;; default-directory is used as the base for file paths.
     (setq compilation-directory dir)
     (setq default-directory compilation-directory)
-    (rg-recompile)))
+    (rg-recompile)
+    (rg-update-header-line)))
 
 (defmacro rg-rerun-with-changes (varplist &rest body)
   "Rerun last search with changed parameters.
