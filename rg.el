@@ -378,7 +378,7 @@ If NOSPECIAL is non nil the `rg-special-type-aliases' will not be
 included."
   (unless rg-builtin-type-aliases
     (setq rg-builtin-type-aliases (rg-list-builtin-type-aliases)))
-  (append rg-builtin-type-aliases rg-custom-type-aliases
+  (append rg-custom-type-aliases rg-builtin-type-aliases
           (unless nospecial rg-special-type-aliases)))
 
 (defun rg-default-alias ()
