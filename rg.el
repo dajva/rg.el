@@ -857,14 +857,20 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
 (defun rg-rerun-change-regexp ()
   "Rerun last search but prompt for new regexp."
   (interactive)
-  (setq rg-literal nil)
-  (rg-rerun-change-search-string))
+  (let ((rg-literal-orig rg-literal))
+    (setq rg-literal nil)
+    (condition-case nil
+        (rg-rerun-change-search-string)
+      ((error quit) (setq rg-literal rg-literal-orig)))))
 
 (defun rg-rerun-change-literal ()
   "Rerun last search but prompt for new literal."
   (interactive)
-  (setq rg-literal t)
-  (rg-rerun-change-search-string))
+  (let ((rg-literal-orig rg-literal))
+    (setq rg-literal t)
+    (condition-case nil
+        (rg-rerun-change-search-string)
+      ((error quit) (setq rg-literal rg-literal-orig)))))
 
 (defun rg-rerun-change-files()
   "Rerun last search but prompt for new files."
