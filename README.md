@@ -15,6 +15,7 @@ Rust. For some introduction and benchmarks, see
 
 This package let you run `ripgrep` like `grep` from within Emacs.
 
+![screenshot](screenshot.png)
 
 ## Installation
 
