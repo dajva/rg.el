@@ -54,7 +54,8 @@ search was successful. Timeout is 10 s."
     (with-timeout (10 nil)
       (while (not search-finished)
         (accept-process-output nil 0.1)))
-    (equal (s-trim search-finished) "finished")))
+    (when search-finished
+      (equal (s-trim search-finished) "finished"))))
 
 (defun rg-check-git-project-root ()
 "Check that project root of rg.el-test.el file is main dir of
