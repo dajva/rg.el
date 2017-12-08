@@ -58,7 +58,8 @@
 
 (defun run-emacs-lisp-flycheck-and-exit ()
   (cl-letf (((symbol-function #'rg-message) (symbol-function #'message))
-            ((symbol-function #'message) #'ignore))
+            ((symbol-function #'message) #'ignore)
+            (flycheck-emacs-lisp-load-path 'inherit))
      (dolist (file argv)
       (dolist (checker '(emacs-lisp-checkdoc emacs-lisp))
         (with-temp-buffer
