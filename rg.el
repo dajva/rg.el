@@ -1007,8 +1007,8 @@ prefix is not supplied `rg-keymap-prefix' is used."
     (message "Global key bindings for `rg' enabled with prefix: %s"
              (edmacro-format-keys prefix))))
 
-;;;###autoload
 (defun rg-run-in-project (regexp files)
+  "Search for `REGEXP' in files of type `FILES' starting at the rg-project-root."
   (let ((root (rg-project-root buffer-file-name)))
     (if root
         (rg-run regexp files root)
@@ -1029,8 +1029,7 @@ version control system."
 
 ;;;###autoload
 (defun rg-dwim-regexp (regexp)
-  "Run ripgrep in current project searching for REGEXP in files
-like the current file"
+  "Run ripgrep in current project searching for REGEXP in files like the current file."
   (interactive
    (progn
      (let* ((regexp (rg-read-pattern)))
