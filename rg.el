@@ -1008,6 +1008,13 @@ prefix is not supplied `rg-keymap-prefix' is used."
              (edmacro-format-keys prefix))))
 
 ;;;###autoload
+(defun rg-run-in-project (regexp files)
+  (let ((root (rg-project-root buffer-file-name)))
+    (if root
+        (rg-run regexp files root)
+      (signal 'user-error '("No project root found")))))
+
+;;;###autoload
 (defun rg-project (regexp files)
   "Run ripgrep in current project searching for REGEXP in FILES.
 The project root will will be determined by either common project
@@ -1018,10 +1025,18 @@ version control system."
      (let* ((regexp (rg-read-pattern))
             (files (rg-read-files regexp)))
        (list regexp files))))
-  (let ((root (rg-project-root buffer-file-name)))
-    (if root
-        (rg-run regexp files root)
-      (signal 'user-error '("No project root found")))))
+  (rg-run-in-project regexp files))
+
+;;;###autoload
+(defun rg-dwim-regexp (regexp)
+  "Run ripgrep in current project searching for REGEXP in files
+like the current file"
+  (interactive
+   (progn
+     (let* ((regexp (rg-read-pattern)))
+       (list regexp))))
+  (let ((files (car (rg-default-alias))))
+    (rg-run-in-project regexp files)))
 
 ;;;###autoload
 (defun rg-dwim (&optional curdir)
