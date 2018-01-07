@@ -409,12 +409,13 @@ If LITERAL is non nil prompt for literal pattern."
                                    nil default-directory t)))
     (list pattern files dir)))
 
-(defun rg-read-files (pattern)
+(defun rg-read-files (&optional pattern)
   "Read files argument for interactive rg.  PATTERN is the search string."
-  (let ((default-alias (rg-default-alias)))
+  (let ((default-alias (rg-default-alias))
+        (pattern-string (if pattern (concat "for \"" pattern "\" ")
+                          "")))
     (completing-read
-     (concat "Search for \"" pattern
-             "\" in files"
+     (concat "Search " pattern-string "in files"
              (if default-alias
                  (concat
                   " (default: [" (car default-alias) "] = "
@@ -1007,81 +1008,123 @@ prefix is not supplied `rg-keymap-prefix' is used."
     (message "Global key bindings for `rg' enabled with prefix: %s"
              (edmacro-format-keys prefix))))
 
-(defun rg-run-in-project (regexp files)
-  "Search for `REGEXP' in files of type `FILES' starting at the rg-project-root."
-  (let ((root (rg-project-root buffer-file-name)))
-    (if root
-        (rg-run regexp files root)
-      (signal 'user-error '("No project root found")))))
+(defun rg-set-search-defaults (args)
+  (if (not (plist-get args :pattern)) (plist-put args :pattern 'regexp)
+    args))
+
+(defun rg-search-parse-local-bindings (search-cfg)
+  (let* ((binding-list `((confirm ,(plist-get search-cfg :confirm))))
+         (pattern-opt (plist-get search-cfg :pattern))
+         (literal (or (eq pattern-opt 'literal)
+                      (eq pattern-opt 'point)))
+         (alias-opt (plist-get search-cfg :files))
+         (dir-opt (plist-get search-cfg :dir)))
+
+    ;; literal binding
+    (setq binding-list (append binding-list `((literal ,literal))))
+
+    ;; pattern binding
+    (when (not (or (eq pattern-opt 'literal)
+                   (eq pattern-opt 'regexp)))
+      (let ((pattern (cond ((eq pattern-opt 'point) '(grep-tag-default))
+                           (t pattern-opt))))
+        (setq binding-list (append binding-list `((pattern ,pattern))))))
+
+    ;; dir binding
+    (when dir-opt
+      (let ((dirs (cond ((eq dir-opt 'project) '(rg-project-root
+                                                 buffer-file-name))
+                        ((eq dir-opt 'current) 'default-directory)
+                        (t dir-opt))))
+        (setq binding-list (append binding-list `((dir ,dirs))))))
+
+    ;; file alias binding
+    (when alias-opt
+      (let ((files (if (eq alias-opt 'current) '(car (rg-default-alias))
+                     alias-opt)))
+        (setq binding-list (append binding-list `((files ,files))))))
+
+    binding-list))
+
+(defun rg-search-parse-interactive-pattern-arg (search-cfg)
+  (let* ((opt (plist-get search-cfg :pattern))
+         (literal (eq opt 'literal)))
+    (when (not (eq opt 'point))
+      (cond ((not opt) `((pattern . (rg-read-pattern nil ,literal))))
+            (t `((pattern . ,opt)))))))
+
+(defun rg-search-parse-interactive-file-alias-arg (search-cfg)
+  (when (not (plist-get search-cfg :files))
+    '((files . (rg-read-files)))))
+
+(defun rg-search-parse-interactive-dir-arg (search-cfg)
+  (when (not (plist-get search-cfg :dir))
+    '((dir . (read-directory-name
+              "In directory: " nil default-directory t)))))
+
+(defun rg-search-parse-interactive-args (search-cfg)
+  (let* ((iargs '()))
+    (setq iargs
+          (append iargs (rg-search-parse-interactive-pattern-arg search-cfg)))
+    (setq iargs
+          (append iargs (rg-search-parse-interactive-file-alias-arg
+                         search-cfg)))
+    (setq iargs
+          (append iargs (rg-search-parse-interactive-dir-arg search-cfg)))
+
+    iargs))
 
 ;;;###autoload
-(defun rg-project (regexp files)
-  "Run ripgrep in current project searching for REGEXP in FILES.
-The project root will will be determined by either common project
-packages like projectile and `find-file-in-project' or the source
-version control system."
-  (interactive
-   (progn
-     (let* ((regexp (rg-read-pattern))
-            (files (rg-read-files regexp)))
-       (list regexp files))))
-  (rg-run-in-project regexp files))
+(defmacro rg-define-search (name &rest args)
+  (let* ((search-cfg (rg-set-search-defaults args))
+         (local-bindings (rg-search-parse-local-bindings search-cfg))
+         (iargs (rg-search-parse-interactive-args search-cfg)))
+    `(defun ,name ,(mapcar 'car iargs)
+       (interactive
+        (list ,(mapcar 'cdr iargs)))
+       (let* ,local-bindings
+         (rg-run pattern files dir literal confirm)))))
 
 ;;;###autoload
-(defun rg-dwim-regexp (regexp)
-  "Run ripgrep in current project searching for REGEXP in files like the current file."
-  (interactive
-   (progn
-     (let* ((regexp (rg-read-pattern)))
-       (list regexp))))
-  (let ((files (car (rg-default-alias))))
-    (rg-run-in-project regexp files)))
+(rg-define-search rg-project
+                  :dir project)
+
+;;;###autoload
+(rg-define-search rg-dwim-project-dir
+                  :pattern point
+                  :files current
+                  :dir project)
+
+;;;###autoload
+(rg-define-search rg-dwim-current-dir
+                  :pattern point
+                  :files current
+                  :dir current)
 
 ;;;###autoload
 (defun rg-dwim (&optional curdir)
   "Run ripgrep without user interaction figuring out the intention by magic(!).
 The default magic searches for thing at point in files matching
 current file under project root directory.
-
 With \\[universal-argument] prefix (CURDIR), search is done in current dir
 instead of project root."
   (interactive "P")
-  (let* ((literal (grep-tag-default))
-         (files (car (rg-default-alias)))
-         (dir (or (when curdir default-directory)
-                  (rg-project-root buffer-file-name))))
-    (rg-run literal files dir 'literal)))
+  (if curdir
+      (rg-dwim-current-dir)
+    (rg-dwim-project-dir)))
 
-(defun rg-literal (pattern files dir &optional confirm)
-  "Run ripgrep, searching for literal PATTERN in FILES in directory DIR.
-With \\[universal-argument] prefix (CONFIRM), you can edit the
-constructed shell command line before it is executed."
-  (interactive
-   (progn
-     (append (rg-read-input 'literal)
-             (list (equal current-prefix-arg '(4))))))
-  (rg-run pattern files dir 'literal confirm))
 
 ;;;###autoload
-(defun rg (regexp files dir &optional confirm)
-  "Run ripgrep, searching for REGEXP in FILES in directory DIR.
-The search is limited to file names matching shell pattern FILES.
-FILES may use abbreviations defined in `rg-custom-type-aliases' or
-ripgrep builtin type aliases, e.g.  entering `elisp' is equivalent to `*.el'.
+(rg-define-search rg-dwim-regexp
+                  :files current
+                  :dir project)
 
-REGEXP is a regexp as defined by the ripgrep executable.
+;;;###autoload
+(rg-define-search rg-literal
+                  :pattern literal)
 
-With \\[universal-argument] prefix (CONFIRM), you can edit the
-constructed shell command line before it is executed.
-
-Collect output in a buffer.  While ripgrep runs asynchronously, you
-can use \\[next-error] (M-x `next-error'), or \\<grep-mode-map>\\[compile-goto-error] \
-in the rg output buffer, to go to the lines where rg found matches."
-  (interactive
-   (progn
-     (append (rg-read-input)
-             (list (equal current-prefix-arg '(4))))))
-  (rg-run regexp files dir nil confirm))
+;;;###autoload
+(rg-define-search rg)
 
 (provide 'rg)
 
