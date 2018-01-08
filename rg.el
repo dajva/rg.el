@@ -1053,33 +1053,36 @@ prefix is not supplied `rg-keymap-prefix' is used."
       (cond ((not opt) `((pattern . (rg-read-pattern nil ,literal))))
             (t `((pattern . ,opt)))))))
 
-(defun rg-search-parse-interactive-file-alias-arg (search-cfg)
-  (when (not (plist-get search-cfg :files))
-    '((files . (rg-read-files)))))
-
-(defun rg-search-parse-interactive-dir-arg (search-cfg)
-  (when (not (plist-get search-cfg :dir))
-    '((dir . (read-directory-name
-              "In directory: " nil default-directory t)))))
-
 (defun rg-search-parse-interactive-args (search-cfg)
-  (let* ((iargs '()))
+  (let* ((dir-opt (plist-get search-cfg :dir))
+         (files-opt (plist-get search-cfg :files))
+         (iargs '()))
+
     (setq iargs
           (append iargs (rg-search-parse-interactive-pattern-arg search-cfg)))
-    (setq iargs
-          (append iargs (rg-search-parse-interactive-file-alias-arg
-                         search-cfg)))
-    (setq iargs
-          (append iargs (rg-search-parse-interactive-dir-arg search-cfg)))
+
+    (when (not files-opt)
+      (setq iargs
+            (append iargs '((files . (rg-read-files))))))
+
+    (when (not dir-opt)
+      (setq iargs
+            (append iargs
+                    '((dir . (read-directory-name
+                              "In directory: " nil default-directory t))))))
+
 
     iargs))
 
 ;;;###autoload
 (defmacro rg-define-search (name &rest args)
-  (let* ((search-cfg (rg-set-search-defaults args))
+  (let* ((body (macroexp-parse-body args))
+         (docstring (car body))
+         (search-cfg (rg-set-search-defaults (cdr body)))
          (local-bindings (rg-search-parse-local-bindings search-cfg))
          (iargs (rg-search-parse-interactive-args search-cfg)))
     `(defun ,name ,(mapcar 'car iargs)
+       ,@docstring
        (interactive
         (list ,(mapcar 'cdr iargs)))
        (let* ,local-bindings
@@ -1109,10 +1112,8 @@ current file under project root directory.
 With \\[universal-argument] prefix (CURDIR), search is done in current dir
 instead of project root."
   (interactive "P")
-  (if curdir
-      (rg-dwim-current-dir)
+  (if curdir (rg-dwim-current-dir)
     (rg-dwim-project-dir)))
-
 
 ;;;###autoload
 (rg-define-search rg-dwim-regexp
