@@ -1090,27 +1090,35 @@ prefix is not supplied `rg-keymap-prefix' is used."
 
 ;;;###autoload
 (rg-define-search rg-project
-                  :dir project)
+  "Run ripgrep in current project searching for REGEXP in FILES.
+The project root will will be determined by either common project
+packages like projectile and `find-file-in-project' or the source
+version control system."
+  :dir project)
 
 ;;;###autoload
 (rg-define-search rg-dwim-project-dir
-                  :pattern point
-                  :files current
-                  :dir project)
+  "Search for thing at point in files matching the current file
+under the project root directory."
+  :pattern point
+  :files current
+  :dir project)
 
 ;;;###autoload
 (rg-define-search rg-dwim-current-dir
-                  :pattern point
-                  :files current
-                  :dir current)
+  "Search for thing at point in files matching the current file
+under the current directory."
+  :pattern point
+  :files current
+  :dir current)
 
 ;;;###autoload
 (defun rg-dwim (&optional curdir)
-  "Run ripgrep without user interaction figuring out the intention by magic(!).
-The default magic searches for thing at point in files matching
-current file under project root directory.
-With \\[universal-argument] prefix (CURDIR), search is done in current dir
-instead of project root."
+  "Run ripgrep without user interaction figuring out the
+intention by magic(!). The default magic searches for thing at
+point in files matching current file under project root
+directory. With \\[universal-argument] prefix (CURDIR), search is
+done in current dir instead of project root."
   (interactive "P")
   (if curdir (rg-dwim-current-dir)
     (rg-dwim-project-dir)))
@@ -1125,7 +1133,18 @@ instead of project root."
                   :pattern literal)
 
 ;;;###autoload
-(rg-define-search rg)
+(rg-define-search rg
+  "Run ripgrep, searching for REGEXP in FILES in directory DIR.
+The search is limited to file names matching shell pattern FILES.
+FILES may use abbreviations defined in `rg-custom-type-aliases'
+or ripgrep builtin type aliases, e.g. entering `elisp' is
+equivalent to `*.el'. REGEXP is a regexp as defined by the
+ripgrep executable. With \\[universal-argument] prefix (CONFIRM),
+you can edit the constructed shell command line before it is
+executed. Collect output in a buffer. While ripgrep runs
+asynchronously, you can use \\[next-error] (M-x `next-error'), or
+\\<grep-mode-map>\\[compile-goto-error] \ in the rg output
+buffer, to go to the lines where rg found matches.")
 
 (provide 'rg)
 
