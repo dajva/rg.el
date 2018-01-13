@@ -651,26 +651,6 @@ and ungrouped otherwise."
     (rg-dwim 'curdir)
     (should (equal (expand-file-name called-dir) (expand-file-name default-directory)))))
 
-(ert-deftest rg-integration/dwim-regexp-search ()
-  "Test `rg-dwim-regexp'."
-  (cl-letf ((called-pattern nil)
-            (called-files nil)
-            (called-dir nil)
-            (called-literal nil)
-            (project-dir (expand-file-name default-directory))
-            ((symbol-function #'rg-run)
-             (lambda (pattern files dir &optional literal _)
-               (setq called-pattern pattern)
-               (setq called-files files)
-               (setq called-dir dir)
-               (setq called-literal literal))))
-    (find-file "test/data/foo.el")
-    (rg-dwim-regexp "hello")
-    (should (equal called-pattern "hello"))
-    (should (equal called-files "elisp"))
-    (should (equal (expand-file-name called-dir) project-dir))
-    (should (eq called-literal nil))))
-
 (ert-deftest rg-integration/project-search ()
   "Test `rg-project'."
   (cl-letf ((called-pattern nil)

@@ -400,15 +400,6 @@ included."
            (rg-get-type-aliases t)))
      '("all" . "*"))))
 
-(defun rg-read-input (&optional literal)
-  "Prompt user for input and return a list of the results.
-If LITERAL is non nil prompt for literal pattern."
-  (let* ((pattern (rg-read-pattern nil literal))
-         (files (rg-read-files pattern))
-         (dir (read-directory-name "In directory: "
-                                   nil default-directory t)))
-    (list pattern files dir)))
-
 (defun rg-read-files (&optional pattern)
   "Read files argument for interactive rg.  PATTERN is the search string."
   (let ((default-alias (rg-default-alias))
@@ -1008,27 +999,49 @@ prefix is not supplied `rg-keymap-prefix' is used."
     (message "Global key bindings for `rg' enabled with prefix: %s"
              (edmacro-format-keys prefix))))
 
+(defun rg-search-parse-body (args)
+  "Parse a function ARGS into (DECLARATIONS . EXPS)."
+  (let ((decls ()))
+    (while (and (cdr args)
+                (let ((e (car args)))
+                  (or (stringp e)
+                      (memq (car-safe e)
+                            '(:documentation declare interactive cl-declare)))))
+      (push (pop args) decls))
+    (cons (nreverse decls) args)))
+
 (defun rg-set-search-defaults (args)
-  (if (not (plist-get args :pattern)) (plist-put args :pattern 'regexp)
-    args))
+  "Set defaults for required search options missing from ARGS.
+If the :format option is missing, set it to 'regexp, and if
+the :query option is missing, set it to 'ask"
+  (unless (plist-get args :format)
+    (setq args (plist-put args :format 'regexp)))
+
+  (unless (plist-get args :query)
+    (setq args (plist-put args :query 'ask)))
+
+  args)
 
 (defun rg-search-parse-local-bindings (search-cfg)
-  (let* ((binding-list `((confirm ,(plist-get search-cfg :confirm))))
-         (pattern-opt (plist-get search-cfg :pattern))
-         (literal (or (eq pattern-opt 'literal)
-                      (eq pattern-opt 'point)))
+  "Parse local bindings for search functions from SEARCH-CFG."
+  (let* ((format-opt (plist-get search-cfg :format))
+         (query-opt (plist-get search-cfg :query))
          (alias-opt (plist-get search-cfg :files))
-         (dir-opt (plist-get search-cfg :dir)))
+         (dir-opt (plist-get search-cfg :dir))
+         (binding-list `((literal ,(eq format-opt 'literal)))))
 
-    ;; literal binding
-    (setq binding-list (append binding-list `((literal ,literal))))
+    ;; confirm binding
+    (cond ((eq confirm-opt 'never)
+           (setq binding-list (append binding-list `((confirm nil))))
 
-    ;; pattern binding
-    (when (not (or (eq pattern-opt 'literal)
-                   (eq pattern-opt 'regexp)))
-      (let ((pattern (cond ((eq pattern-opt 'point) '(grep-tag-default))
-                           (t pattern-opt))))
-        (setq binding-list (append binding-list `((pattern ,pattern))))))
+           (eq confirm-opt 'always)
+           (setq binding-list (append binding-list `((confirm t))))))
+
+    ;; query binding
+    (unless (eq query-opt 'ask)
+      (let ((query (cond ((eq query-opt 'point) '(grep-tag-default))
+                         (t query-opt))))
+        (setq binding-list (append binding-list `((query ,query))))))
 
     ;; dir binding
     (when dir-opt
@@ -1040,32 +1053,36 @@ prefix is not supplied `rg-keymap-prefix' is used."
 
     ;; file alias binding
     (when alias-opt
-      (let ((files (if (eq alias-opt 'current) '(car (rg-default-alias))
+      (let ((files (if (eq alias-opt 'current)
+                       '(car (rg-default-alias))
                      alias-opt)))
         (setq binding-list (append binding-list `((files ,files))))))
 
     binding-list))
 
-(defun rg-search-parse-interactive-pattern-arg (search-cfg)
-  (let* ((opt (plist-get search-cfg :pattern))
-         (literal (eq opt 'literal)))
-    (when (not (eq opt 'point))
-      (cond ((not opt) `((pattern . (rg-read-pattern nil ,literal))))
-            (t `((pattern . ,opt)))))))
-
 (defun rg-search-parse-interactive-args (search-cfg)
-  (let* ((dir-opt (plist-get search-cfg :dir))
+  "Parse interactive args from SEARCH-CFG for search functions."
+  (let* ((confirm-opt (plist-get search-cfg :confirm))
+         (query-opt (plist-get search-cfg :query))
+         (format-opt (plist-get search-cfg :format))
+         (literal (eq format-opt 'literal))
+         (dir-opt (plist-get search-cfg :dir))
          (files-opt (plist-get search-cfg :files))
          (iargs '()))
 
-    (setq iargs
-          (append iargs (rg-search-parse-interactive-pattern-arg search-cfg)))
+    (when (eq confirm-opt 'prefix)
+      (setq iargs (append iargs '((confirm . (equal current-prefix-arg
+                                                    '(4)))))))
 
-    (when (not files-opt)
+    (when (eq query-opt 'ask)
+      (setq iargs
+            (append iargs `((query . (rg-read-pattern nil ,literal))))))
+
+    (unless files-opt
       (setq iargs
             (append iargs '((files . (rg-read-files))))))
 
-    (when (not dir-opt)
+    (unless dir-opt
       (setq iargs
             (append iargs
                     '((dir . (read-directory-name
@@ -1076,17 +1093,23 @@ prefix is not supplied `rg-keymap-prefix' is used."
 
 ;;;###autoload
 (defmacro rg-define-search (name &rest args)
-  (let* ((body (macroexp-parse-body args))
-         (docstring (car body))
+  "Define an rg search functions named NAME.
+ARGS is a search specification with `:query' (point or ask),
+`:format' (literal or regexp), `files' (rg or custom file alias),
+`dir' (root search directory), and `confirm' as allowable options
+specifying the behavior of the search function."
+  (declare (indent defun))
+  (let* ((body (rg-search-parse-body args))
+         (decls (car body))
          (search-cfg (rg-set-search-defaults (cdr body)))
          (local-bindings (rg-search-parse-local-bindings search-cfg))
          (iargs (rg-search-parse-interactive-args search-cfg)))
     `(defun ,name ,(mapcar 'car iargs)
-       ,@docstring
+       ,@decls
        (interactive
-        (list ,(mapcar 'cdr iargs)))
-       (let* ,local-bindings
-         (rg-run pattern files dir literal confirm)))))
+        (list ,@(mapcar 'cdr iargs)))
+       (let ,local-bindings
+         (rg-run query files dir literal confirm)))))
 
 ;;;###autoload
 (rg-define-search rg-project
@@ -1100,7 +1123,8 @@ version control system."
 (rg-define-search rg-dwim-project-dir
   "Search for thing at point in files matching the current file
 under the project root directory."
-  :pattern point
+  :query point
+  :format literal
   :files current
   :dir project)
 
@@ -1108,29 +1132,30 @@ under the project root directory."
 (rg-define-search rg-dwim-current-dir
   "Search for thing at point in files matching the current file
 under the current directory."
-  :pattern point
+  :query point
+  :format literal
   :files current
   :dir current)
 
 ;;;###autoload
 (defun rg-dwim (&optional curdir)
-  "Run ripgrep without user interaction figuring out the
-intention by magic(!). The default magic searches for thing at
+  "Run ripgrep without user interaction figuring out the intention by magic(!).
+The default magic searches for thing at
 point in files matching current file under project root
-directory. With \\[universal-argument] prefix (CURDIR), search is
+directory.  With \\[universal-argument] prefix (CURDIR), search is
 done in current dir instead of project root."
   (interactive "P")
-  (if curdir (rg-dwim-current-dir)
+  (if curdir
+      (rg-dwim-current-dir)
     (rg-dwim-project-dir)))
 
 ;;;###autoload
-(rg-define-search rg-dwim-regexp
-                  :files current
-                  :dir project)
-
-;;;###autoload
 (rg-define-search rg-literal
-                  :pattern literal)
+  "Run ripgrep, searching for literal PATTERN in FILES in directory DIR.
+With \\[universal-argument] prefix (CONFIRM), you can edit the
+constructed shell command line before it is executed."
+  :format literal
+  :confirm prefix)
 
 ;;;###autoload
 (rg-define-search rg
@@ -1144,7 +1169,8 @@ you can edit the constructed shell command line before it is
 executed. Collect output in a buffer. While ripgrep runs
 asynchronously, you can use \\[next-error] (M-x `next-error'), or
 \\<grep-mode-map>\\[compile-goto-error] \ in the rg output
-buffer, to go to the lines where rg found matches.")
+buffer, to go to the lines where rg found matches."
+  :confirm prefix)
 
 (provide 'rg)
 
