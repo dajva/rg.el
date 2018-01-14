@@ -1012,8 +1012,12 @@ prefix is not supplied `rg-keymap-prefix' is used."
 
 (defun rg-set-search-defaults (args)
   "Set defaults for required search options missing from ARGS.
-If the :format option is missing, set it to 'regexp, and if
+If the :confirm option is missing, set it to 'never, if
+the :format option is missing, set it to 'regexp, and if
 the :query option is missing, set it to 'ask"
+  (unless (plist-get args :confirm)
+    (setq args (plist-put args :confirm 'never)))
+
   (unless (plist-get args :format)
     (setq args (plist-put args :format 'regexp)))
 
@@ -1024,7 +1028,8 @@ the :query option is missing, set it to 'ask"
 
 (defun rg-search-parse-local-bindings (search-cfg)
   "Parse local bindings for search functions from SEARCH-CFG."
-  (let* ((format-opt (plist-get search-cfg :format))
+  (let* ((confirm-opt (plist-get search-cfg :confirm))
+         (format-opt (plist-get search-cfg :format))
          (query-opt (plist-get search-cfg :query))
          (alias-opt (plist-get search-cfg :files))
          (dir-opt (plist-get search-cfg :dir))
@@ -1032,10 +1037,15 @@ the :query option is missing, set it to 'ask"
 
     ;; confirm binding
     (cond ((eq confirm-opt 'never)
-           (setq binding-list (append binding-list `((confirm nil))))
+           (setq binding-list (append binding-list `((confirm nil)))))
 
-           (eq confirm-opt 'always)
-           (setq binding-list (append binding-list `((confirm t))))))
+          ((eq confirm-opt 'always)
+           (setq binding-list (append binding-list `((confirm t)))))
+
+          ((eq confirm-opt 'prefix)
+           (setq binding-list (append binding-list
+                                      '((confirm (equal current-prefix-arg
+                                                        '(4))))))))
 
     ;; query binding
     (unless (eq query-opt 'ask)
@@ -1062,17 +1072,12 @@ the :query option is missing, set it to 'ask"
 
 (defun rg-search-parse-interactive-args (search-cfg)
   "Parse interactive args from SEARCH-CFG for search functions."
-  (let* ((confirm-opt (plist-get search-cfg :confirm))
-         (query-opt (plist-get search-cfg :query))
+  (let* ((query-opt (plist-get search-cfg :query))
          (format-opt (plist-get search-cfg :format))
          (literal (eq format-opt 'literal))
          (dir-opt (plist-get search-cfg :dir))
          (files-opt (plist-get search-cfg :files))
          (iargs '()))
-
-    (when (eq confirm-opt 'prefix)
-      (setq iargs (append iargs '((confirm . (equal current-prefix-arg
-                                                    '(4)))))))
 
     (when (eq query-opt 'ask)
       (setq iargs
@@ -1087,7 +1092,6 @@ the :query option is missing, set it to 'ask"
             (append iargs
                     '((dir . (read-directory-name
                               "In directory: " nil default-directory t))))))
-
 
     iargs))
 
