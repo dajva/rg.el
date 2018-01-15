@@ -1014,9 +1014,9 @@ prefix is not supplied `rg-keymap-prefix' is used."
 (eval-when-compile
   (defun rg-set-search-defaults (args)
     "Set defaults for required search options missing from ARGS.
-If the :confirm option is missing, set it to 'never, if
-the :format option is missing, set it to 'regexp, and if
-the :query option is missing, set it to 'ask"
+If the :confirm option is missing, set it to NEVER, if
+the :format option is missing, set it to REGEXP, and if
+the :query option is missing, set it to ASK"
     (unless (plist-get args :confirm)
       (setq args (plist-put args :confirm 'never)))
 
@@ -1102,10 +1102,11 @@ the :query option is missing, set it to 'ask"
 ;;;###autoload
 (defmacro rg-define-search (name &rest args)
   "Define an rg search functions named NAME.
-ARGS is a search specification with `:query' (point or ask),
-`:format' (literal or regexp), `files' (rg or custom file alias),
-`dir' (root search directory), and `confirm' as allowable options
-specifying the behavior of the search function."
+ARGS is a search specification with :query (POINT or ASK),
+:format (LITERAL or REGEXP), :files (rg or custom file alias),
+:dir (root search directory), and :confirm (NEVER, ALWAYS, or
+PREFIX) as allowable options specifying the behavior of the
+search function."
   (declare (indent defun))
   (let* ((body (rg-search-parse-body args))
          (decls (car body))
