@@ -999,101 +999,105 @@ prefix is not supplied `rg-keymap-prefix' is used."
     (message "Global key bindings for `rg' enabled with prefix: %s"
              (edmacro-format-keys prefix))))
 
-(defun rg-search-parse-body (args)
-  "Parse a function ARGS into (DECLARATIONS . EXPS)."
-  (let ((decls ()))
-    (while (and (cdr args)
-                (let ((e (car args)))
-                  (or (stringp e)
-                      (memq (car-safe e)
-                            '(:documentation declare interactive cl-declare)))))
-      (push (pop args) decls))
-    (cons (nreverse decls) args)))
+(eval-when-compile
+  (defun rg-search-parse-body (args)
+    "Parse a function ARGS into (DECLARATIONS . EXPS)."
+    (let ((decls ()))
+      (while (and (cdr args)
+                  (let ((e (car args)))
+                    (or (stringp e)
+                        (memq (car-safe e)
+                              '(:documentation declare interactive cl-declare)))))
+        (push (pop args) decls))
+      (cons (nreverse decls) args))))
 
-(defun rg-set-search-defaults (args)
-  "Set defaults for required search options missing from ARGS.
+(eval-when-compile
+  (defun rg-set-search-defaults (args)
+    "Set defaults for required search options missing from ARGS.
 If the :confirm option is missing, set it to 'never, if
 the :format option is missing, set it to 'regexp, and if
 the :query option is missing, set it to 'ask"
-  (unless (plist-get args :confirm)
-    (setq args (plist-put args :confirm 'never)))
+    (unless (plist-get args :confirm)
+      (setq args (plist-put args :confirm 'never)))
 
-  (unless (plist-get args :format)
-    (setq args (plist-put args :format 'regexp)))
+    (unless (plist-get args :format)
+      (setq args (plist-put args :format 'regexp)))
 
-  (unless (plist-get args :query)
-    (setq args (plist-put args :query 'ask)))
+    (unless (plist-get args :query)
+      (setq args (plist-put args :query 'ask)))
 
-  args)
+    args))
 
-(defun rg-search-parse-local-bindings (search-cfg)
-  "Parse local bindings for search functions from SEARCH-CFG."
-  (let* ((confirm-opt (plist-get search-cfg :confirm))
-         (format-opt (plist-get search-cfg :format))
-         (query-opt (plist-get search-cfg :query))
-         (alias-opt (plist-get search-cfg :files))
-         (dir-opt (plist-get search-cfg :dir))
-         (binding-list `((literal ,(eq format-opt 'literal)))))
+(eval-when-compile
+  (defun rg-search-parse-local-bindings (search-cfg)
+    "Parse local bindings for search functions from SEARCH-CFG."
+    (let* ((confirm-opt (plist-get search-cfg :confirm))
+           (format-opt (plist-get search-cfg :format))
+           (query-opt (plist-get search-cfg :query))
+           (alias-opt (plist-get search-cfg :files))
+           (dir-opt (plist-get search-cfg :dir))
+           (binding-list `((literal ,(eq format-opt 'literal)))))
 
-    ;; confirm binding
-    (cond ((eq confirm-opt 'never)
-           (setq binding-list (append binding-list `((confirm nil)))))
+      ;; confirm binding
+      (cond ((eq confirm-opt 'never)
+             (setq binding-list (append binding-list `((confirm nil)))))
 
-          ((eq confirm-opt 'always)
-           (setq binding-list (append binding-list `((confirm t)))))
+            ((eq confirm-opt 'always)
+             (setq binding-list (append binding-list `((confirm t)))))
 
-          ((eq confirm-opt 'prefix)
-           (setq binding-list (append binding-list
-                                      '((confirm (equal current-prefix-arg
-                                                        '(4))))))))
+            ((eq confirm-opt 'prefix)
+             (setq binding-list (append binding-list
+                                        '((confirm (equal current-prefix-arg
+                                                          '(4))))))))
 
-    ;; query binding
-    (unless (eq query-opt 'ask)
-      (let ((query (cond ((eq query-opt 'point) '(grep-tag-default))
-                         (t query-opt))))
-        (setq binding-list (append binding-list `((query ,query))))))
+      ;; query binding
+      (unless (eq query-opt 'ask)
+        (let ((query (cond ((eq query-opt 'point) '(grep-tag-default))
+                           (t query-opt))))
+          (setq binding-list (append binding-list `((query ,query))))))
 
-    ;; dir binding
-    (when dir-opt
-      (let ((dirs (cond ((eq dir-opt 'project) '(rg-project-root
-                                                 buffer-file-name))
-                        ((eq dir-opt 'current) 'default-directory)
-                        (t dir-opt))))
-        (setq binding-list (append binding-list `((dir ,dirs))))))
+      ;; dir binding
+      (when dir-opt
+        (let ((dirs (cond ((eq dir-opt 'project) '(rg-project-root
+                                                   buffer-file-name))
+                          ((eq dir-opt 'current) 'default-directory)
+                          (t dir-opt))))
+          (setq binding-list (append binding-list `((dir ,dirs))))))
 
-    ;; file alias binding
-    (when alias-opt
-      (let ((files (if (eq alias-opt 'current)
-                       '(car (rg-default-alias))
-                     alias-opt)))
-        (setq binding-list (append binding-list `((files ,files))))))
+      ;; file alias binding
+      (when alias-opt
+        (let ((files (if (eq alias-opt 'current)
+                         '(car (rg-default-alias))
+                       alias-opt)))
+          (setq binding-list (append binding-list `((files ,files))))))
 
-    binding-list))
+      binding-list)))
 
-(defun rg-search-parse-interactive-args (search-cfg)
-  "Parse interactive args from SEARCH-CFG for search functions."
-  (let* ((query-opt (plist-get search-cfg :query))
-         (format-opt (plist-get search-cfg :format))
-         (literal (eq format-opt 'literal))
-         (dir-opt (plist-get search-cfg :dir))
-         (files-opt (plist-get search-cfg :files))
-         (iargs '()))
+(eval-when-compile
+  (defun rg-search-parse-interactive-args (search-cfg)
+    "Parse interactive args from SEARCH-CFG for search functions."
+    (let* ((query-opt (plist-get search-cfg :query))
+           (format-opt (plist-get search-cfg :format))
+           (literal (eq format-opt 'literal))
+           (dir-opt (plist-get search-cfg :dir))
+           (files-opt (plist-get search-cfg :files))
+           (iargs '()))
 
-    (when (eq query-opt 'ask)
-      (setq iargs
-            (append iargs `((query . (rg-read-pattern nil ,literal))))))
+      (when (eq query-opt 'ask)
+        (setq iargs
+              (append iargs `((query . (rg-read-pattern nil ,literal))))))
 
-    (unless files-opt
-      (setq iargs
-            (append iargs '((files . (rg-read-files))))))
+      (unless files-opt
+        (setq iargs
+              (append iargs '((files . (rg-read-files))))))
 
-    (unless dir-opt
-      (setq iargs
-            (append iargs
-                    '((dir . (read-directory-name
-                              "In directory: " nil default-directory t))))))
+      (unless dir-opt
+        (setq iargs
+              (append iargs
+                      '((dir . (read-directory-name
+                                "In directory: " nil default-directory t))))))
 
-    iargs))
+      iargs)))
 
 ;;;###autoload
 (defmacro rg-define-search (name &rest args)
