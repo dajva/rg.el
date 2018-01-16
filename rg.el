@@ -1099,6 +1099,13 @@ the :query option is missing, set it to ASK"
 
       iargs)))
 
+(defconst rg-elisp-font-lock-keywords
+  '(("(\\(rg-define-search\\)\\_>[ \t']*\\(\\(?:\\sw\\|\\s_\\)+\\)?"
+     (1 font-lock-keyword-face)
+     (2 font-lock-function-name-face nil t))))
+
+(font-lock-add-keywords 'emacs-lisp-mode rg-elisp-font-lock-keywords)
+
 ;;;###autoload
 (defmacro rg-define-search (name &rest args)
   "Define an rg search functions named NAME.
