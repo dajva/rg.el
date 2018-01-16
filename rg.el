@@ -1120,7 +1120,7 @@ search function."
        (let ,local-bindings
          (rg-run query files dir literal confirm)))))
 
-;;;###autoload
+;;;###autoload (autoload 'rg-project "rg.el" "" t)
 (rg-define-search rg-project
   "Run ripgrep in current project searching for REGEXP in FILES.
 The project root will will be determined by either common project
@@ -1128,7 +1128,7 @@ packages like projectile and `find-file-in-project' or the source
 version control system."
   :dir project)
 
-;;;###autoload
+;;;###autoload (autoload 'rg-dwim-project-dir "rg.el" "" t)
 (rg-define-search rg-dwim-project-dir
   "Search for thing at point in files matching the current file
 under the project root directory."
@@ -1137,7 +1137,7 @@ under the project root directory."
   :files current
   :dir project)
 
-;;;###autoload
+;;;###autoload (autoload 'rg-dwim-current-dir "rg.el" "" t)
 (rg-define-search rg-dwim-current-dir
   "Search for thing at point in files matching the current file
 under the current directory."
@@ -1158,7 +1158,7 @@ done in current dir instead of project root."
       (rg-dwim-current-dir)
     (rg-dwim-project-dir)))
 
-;;;###autoload
+;;;###autoload (autoload 'rg-literal "rg.el" "" t)
 (rg-define-search rg-literal
   "Run ripgrep, searching for literal PATTERN in FILES in directory DIR.
 With \\[universal-argument] prefix (CONFIRM), you can edit the
@@ -1166,7 +1166,7 @@ constructed shell command line before it is executed."
   :format literal
   :confirm prefix)
 
-;;;###autoload
+;;;###autoload (autoload 'rg "rg.el" "" t)
 (rg-define-search rg
   "Run ripgrep, searching for REGEXP in FILES in directory DIR.
 The search is limited to file names matching shell pattern FILES.
