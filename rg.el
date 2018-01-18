@@ -999,7 +999,7 @@ prefix is not supplied `rg-keymap-prefix' is used."
     (message "Global key bindings for `rg' enabled with prefix: %s"
              (edmacro-format-keys prefix))))
 
-(eval-when-compile
+(eval-and-compile
   (defun rg-search-parse-body (args)
     "Parse a function ARGS into (DECLARATIONS . EXPS)."
     (let ((decls ()))
@@ -1011,7 +1011,7 @@ prefix is not supplied `rg-keymap-prefix' is used."
         (push (pop args) decls))
       (cons (nreverse decls) args))))
 
-(eval-when-compile
+(eval-and-compile
   (defun rg-set-search-defaults (args)
     "Set defaults for required search options missing from ARGS.
 If the :confirm option is missing, set it to NEVER, if
@@ -1028,7 +1028,7 @@ the :query option is missing, set it to ASK"
 
     args))
 
-(eval-when-compile
+(eval-and-compile
   (defun rg-search-parse-local-bindings (search-cfg)
     "Parse local bindings for search functions from SEARCH-CFG."
     (let* ((confirm-opt (plist-get search-cfg :confirm))
@@ -1073,7 +1073,7 @@ the :query option is missing, set it to ASK"
 
       binding-list)))
 
-(eval-when-compile
+(eval-and-compile
   (defun rg-search-parse-interactive-args (search-cfg)
     "Parse interactive args from SEARCH-CFG for search functions."
     (let* ((query-opt (plist-get search-cfg :query))
