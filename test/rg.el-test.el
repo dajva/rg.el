@@ -82,11 +82,18 @@
 
 (ert-deftest rg-unit-test/custom-command-line-flags ()
   "Test that `rg-command-line-flags' is added to the template."
-  (let* ((rg-command "rg")
-         (rg-custom-type-aliases nil)
-         (rg-command-line-flags '("--foo" "--bar"))
-         (template (rg-build-template)))
-    (should (s-matches? (rg-regexp-anywhere-but-last "--foo --bar") template))))
+  (let ((rg-command "rg")
+        (rg-custom-type-aliases nil)
+        (rg-command-line-flags '("--foo" "--bar")))
+    (should (s-matches? (rg-regexp-anywhere-but-last "--foo --bar") (rg-build-template)))))
+
+(ert-deftest rg-unit-test/custom-command-line-function ()
+  "Test that when `rg-command-line-flags' is a function, the returned
+  list of flags are added to the template."
+  (let ((rg-command "rg")
+        (rg-custom-type-aliases nil)
+        (rg-command-line-flags (lambda () '("--foo" "--bar"))))
+    (should (s-matches? (rg-regexp-anywhere-but-last "--foo --bar") (rg-build-template)))))
 
 (ert-deftest rg-unit-test/toggle-command-flag ()
   "Test `rg-list-toggle'."

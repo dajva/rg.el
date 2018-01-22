@@ -108,8 +108,9 @@
   :group 'rg)
 
 (defcustom rg-command-line-flags nil
-  "List of command line flags for rg."
-  :type '(repeat string)
+  "List of command line flags for rg.
+Alternatively a function returning a list of flags."
+  :type '(choice function (repeat string))
   :group 'rg)
 
 (defcustom rg-group-result nil
@@ -345,7 +346,9 @@ added as a '--type-add' parameter to the rg command line."
                          "--heading"
                        "--no-heading"))
                (rg-build-type-add-args)
-               rg-command-line-flags
+               (if (functionp rg-command-line-flags)
+                   (funcall rg-command-line-flags)
+                 rg-command-line-flags)
                rg-toggle-command-line-flags
                (list "-e" "<R>"))))
     (when rg-literal

@@ -144,7 +144,8 @@ Custom type patterns as for rgrep are supported via customizing of
 
 ### `rg-command-line-flags`
 Additional command line flags that will be appended to the ripgrep
-command line.
+command line. Must either be a list of flags or a function that
+returns a list of flags.
 
 ### `rg-group-result`
 Controls the layout of the results buffer. If non `nil`, each file
