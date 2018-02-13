@@ -1027,6 +1027,8 @@ prefix is not supplied `rg-keymap-prefix' is used."
              (edmacro-format-keys prefix))))
 
 (eval-and-compile
+  ;; Copied macroexp-parse-body from macroexp.el since this is only
+  ;; available in emacs > 25.
   (defun rg-search-parse-body (args)
     "Parse a function ARGS into (DECLARATIONS . EXPS)."
     (let ((decls ()))
