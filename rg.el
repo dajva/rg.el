@@ -161,6 +161,11 @@ new content and filtered through the `rg-filter' function.")
 Each function is called with two arguments: the compilation buffer,and
 a string describing how the process finished.")
 
+(defvar rg-ephemeral-command-line-flags nil
+  "Command line flags used for a single invokation of rg.
+Will be globally reset after each search but kept as a buffer local in
+the result buffer.")
+
 
 ;; Faces
 (defgroup rg-face nil
@@ -351,6 +356,7 @@ added as a '--type-add' parameter to the rg command line."
                (if (functionp rg-command-line-flags)
                    (funcall rg-command-line-flags)
                  rg-command-line-flags)
+               rg-ephemeral-command-line-flags
                rg-toggle-command-line-flags
                (list "-e" "<R>"))))
     (when rg-literal
@@ -544,6 +550,8 @@ Commands:
   (make-local-variable 'rg-hit-count)
   (make-local-variable 'rg-toggle-command-line-flags)
   (make-local-variable 'rg-literal)
+  (make-local-variable 'rg-ephemeral-command-line-flags)
+  (setq-default rg-ephemeral-command-line-flags nil)
   (rg-create-header-line)
   (add-hook 'compilation-filter-hook 'rg-filter nil t) )
 
@@ -672,11 +680,12 @@ executing."
       (add-to-history 'rg-history command))
     ;; If user changed command we can't know the parts of the
     ;; search and needs to disable result buffer modifications.
-    (cond ((and confirmed (not (string= confirmed command)))
-           (setq-default rg-last-search nil)
-           (setq command confirmed))
-          (t
-           (setq-default rg-last-search (list pattern files dir))))
+    (cond
+     ((and confirmed (not (string= confirmed command)))
+      (setq-default rg-last-search nil)
+      (setq command confirmed))
+     (t
+      (setq-default rg-last-search (list pattern files dir))))
     (let ((default-directory dir))
       ;; Setting process-setup-function makes exit-message-function work
       ;; even when async processes aren't supported.
@@ -1097,6 +1106,16 @@ the :query option is missing, set it to ASK"
       binding-list)))
 
 (eval-and-compile
+  (defun rg-search-parse-global-bindings (search-cfg)
+    "Parse local bindings for search functions from SEARCH-CFG."
+    (let ((flags-opt (plist-get search-cfg :flags)))
+      (cond ((eq flags-opt 'ask)
+             '((rg-ephemeral-command-line-flags (split-string flags))))
+            (flags-opt
+             `((rg-ephemeral-command-line-flags ,flags-opt)))
+            (t nil)))))
+
+(eval-and-compile
   (defun rg-search-parse-interactive-args (search-cfg)
     "Parse interactive args from SEARCH-CFG for search functions."
     (let* ((query-opt (plist-get search-cfg :query))
@@ -1104,6 +1123,7 @@ the :query option is missing, set it to ASK"
            (literal (eq format-opt 'literal))
            (dir-opt (plist-get search-cfg :dir))
            (files-opt (plist-get search-cfg :files))
+           (flags-opt (plist-get search-cfg :flags))
            (iargs '()))
 
       (when (eq query-opt 'ask)
@@ -1120,6 +1140,9 @@ the :query option is missing, set it to ASK"
                       '((dir . (read-directory-name
                                 "In directory: " nil default-directory t))))))
 
+      (when (eq flags-opt 'ask)
+        (setq iargs
+              (append iargs '((flags . (read-string "Command line flags: "))))))
       iargs)))
 
 (defconst rg-elisp-font-lock-keywords
@@ -1159,6 +1182,11 @@ specified default if left out.
             if the the final search command line string can be modified
             and confirmed by the user.
             Default is `never'.
+:flags      `ask' or a list of command line flags that will be used when
+            invoking the search.  This sets the
+            `rg-ephemeral-command-line-flags' variable before the
+            search is executed.  If nil or left out, the variable will
+            be untouched.
 
 Example:
 \(rg-define-search search-home-dir-in-elisp
@@ -1172,11 +1200,14 @@ Example:
          (decls (car body))
          (search-cfg (rg-set-search-defaults (cdr body)))
          (local-bindings (rg-search-parse-local-bindings search-cfg))
+         (global-bindings (rg-search-parse-global-bindings search-cfg))
          (iargs (rg-search-parse-interactive-args search-cfg)))
     `(defun ,name ,(mapcar 'car iargs)
        ,@decls
        (interactive
         (list ,@(mapcar 'cdr iargs)))
+       ,@(cl-loop for pair in global-bindings
+                  collect `(setq ,@pair))
        (let ,local-bindings
          (rg-run query files dir literal confirm)))))
 
