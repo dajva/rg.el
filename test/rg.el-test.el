@@ -382,6 +382,77 @@ matching alias."
     (rg "foo" "elisp" "/tmp/test")
     (should (eq called-literal nil))))
 
+(ert-deftest rg-unit/set-search-defaults ()
+  "Test rg-define-search helper defun rg-set-search-defaults."
+  (let  ((defaults (rg-set-search-defaults nil)))
+    (should (eq (plist-get defaults :confirm) 'never))
+    (should (eq (plist-get defaults :format) 'regexp))
+    (should (eq (plist-get defaults :query) 'ask))
+    (should (eq (plist-get defaults :files) 'ask))
+    (should (eq (plist-get defaults :dir) 'ask))))
+
+(ert-deftest rg-unit/search-parse-local-bindings-confirm ()
+  "Test rg-define-search helper defun rg-search-parse-local-bindings.
+Test `:confirm' directive."
+  (let  ((prefix (rg-search-parse-local-bindings '(:confirm prefix)))
+         (never (rg-search-parse-local-bindings '(:confirm never)))
+         (always (rg-search-parse-local-bindings '(:confirm always))))
+    (should (null (cadr (assq 'confirm never))))
+    (should (cadr (assq 'confirm always)))
+    (should (eq (cadr (cadr (assq 'confirm prefix))) 'current-prefix-arg))))
+
+(ert-deftest rg-unit/search-parse-local-bindings-query ()
+  "Test rg-define-search helper defun rg-search-parse-local-bindings.
+Test `:query' directive."
+  (let  ((ask (rg-search-parse-local-bindings '(:query ask)))
+         (form (rg-search-parse-local-bindings '(:query (form))))
+         (point (rg-search-parse-local-bindings '(:query point))))
+    (should (null (assq 'query ask)))
+    (should (equal (cadr (assq 'query form)) '(form)))
+    (should (equal (cadr (assq 'query point)) '(grep-tag-default)))))
+
+(ert-deftest rg-unit/search-parse-local-bindings-dir ()
+  "Test rg-define-search helper defun rg-search-parse-local-bindings.
+Test `:dir' directive."
+  (let  ((ask (rg-search-parse-local-bindings '(:dir ask)))
+         (project (rg-search-parse-local-bindings '(:dir project)))
+         (current (rg-search-parse-local-bindings '(:dir current)))
+         (form (rg-search-parse-local-bindings '(:dir (form)))))
+    (should (null (assq 'dir ask)))
+    (should (equal (cadr (assq 'dir project)) '(rg-project-root buffer-file-name)))
+    (should (equal (cadr (assq 'dir current)) 'default-directory))
+    (should (equal (cadr (assq 'dir form)) '(form)))))
+
+(ert-deftest rg-unit/search-parse-local-bindings-files ()
+  "Test rg-define-search helper defun rg-search-parse-local-bindings.
+Test `:files' directive."
+  (let  ((ask (rg-search-parse-local-bindings '(:files ask)))
+         (current (rg-search-parse-local-bindings '(:files current)))
+         (form (rg-search-parse-local-bindings '(:files (form)))))
+    (should (null (assq 'files ask)))
+    (should (equal (cadr (assq 'files current)) '(car (rg-default-alias))))
+    (should (equal (cadr (assq 'files form)) '(form)))))
+
+(ert-deftest rg-unit/search-parse-global-bindings-flags ()
+  "Test rg-define-search helper defun rg-search-parse-global-bindings.
+Test `:flags' directive."
+  (let  ((ask (rg-search-parse-global-bindings '(:flags ask)))
+         (form (rg-search-parse-global-bindings '(:flags '("--flag")))))
+    (should (equal (cadr (assq 'rg-ephemeral-command-line-flags ask)) '(split-string flags)))
+    (should (equal (cadr (assq 'rg-ephemeral-command-line-flags form)) (quote '("--flag"))))))
+
+(ert-deftest rg-unit/search-parse-interactive-args ()
+  "Test rg-define-search helper defun rg-search-parse-interactive-args."
+  (let  ((empty (rg-search-parse-interactive-args nil))
+         (query (rg-search-parse-interactive-args '(:query ask)))
+         (files (rg-search-parse-interactive-args '(:files ask)))
+         (dir (rg-search-parse-interactive-args '(:dir ask)))
+         (flags (rg-search-parse-interactive-args '(:flags ask))))
+    (should (null empty))
+    (should (equal (cadr (assq 'query query)) 'rg-read-pattern))
+    (should (equal (cadr (assq 'files files)) 'rg-read-files ))
+    (should (equal (cadr (assq 'dir dir)) 'read-directory-name))
+    (should (equal (cadr (assq 'flags flags)) 'read-string))))
 
 
 ;; Integration tests
@@ -628,7 +699,6 @@ and ungrouped otherwise."
                (setq changed-command (concat command " world"))
                (setq original-command command)
                changed-command)))
-    (message "foo")
     (rg-run "hello" "all" "tmp/test" nil 'confirm)
     (should (equal changed-command (concat original-command " world")))
     (should (null rg-last-search))
