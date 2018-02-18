@@ -459,7 +459,7 @@ This function is called from `compilation-filter-hook'."
         (setq end (copy-marker end))
         ;; Add File: in front of filename
         (when rg-group-result
-          (while (re-search-forward "^\033\\[m\033\\[35m\\(.*?\\)\033\\[m$" end 1)
+          (while (re-search-forward "^\033\\[[0]*m\033\\[35m\\(.*?\\)\033\\[[0]*m$" end 1)
             (replace-match (concat (propertize "File:"
                                                'face nil 'font-lock-face 'rg-file-tag-face)
                                    " "
@@ -469,14 +469,14 @@ This function is called from `compilation-filter-hook'."
           (goto-char beg))
 
         ;; Highlight rg matches and delete marking sequences.
-        (while (re-search-forward "\033\\[m\033\\[31m\033\\[1m\\(.*?\\)\033\\[m" end 1)
+        (while (re-search-forward "\033\\[[0]*m\033\\[31m\033\\[1m\\(.*?\\)\033\\[[0]*m" end 1)
           (replace-match (propertize (match-string 1)
                                      'face nil 'font-lock-face 'rg-match-face)
                          t t)
           (setq rg-hit-count (+ rg-hit-count 1)))
         ;; Delete all remaining escape sequences
         (goto-char beg)
-        (while (re-search-forward "\033\\[[0-9;]*[mK]" end 1)
+        (while (re-search-forward "\033\\[[0-9;]*[0mK]" end 1)
           (replace-match "" t t))))
     (run-hooks 'rg-filter-hook)))
 
