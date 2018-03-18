@@ -223,7 +223,17 @@ the result buffer.")
   :group 'rg-face)
 
 
-;; Internal vars
+;; Internal vars and structs
+(cl-defstruct (rg-search (:constructor rg-search-create)
+                         (:constructor rg-search-new (pattern files dir))
+                         (:copier nil)) ;; avoid escaping rg ns
+  pattern
+  files
+  dir
+  full-command
+  literal
+  toggle-flags)
+
 (defvar rg-builtin-type-aliases nil
   "Cache for 'rg --type-list'.")
 
@@ -232,14 +242,11 @@ the result buffer.")
 	  " --color always --colors match:fg:red -n")
   "Command string for invoking rg.")
 
-(defvar rg-last-search nil
+(defvar rg-last-search (rg-search-create)
   "Stores parameters of last search.  Becomes buffer local in `rg-mode' buffers.")
 
 (defvar rg-hit-count 0
   "Stores number of hits in a search.")
-
-(defvar rg-literal nil
-  "If non nil do literal search instead of regexp search.")
 
 (defvar rg-toggle-command-line-flags nil
   "List of command line flags defined by `rg-define-toggle' macro.")
@@ -352,10 +359,7 @@ added as a '--type-add' parameter to the rg command line."
                    (funcall rg-command-line-flags)
                  rg-command-line-flags)
                rg-ephemeral-command-line-flags
-               rg-toggle-command-line-flags
                (list "-e" "<R>"))))
-    (when rg-literal
-      (setq args (cons "--fixed-strings" args)))
     (when rg-show-columns
       (setq args (cons "--column" args)))
     (when type
@@ -432,7 +436,7 @@ DEFAULT is the default pattern to use at the prompt.  If LITERAL is
   non nil prompt for literal string."
   (let ((default (or default (grep-tag-default)))
         (prompt (concat
-                 (if (or literal rg-literal)
+                 (if literal
                      "Literal"
                    "Regexp")
                  " search for")))
@@ -543,8 +547,6 @@ Commands:
   (set (make-local-variable 'compilation-error-screen-columns) nil)
   (make-local-variable 'rg-last-search)
   (make-local-variable 'rg-hit-count)
-  (make-local-variable 'rg-toggle-command-line-flags)
-  (make-local-variable 'rg-literal)
   (make-local-variable 'rg-ephemeral-command-line-flags)
   (setq-default rg-ephemeral-command-line-flags nil)
   (rg-create-header-line)
@@ -587,7 +589,7 @@ Returns the new list."
       (delete elem list)
     list))
 
-(defun rg-build-command (pattern files)
+(defun rg-build-command (pattern files literal flags)
   "Create the command for PATTERN and FILES."
   (concat (grep-expand-template
            (rg-build-template
@@ -598,6 +600,9 @@ Returns the new list."
                 glob)))
            pattern
            files)
+          " " (mapconcat 'identity flags " ")
+          (when literal
+            " --fixed-strings")
           " ."))
 
 (defun rg-header-render-label (labelform)
@@ -614,9 +619,9 @@ Specs are lists where the the `car' is the labels string and the
           (let* ((condition (nth 0 labelform))
                  (then (nth 1 labelform))
                  (else (nth 2 labelform)))
-            `(,condition
-              (:propertize ,(nth 0 then) font-lock-face (,(nth 1 then) header-line bold))
-              (:propertize ,(nth 0 else) font-lock-face (,(nth 1 else) header-line bold)))))
+            `(:eval (if ,condition
+              (propertize ,(nth 0 then) 'font-lock-face '(,(nth 1 then) header-line bold))
+              (propertize ,(nth 0 else) 'font-lock-face '(,(nth 1 else) header-line bold))))))
          (t (error "Not a string or list")))
         '(:propertize "]" font-lock-face (header-line bold))
         '(": ")))
@@ -635,20 +640,20 @@ string."
   (when rg-show-header
     (let ((itemspace "  "))
       (setq header-line-format
-            (if (null rg-last-search)
+            (if (rg-search-full-command rg-last-search)
                 (list (rg-header-render-label "command line") "no refinement")
               (list
-               (rg-header-render-label '(rg-literal ("literal" rg-literal-face)
+               (rg-header-render-label '((rg-search-literal rg-last-search) ("literal" rg-literal-face)
                                                     ("regexp" rg-regexp-face)))
-               '(:eval (nth 0 rg-last-search)) itemspace
+               '(:eval (rg-search-pattern rg-last-search)) itemspace
                (rg-header-render-label "files")
-               '(:eval (nth 1 rg-last-search)) itemspace
+               '(:eval (rg-search-files rg-last-search)) itemspace
                (rg-header-render-label "case")
                (rg-header-render-toggle
-               '(not (member "-i" rg-toggle-command-line-flags))) itemspace
+               '(not (member "-i" (rg-search-toggle-flags rg-last-search)))) itemspace
                (rg-header-render-label "ign")
                (rg-header-render-toggle
-               '(not (member "--no-ignore" rg-toggle-command-line-flags))) itemspace
+               '(not (member "--no-ignore" (rg-search-toggle-flags rg-last-search)))) itemspace
                (rg-header-render-label "hits")
                '(:eval (format "%d" rg-hit-count))))))))
 
@@ -663,9 +668,8 @@ executing."
     (signal 'user-error '("Empty string: No search done")))
   (unless (and (file-directory-p dir) (file-readable-p dir))
     (setq dir default-directory))
-  (setq rg-literal literal)
   (rg-apply-case-flag pattern)
-  (let ((command (rg-build-command pattern files))
+  (let ((command (rg-build-command pattern files literal rg-toggle-command-line-flags))
         confirmed)
     (setq dir (file-name-as-directory (expand-file-name dir)))
     (if confirm
@@ -677,10 +681,16 @@ executing."
     ;; search and needs to disable result buffer modifications.
     (cond
      ((and confirmed (not (string= confirmed command)))
-      (setq-default rg-last-search nil)
+      (setf (rg-search-full-command rg-last-search) t)
       (setq command confirmed))
      (t
-      (setq-default rg-last-search (list pattern files dir))))
+      (setq-default rg-last-search
+                    (rg-search-create
+                     :pattern pattern
+                     :files files
+                     :dir dir
+                     :literal literal
+                     :toggle-flags rg-toggle-command-line-flags))))
     (let ((default-directory dir))
       ;; Setting process-setup-function makes exit-message-function work
       ;; even when async processes aren't supported.
@@ -690,16 +700,39 @@ executing."
 
 (defun rg-rerun ()
   "Run `rg-recompile' with `compilation-arguments' taken from `rg-last-search'."
-  (let ((pattern (nth 0 rg-last-search))
-        (files (nth 1 rg-last-search))
-        (dir (nth 2 rg-last-search)))
+  (let ((pattern (rg-search-pattern rg-last-search))
+        (files (rg-search-files rg-last-search))
+        (dir (rg-search-dir rg-last-search))
+        (literal (rg-search-literal rg-last-search))
+        (flags (rg-search-toggle-flags rg-last-search)) )
     (setcar compilation-arguments
-            (rg-build-command pattern files))
+            (rg-build-command pattern files literal flags))
     ;; compilation-directory is used as search dir and
     ;; default-directory is used as the base for file paths.
     (setq compilation-directory dir)
     (setq default-directory compilation-directory)
     (rg-recompile)))
+
+(eval-and-compile
+  (defun rg-rerun-local-bindings (varplist)
+    (let ((pattern (plist-get varplist :pattern))
+          (files (plist-get varplist :files))
+          (dir (plist-get varplist :dir))
+          (flags (plist-get varplist :flags))
+          (bindings nil))
+      (when pattern
+        (setq bindings (append bindings
+                               `((,pattern (rg-search-pattern rg-last-search))))))
+      (when files
+        (setq bindings (append bindings
+                               `((,files (rg-search-files rg-last-search))))))
+      (when dir
+        (setq bindings (append bindings
+                               `((,dir (rg-search-dir rg-last-search))))))
+      (when flags
+        (setq bindings (append bindings
+                               `((,flags (rg-search-toggle-flags rg-last-search))))))
+      bindings)))
 
 (defmacro rg-rerun-with-changes (varplist &rest body)
   "Rerun last search with changed parameters.
@@ -713,25 +746,20 @@ with the non exposed unmodified parameters to rerun the the search.
 
 Supported properties are :pattern, :files, :dir and :flags, where the
 three first are bound to the corresponding parameters in `rg' from
-`rg-last-search' and :flags is bound to
-`rg-toggle-command-line-flags'.
+`rg-last-search'.
 
 Example:
 \(rg-rerun-with-changes \(:pattern searchstring\)
   \(setq searchstring \"new string\"\)\)"
   (declare (debug ((&rest symbolp symbolp) body))
            (indent 1))
-  (let ((pattern (or (plist-get varplist :pattern) (cl-gensym)))
-        (files (or (plist-get varplist :files) (cl-gensym)))
-        (dir (or (plist-get varplist :dir) (cl-gensym)))
-        (flags (or (plist-get varplist :flags) (cl-gensym))))
-    `(if rg-last-search
-         (cl-destructuring-bind (,pattern ,files ,dir) rg-last-search
-           (let ((,flags rg-toggle-command-line-flags))
-             ,@body
-             (setq rg-toggle-command-line-flags ,flags)
-             (setq rg-last-search (list ,pattern ,files ,dir))
-             (rg-rerun)))
+  (let ((bindings (rg-rerun-local-bindings varplist)))
+    `(if (null (rg-search-full-command rg-last-search))
+         (let ,bindings
+           ,@body
+           ,@(cl-loop for binding in bindings
+                   collect `(setf ,@(reverse binding)))
+           (rg-rerun))
        (message "Can't refine search since full command line search was used."))))
 
 (defun rg-regexp-quote (regexp)
@@ -842,7 +870,7 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
   (interactive)
   ;; Buffer locals will be reset in recompile so we need save them
   ;; here.
-  (rg-save-vars (rg-literal rg-last-search rg-toggle-command-line-flags)
+  (rg-save-vars (rg-last-search)
     (recompile)))
 
 (defun rg-rerun-toggle-case ()
@@ -866,25 +894,26 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
       (cl-letf (((symbol-function #'read-from-minibuffer)
                   (lambda (prompt &optional _ &rest args)
                     (apply read-from-minibuffer-orig prompt pattern args))))
-        (setq pattern (rg-read-pattern pattern))))))
+        (setq pattern (rg-read-pattern pattern
+                                       (rg-search-literal rg-last-search)))))))
 
 (defun rg-rerun-change-regexp ()
   "Rerun last search but prompt for new regexp."
   (interactive)
-  (let ((rg-literal-orig rg-literal))
-    (setq rg-literal nil)
+  (let ((literal-orig (rg-search-literal rg-last-search)))
+    (setf (rg-search-literal rg-last-search) nil)
     (condition-case nil
         (rg-rerun-change-search-string)
-      ((error quit) (setq rg-literal rg-literal-orig)))))
+      ((error quit) (setf (rg-search-literal rg-last-search) literal-orig)))))
 
 (defun rg-rerun-change-literal ()
   "Rerun last search but prompt for new literal."
   (interactive)
-  (let ((rg-literal-orig rg-literal))
-    (setq rg-literal t)
+  (let ((literal-orig (rg-search-literal rg-last-search)))
+    (setf (rg-search-literal rg-last-search) t)
     (condition-case nil
         (rg-rerun-change-search-string)
-      ((error quit) (setq rg-literal rg-literal-orig)))))
+      ((error quit) (setf (rg-search-literal rg-last-search) literal-orig)))))
 
 (defun rg-rerun-change-files()
   "Rerun last search but prompt for new files."
@@ -973,7 +1002,7 @@ from a saved buffer in which case the saved buffer will be reused."
 (define-ibuffer-column rg-search-term
   (:name "Search" :props ('face 'rg-match-face))
   (ignore mark)
-  (or (car rg-last-search) "N/A"))
+  (or (rg-search-pattern rg-last-search) "N/A"))
 
 (define-ibuffer-column rg-hit-count
   (:name "Hits")
@@ -983,12 +1012,12 @@ from a saved buffer in which case the saved buffer will be reused."
 (define-ibuffer-column rg-search-dir
   (:name "Directory" :props ('face 'rg-filename-face))
   (ignore mark)
-  (or (nth 2 rg-last-search) "N/A"))
+  (or (rg-search-dir rg-last-search) "N/A"))
 
 (define-ibuffer-column rg-file-types
   (:name "Type")
   (ignore mark)
-  (or (nth 1 rg-last-search) "N/A"))
+  (or (rg-search-files rg-last-search) "N/A"))
 
 ;;;###autoload
 (defun rg-list-searches ()
