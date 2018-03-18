@@ -156,11 +156,6 @@ NIL means case sensitive search will be forced."
 This hook is called every time the rg buffer has been updated with
 new content and filtered through the `rg-filter' function.")
 
-(defvar rg-finished-functions nil
-  "Functions to call when a search is finished.
-Each function is called with two arguments: the compilation buffer,and
-a string describing how the process finished.")
-
 (defvar rg-ephemeral-command-line-flags nil
   "Command line flags used for a single invokation of rg.
 Will be globally reset after each search but kept as a buffer local in
