@@ -8,7 +8,7 @@
 ;;         Roland McGrath <roland@gnu.org>
 ;; Version: 1.5.0
 ;; URL: https://github.com/dajva/rg.el
-;; Package-Requires: ((cl-lib "0.5") (emacs "24") (s "1.10.0"))
+;; Package-Requires: ((cl-lib "0.5") (emacs "24.3") (s "1.10.0"))
 ;; Keywords: matching, tools
 
 ;; This file is not part of GNU Emacs.
@@ -346,30 +346,39 @@ Set up `compilation-exit-message-function' and run `grep-setup-hook'."
         (split-string globs) " ")))
    rg-custom-type-aliases))
 
-(defun rg-build-template(&optional type custom)
-  "Create command line template.  When TYPE is non nil, type flag template
-will be added.  Optional CUSTOM is a file matching pattern that will be
-added as a '--type-add' parameter to the rg command line."
-  (let ((args (append
-               (list (if rg-group-result
-                         "--heading"
-                       "--no-heading"))
-               (rg-build-type-add-args)
-               (if (functionp rg-command-line-flags)
-                   (funcall rg-command-line-flags)
-                 rg-command-line-flags)
-               rg-ephemeral-command-line-flags
-               (list "-e" "<R>"))))
-    (when rg-show-columns
-      (setq args (cons "--column" args)))
-    (when type
-      (setq args (cons "--type <F>" args))
-      (when custom
-        (setq args (cons
-                    (concat "--type-add "
-                            (shell-quote-argument (concat "custom:" custom)))
-                    args))))
-    (mapconcat 'identity (cons rg-command (delete-dups args)) " ")))
+(defun rg-is-custom-file-pattern (files)
+  "Return non nil if FILES is a custom file pattern."
+  (not (assoc files (rg-get-type-aliases))))
+
+(defun rg-build-command (pattern files literal flags)
+  "Create the command line for PATTERN and FILES.
+LITERAL determines if search will be literal or regexp based and FLAGS
+are command line flags to use for the search."
+  (let ((command-line
+         (append
+          (rg-build-type-add-args)
+          (if (functionp rg-command-line-flags)
+              (funcall rg-command-line-flags)
+            rg-command-line-flags)
+          flags
+          rg-ephemeral-command-line-flags
+
+          (list
+           (if rg-group-result "--heading" "--no-heading"))
+          (when (rg-is-custom-file-pattern files)
+            (list (concat "--type-add " (shell-quote-argument (concat "custom:" files)))))
+          (when rg-show-columns
+            (list "--column"))
+          (when literal
+            (list "--fixed-strings"))
+          (when (not (equal files "everything"))
+            (list "--type <F>"))
+          (list "-e <R>" "."))))
+
+    (grep-expand-template
+     (mapconcat 'identity (cons rg-command (delete-dups command-line)) " ")
+     pattern
+     (if (rg-is-custom-file-pattern files) "custom" files))))
 
 (defun rg-list-builtin-type-aliases ()
   "Invokes rg --type-list and puts the result in an alist."
@@ -587,22 +596,6 @@ Returns the new list."
   (if (member elem list)
       (delete elem list)
     list))
-
-(defun rg-build-command (pattern files literal flags)
-  "Create the command for PATTERN and FILES."
-  (concat (grep-expand-template
-           (rg-build-template
-            (not (equal files "everything"))
-            (unless (assoc files (rg-get-type-aliases))
-              (let ((glob files))
-                (setq files "custom")
-                glob)))
-           pattern
-           files)
-          " " (mapconcat 'identity flags " ")
-          (when literal
-            " --fixed-strings")
-          " ."))
 
 (defun rg-header-render-label (labelform)
   "Return a fontified header label.
