@@ -245,7 +245,7 @@ the result buffer.")
 (defvar rg-last-search (rg-search-create)
   "Stores parameters of last search.  Becomes buffer local in `rg-mode' buffers.")
 
-(defvar rg-hit-count 0
+(defvar-local rg-hit-count 0
   "Stores number of hits in a search.")
 
 (defvar rg-toggle-command-line-flags nil
@@ -546,7 +546,6 @@ Commands:
   (set (make-local-variable 'compilation-disable-input) t)
   (set (make-local-variable 'compilation-error-screen-columns) nil)
   (make-local-variable 'rg-last-search)
-  (make-local-variable 'rg-hit-count)
   (make-local-variable 'rg-ephemeral-command-line-flags)
   (setq-default rg-ephemeral-command-line-flags nil)
   (rg-create-header-line)
