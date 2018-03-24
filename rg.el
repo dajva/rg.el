@@ -255,7 +255,7 @@ the result buffer.")
 (defvar rg-files-history nil "History for files args.")
 (defvar rg-pattern-history nil "History for search patterns.")
 
-(defconst rg-special-type-aliases
+(defconst rg-internal-type-aliases
   '(("all" . "all defined type aliases") ; rg --type all
     ("everything" . "*")) ; rg without '--type' arg
   "Internal type aliases for special purposes.
@@ -384,52 +384,54 @@ are command line flags to use for the search."
   "Invokes rg --type-list and puts the result in an alist."
   (unless (executable-find "rg")
     (error "'rg' is not in path"))
-  (mapcar
-   (lambda (item)
-     (let ((association (split-string item ":" t)))
-       (cons (s-trim (car association))
+  (let ((type-list (nbutlast (split-string
+                              (shell-command-to-string
+                               (concat (executable-find "rg") " --type-list"))
+                              "\n") 1)))
+    (mapcar
+     (lambda (type-alias)
+       (setq type-alias (split-string type-alias ":" t))
+       (cons (s-trim (car type-alias))
              (s-trim
-              (mapconcat 'identity (split-string (cadr association) "," t ) " ")))))
-   (nbutlast (split-string
-              (shell-command-to-string
-	       (concat (executable-find "rg") " --type-list")) "\n") 1)))
+              (mapconcat 'identity
+                         (split-string (cadr type-alias) "," t )
+                         " "))))
+     type-list)))
 
 
-(defun rg-get-type-aliases (&optional nospecial)
+(defun rg-get-type-aliases (&optional skip-internal)
   "Return supported type aliases.
-If NOSPECIAL is non nil the `rg-special-type-aliases' will not be
-included."
+If SKIP-INTERNAL is non nil the `rg-internal-type-aliases' will be
+excluded."
   (unless rg-builtin-type-aliases
     (setq rg-builtin-type-aliases (rg-list-builtin-type-aliases)))
   (append rg-custom-type-aliases rg-builtin-type-aliases
-          (unless nospecial rg-special-type-aliases)))
+          (unless skip-internal rg-internal-type-aliases)))
 
 (defun rg-default-alias ()
   "Return the default alias by matching alias globs with the buffer file name."
-  (let* ((bn (or (buffer-file-name)
-                 (replace-regexp-in-string "<[0-9]+>\\'" "" (buffer-name))))
-         (fn (and bn
-                  (stringp bn)
-                  (file-name-nondirectory bn))))
+  (let* ((bufname (or (buffer-file-name)
+                      (replace-regexp-in-string "<[0-9]+>\\'" "" (buffer-name))))
+         (filename (and bufname
+                        (stringp bufname)
+                        (file-name-nondirectory bufname))))
     (or
-     (and fn
-          (cl-find-if
-           (lambda (alias)
-             (string-match (mapconcat
-                            'wildcard-to-regexp
-                            (split-string (cdr alias) nil t)
-                            "\\|")
-                           fn))
-           (rg-get-type-aliases t)))
+     (when filename
+       (cl-find-if
+        (lambda (alias)
+          (string-match (mapconcat 'wildcard-to-regexp
+                                   (split-string (cdr alias) nil t)
+                                   "\\|")
+                        filename))
+        (rg-get-type-aliases t)))
+     ;; Default when an alias for the file can't be determined
      '("all" . "*"))))
 
-(defun rg-read-files (&optional pattern)
-  "Read files argument for interactive rg.  PATTERN is the search string."
-  (let ((default-alias (rg-default-alias))
-        (pattern-string (if pattern (concat "for \"" pattern "\" ")
-                          "")))
+(defun rg-read-files ()
+  "Read files argument for interactive rg."
+  (let ((default-alias (rg-default-alias)))
     (completing-read
-     (concat "Search " pattern-string "in files"
+     (concat "Search in files"
              (if default-alias
                  (concat
                   " (default: [" (car default-alias) "] = "
@@ -439,16 +441,12 @@ included."
      nil nil nil 'rg-files-history
      (car default-alias))))
 
-(defun rg-read-pattern (&optional default literal)
+(defun rg-read-pattern (literal &optional default)
   "Read search pattern argument from user.
-DEFAULT is the default pattern to use at the prompt.  If LITERAL is
-  non nil prompt for literal string."
+If LITERAL is non nil prompt for literal string.  DEFAULT is the default pattern to use at the prompt."
   (let ((default (or default (grep-tag-default)))
-        (prompt (concat
-                 (if literal
-                     "Literal"
-                   "Regexp")
-                 " search for")))
+        (prompt (concat (if literal "Literal" "Regexp")
+                        " search for")))
     (with-no-warnings
       (if (and (= emacs-major-version 24)
                (< emacs-minor-version 3))
@@ -886,8 +884,8 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
       (cl-letf (((symbol-function #'read-from-minibuffer)
                   (lambda (prompt &optional _ &rest args)
                     (apply read-from-minibuffer-orig prompt pattern args))))
-        (setq pattern (rg-read-pattern pattern
-                                       (rg-search-literal rg-last-search)))))))
+        (setq pattern (rg-read-pattern (rg-search-literal rg-last-search)
+                                       pattern))))))
 
 (defun rg-rerun-change-regexp ()
   "Rerun last search but prompt for new regexp."
@@ -1146,7 +1144,7 @@ the :query option is missing, set it to ASK"
 
       (when (eq query-opt 'ask)
         (setq iargs
-              (append iargs `((query . (rg-read-pattern nil ,literal))))))
+              (append iargs `((query . (rg-read-pattern ,literal))))))
 
       (when (eq files-opt 'ask)
         (setq iargs

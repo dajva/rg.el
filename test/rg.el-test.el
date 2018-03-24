@@ -116,7 +116,7 @@ on emacs version."
               ((symbol-function #'read-regexp) (lambda (pr &rest _)
                                                  (setq called 'read-regexp)
                                                  (setq prompt-result pr))))
-      (rg-read-pattern "foo" nil)
+      (rg-read-pattern nil "foo")
       (if (and (<= emacs-major-version 24)
                (<= emacs-minor-version 2))
           (progn
