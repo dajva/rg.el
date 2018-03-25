@@ -392,7 +392,7 @@ matching alias."
   "Test `rg-literal'."
   (cl-letf ((called-literal nil)
             ((symbol-function #'rg-run)
-             (lambda (_pattern _files _dir &optional literal _)
+             (lambda (_pattern _files _dir &optional literal &rest _)
                (setq called-literal literal))))
     (rg-literal "foo" "elisp" "/tmp/test")
     (should-not (eq called-literal nil))))
@@ -401,7 +401,7 @@ matching alias."
   "Test `rg'."
   (cl-letf ((called-literal nil)
             ((symbol-function #'rg-run)
-             (lambda (_pattern _files _dir &optional literal _)
+             (lambda (_pattern _files _dir &optional literal &rest _)
                (setq called-literal literal))))
     (rg "foo" "elisp" "/tmp/test")
     (should (eq called-literal nil))))
@@ -457,13 +457,14 @@ Test `:files' directive."
     (should (equal (cadr (assq 'files current)) '(car (rg-default-alias))))
     (should (equal (cadr (assq 'files form)) '(form)))))
 
-(ert-deftest rg-unit/search-parse-global-bindings-flags ()
+(ert-deftest rg-unit/search-parse-local-bindings-flags ()
   "Test rg-define-search helper defun rg-search-parse-global-bindings.
 Test `:flags' directive."
-  (let  ((ask (rg-search-parse-global-bindings '(:flags ask)))
-         (form (rg-search-parse-global-bindings '(:flags '("--flag")))))
-    (should (equal (cadr (assq 'rg-ephemeral-command-line-flags ask)) '(split-string flags)))
-    (should (equal (cadr (assq 'rg-ephemeral-command-line-flags form)) (quote '("--flag"))))))
+  (let  ((ask (rg-search-parse-local-bindings '(:flags ask)))
+         (form (rg-search-parse-local-bindings '(:flags '("--flag")))))
+    (should (cadr (assq 'flags ask)))
+    (should (equal (cadr (assq 'flags form))
+                   (quote (funcall rg-command-line-flags-function '("--flag")))))))
 
 (ert-deftest rg-unit/search-parse-interactive-args ()
   "Test rg-define-search helper defun rg-search-parse-interactive-args."
@@ -476,7 +477,7 @@ Test `:flags' directive."
     (should (equal (cadr (assq 'query query)) 'rg-read-pattern))
     (should (equal (cadr (assq 'files files)) 'rg-read-files ))
     (should (equal (cadr (assq 'dir dir)) 'read-directory-name))
-    (should (equal (cadr (assq 'flags flags)) 'read-string))))
+    (should (equal (caar (cddr (assq 'flags flags))) 'read-string))))
 
 
 ;; Integration tests
@@ -749,7 +750,7 @@ and ungrouped otherwise."
             (called-literal nil)
             (project-dir (expand-file-name default-directory))
             ((symbol-function #'rg-run)
-             (lambda (pattern files dir &optional literal _)
+             (lambda (pattern files dir &optional literal &rest _)
                (setq called-pattern pattern)
                (setq called-files files)
                (setq called-dir dir)
@@ -771,7 +772,7 @@ and ungrouped otherwise."
             (called-literal nil)
             (project-dir (expand-file-name default-directory))
             ((symbol-function #'rg-run)
-             (lambda (pattern files dir &optional literal _)
+             (lambda (pattern files dir &optional literal &rest _)
                (setq called-pattern pattern)
                (setq called-files files)
                (setq called-dir dir)

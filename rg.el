@@ -156,10 +156,11 @@ NIL means case sensitive search will be forced."
 This hook is called every time the rg buffer has been updated with
 new content and filtered through the `rg-filter' function.")
 
-(defvar rg-ephemeral-command-line-flags nil
-  "Command line flags used for a single invokation of rg.
-Will be globally reset after each search but kept as a buffer local in
-the result buffer.")
+(defvar rg-command-line-flags-function 'identity
+  "Function to modify command line flags of a search.
+The argument of the function is an optional list of search specific
+command line flags and the function shall return a list of command
+line flags to use.")
 
 
 ;; Faces
@@ -232,7 +233,8 @@ the result buffer.")
   dir
   full-command
   literal
-  toggle-flags)
+  toggle-flags
+  flags)
 
 (defvar rg-builtin-type-aliases nil
   "Cache for 'rg --type-list'.")
@@ -361,7 +363,6 @@ are command line flags to use for the search."
               (funcall rg-command-line-flags)
             rg-command-line-flags)
           flags
-          rg-ephemeral-command-line-flags
 
           (list
            (if rg-group-result "--heading" "--no-heading"))
@@ -553,8 +554,6 @@ Commands:
   (set (make-local-variable 'compilation-disable-input) t)
   (set (make-local-variable 'compilation-error-screen-columns) nil)
   (make-local-variable 'rg-last-search)
-  (make-local-variable 'rg-ephemeral-command-line-flags)
-  (setq-default rg-ephemeral-command-line-flags nil)
   (rg-create-header-line)
   (add-hook 'compilation-filter-hook 'rg-filter nil t) )
 
@@ -647,11 +646,11 @@ string."
                (rg-header-render-label "hits")
                '(:eval (format "%d" rg-hit-count))))))))
 
-(defun rg-run (pattern files dir &optional literal  confirm)
+(defun rg-run (pattern files dir &optional literal confirm flags)
   "Execute rg command with supplied PATTERN, FILES and DIR.
 If LITERAL is nil interpret PATTERN as regexp, otherwise as a literal.
 CONFIRM allows the user to confirm and modify the command before
-executing."
+executing.  FLAGS is additional command line flags to use in the search."
   (unless (executable-find "rg")
     (error "'rg' is not in path"))
   (unless (and (stringp pattern) (> (length pattern) 0))
@@ -659,7 +658,9 @@ executing."
   (unless (and (file-directory-p dir) (file-readable-p dir))
     (setq dir default-directory))
   (rg-apply-case-flag pattern)
-  (let ((command (rg-build-command pattern files literal rg-toggle-command-line-flags))
+  (let ((command (rg-build-command
+                  pattern files literal
+                  (append rg-toggle-command-line-flags flags)))
         confirmed)
     (setq dir (file-name-as-directory (expand-file-name dir)))
     (if confirm
@@ -667,10 +668,10 @@ executing."
               (read-from-minibuffer "Confirm: "
                                     command nil nil 'rg-history))
       (add-to-history 'rg-history command))
-    ;; If user changed command we can't know the parts of the
-    ;; search and needs to disable result buffer modifications.
     (cond
      ((and confirmed (not (string= confirmed command)))
+      ;; If user changed command we can't know the parts of the
+      ;; search and needs to disable result buffer modifications.
       (setf (rg-search-full-command rg-last-search) t)
       (setq command confirmed))
      (t
@@ -680,7 +681,8 @@ executing."
                      :files files
                      :dir dir
                      :literal literal
-                     :toggle-flags rg-toggle-command-line-flags))))
+                     :toggle-flags rg-toggle-command-line-flags
+                     :flags flags))))
     (let ((default-directory dir))
       ;; Setting process-setup-function makes exit-message-function work
       ;; even when async processes aren't supported.
@@ -694,9 +696,11 @@ executing."
         (files (rg-search-files rg-last-search))
         (dir (rg-search-dir rg-last-search))
         (literal (rg-search-literal rg-last-search))
-        (flags (rg-search-toggle-flags rg-last-search)) )
+        (toggle-flags (rg-search-toggle-flags rg-last-search))
+        (flags (rg-search-flags rg-last-search)))
     (setcar compilation-arguments
-            (rg-build-command pattern files literal flags))
+            (rg-build-command pattern files literal
+                              (append toggle-flags flags)))
     ;; compilation-directory is used as search dir and
     ;; default-directory is used as the base for file paths.
     (setq compilation-directory dir)
@@ -1084,6 +1088,7 @@ the :query option is missing, set it to ASK"
            (query-opt (plist-get search-cfg :query))
            (alias-opt (plist-get search-cfg :files))
            (dir-opt (plist-get search-cfg :dir))
+           (flags-opt (plist-get search-cfg :flags))
            (binding-list `((literal ,(eq format-opt 'literal)))))
 
       ;; confirm binding
@@ -1119,17 +1124,14 @@ the :query option is missing, set it to ASK"
                        alias-opt)))
           (setq binding-list (append binding-list `((files ,files))))))
 
-      binding-list)))
+      (when (eq flags-opt 'ask)
+        (setq flags-opt 'flags))
 
-(eval-and-compile
-  (defun rg-search-parse-global-bindings (search-cfg)
-    "Parse local bindings for search functions from SEARCH-CFG."
-    (let ((flags-opt (plist-get search-cfg :flags)))
-      (cond ((eq flags-opt 'ask)
-             '((rg-ephemeral-command-line-flags (split-string flags))))
-            (flags-opt
-             `((rg-ephemeral-command-line-flags ,flags-opt)))
-            (t nil)))))
+      (setq binding-list
+            (append binding-list
+                    `((flags (funcall rg-command-line-flags-function ,flags-opt)))))
+
+      binding-list)))
 
 (eval-and-compile
   (defun rg-search-parse-interactive-args (search-cfg)
@@ -1158,7 +1160,8 @@ the :query option is missing, set it to ASK"
 
       (when (eq flags-opt 'ask)
         (setq iargs
-              (append iargs '((flags . (read-string "Command line flags: "))))))
+              (append iargs '((flags . (split-string
+                                        (read-string "Command line flags: ")))))))
       iargs)))
 
 (defconst rg-elisp-font-lock-keywords
@@ -1196,13 +1199,10 @@ specified default if left out.
             Default is `ask'.
 :confirm    `never', `always', or `prefix' are allowed values.  Specifies
             if the the final search command line string can be modified
-            and confirmed by the user.
+            and confirmed the user.
             Default is `never'.
 :flags      `ask' or a list of command line flags that will be used when
-            invoking the search.  This sets the
-            `rg-ephemeral-command-line-flags' variable before the
-            search is executed.  If nil or left out, the variable will
-            be untouched.
+            invoking the search.
 
 Example:
 \(rg-define-search search-home-dir-in-elisp
@@ -1216,16 +1216,13 @@ Example:
          (decls (car body))
          (search-cfg (rg-set-search-defaults (cdr body)))
          (local-bindings (rg-search-parse-local-bindings search-cfg))
-         (global-bindings (rg-search-parse-global-bindings search-cfg))
          (iargs (rg-search-parse-interactive-args search-cfg)))
     `(defun ,name ,(mapcar 'car iargs)
        ,@decls
        (interactive
         (list ,@(mapcar 'cdr iargs)))
-       ,@(cl-loop for pair in global-bindings
-                  collect `(setq ,@pair))
        (let ,local-bindings
-         (rg-run query files dir literal confirm)))))
+         (rg-run query files dir literal confirm flags)))))
 
 ;;;###autoload (autoload 'rg-project "rg.el" "" t)
 (rg-define-search rg-project
