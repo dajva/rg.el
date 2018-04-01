@@ -128,7 +128,6 @@ search for quick reruns with refined parameters.
 | `s` | Save search result to unique name |
 | `S` | Save search result, prompt for name |
 | `t` | Edit search string as literal |
-| `w` | Switch to `wgrep-mode` |
 
 ## Customize
 
