@@ -68,6 +68,7 @@
   (kill-emacs 0))
 
 (defun run-package-lint-and-exit ()
+  (setq package-user-dir "/tmp/rg-elpa")
   (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
   (package-refresh-contents)
   (package-lint-batch-and-exit))
