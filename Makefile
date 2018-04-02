@@ -7,7 +7,7 @@ STYLE_CHECK= -L test -L . -l test/style-check.el
 
 all: deps test
 
-test: ert-test style-check package-lint build-test package-test
+test: ert-test style-check package-lint build-test
 
 build-test: clean build
 	cask clean-elc
