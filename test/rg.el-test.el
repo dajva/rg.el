@@ -86,7 +86,7 @@
 
 (ert-deftest rg-unit-test/rerun-change-regexp-literal ()
   "Test result of `rg-rerun-change-regexp' and `rg-rerun-change-literal'."
-  (let ((rg-last-search (rg-search-create :pattern "pattern" :files "elisp" :dir "/tmp/test")))
+  (let ((rg-cur-search (rg-search-create :pattern "pattern" :files "elisp" :dir "/tmp/test")))
     (cl-letf (((symbol-function #'rg-rerun) #'ignore)
               ((symbol-function #'rg-read-pattern) (lambda (&rest _) "new-pattern")))
       (rg-rerun-change-regexp)
@@ -95,16 +95,16 @@
                                           :files "elisp"
                                           :dir "/tmp/test"
                                           :literal nil)
-                        rg-last-search))
+                        rg-cur-search))
       (rg-rerun-change-literal)
       (should (cl-every 'equal
                          (rg-search-create :pattern "new-pattern"
                                            :files "elisp"
                                            :dir "/tmp/test"
                                            :literal t)
-                        rg-last-search))
+                        rg-cur-search))
       (rg-rerun-change-regexp)
-      (should (eq (rg-search-literal rg-last-search) nil)))))
+      (should (eq (rg-search-literal rg-cur-search) nil)))))
 
 (ert-deftest rg-unit-test/read-pattern-correct-read-func ()
   "Test that `rg-read-pattern' choose the correct read function depending
@@ -128,22 +128,22 @@ on emacs version."
 
 (ert-deftest rg-unit-test/rerun-change-files ()
   "Test result of `rg-rerun-change-files'."
-  (let ((rg-last-search (rg-search-new "regexp" "elisp" "/tmp/test")))
+  (let ((rg-cur-search (rg-search-new "regexp" "elisp" "/tmp/test")))
     (cl-letf (((symbol-function #'rg-rerun) #'ignore)
               ((symbol-function #'completing-read) (lambda (&rest _) "cpp")))
       (rg-rerun-change-files)
-      (should (cl-every 'equal (rg-search-new "regexp" "cpp" "/tmp/test") rg-last-search)))))
+      (should (cl-every 'equal (rg-search-new "regexp" "cpp" "/tmp/test") rg-cur-search)))))
 
 (ert-deftest rg-unit-test/rerun-change-dir ()
   "Test result of `rg-rerun-change-dir'."
-  (let ((rg-last-search (rg-search-new "regexp" "elisp" "/tmp/test")))
+  (let ((rg-cur-search (rg-search-new "regexp" "elisp" "/tmp/test")))
     (cl-letf (((symbol-function #'rg-rerun) #'ignore)
               ((symbol-function #'read-directory-name) (lambda (&rest _) "/tmp/new")))
       (rg-rerun-change-dir)
-      (should (cl-every 'equal (rg-search-new "regexp" "elisp" "/tmp/new") rg-last-search)))))
+      (should (cl-every 'equal (rg-search-new "regexp" "elisp" "/tmp/new") rg-cur-search)))))
 
 (defun simulate-rg-run (pattern files dir)
-  (setq-default rg-last-search
+  (setq-default rg-cur-search
                 (rg-search-create
                  :pattern pattern
                  :files files
@@ -151,7 +151,7 @@ on emacs version."
 
 (ert-deftest rg-unit-test/custom-toggle ()
   "Test `rg-define-toggle' macro."
-  (let ((rg-last-search (rg-search-create :pattern "regexp" :files "elisp" :dir "/tmp/test")))
+  (let ((rg-cur-search (rg-search-create :pattern "regexp" :files "elisp" :dir "/tmp/test")))
     (cl-letf (((symbol-function #'rg-rerun) #'ignore))
       (rg-define-toggle "--foo")
       (should (functionp 'rg-custom-toggle-flag-foo))
@@ -160,21 +160,21 @@ on emacs version."
       (should (functionp 'rg-custom-toggle-flag-bar))
       (should (member "--bar" rg-toggle-command-line-flags))
 
-      (simulate-rg-run (rg-search-pattern rg-last-search)
-                       (rg-search-files rg-last-search)
-                       (rg-search-dir rg-last-search))
+      (simulate-rg-run (rg-search-pattern rg-cur-search)
+                       (rg-search-files rg-cur-search)
+                       (rg-search-dir rg-cur-search))
 
       (rg-custom-toggle-flag-foo)
-      (should (member "--foo" (rg-search-toggle-flags rg-last-search)))
-      (should (member "--bar" (rg-search-toggle-flags rg-last-search)))
+      (should (member "--foo" (rg-search-toggle-flags rg-cur-search)))
+      (should (member "--bar" (rg-search-toggle-flags rg-cur-search)))
 
       (rg-custom-toggle-flag-foo)
-      (should-not (member "--foo" (rg-search-toggle-flags rg-last-search)))
-      (should (member "--bar" (rg-search-toggle-flags rg-last-search)))
+      (should-not (member "--foo" (rg-search-toggle-flags rg-cur-search)))
+      (should (member "--bar" (rg-search-toggle-flags rg-cur-search)))
 
       (rg-custom-toggle-flag-bar)
-      (should-not (member "--foo" (rg-search-toggle-flags rg-last-search)))
-      (should-not (member "--bar" (rg-search-toggle-flags rg-last-search)))
+      (should-not (member "--foo" (rg-search-toggle-flags rg-cur-search)))
+      (should-not (member "--bar" (rg-search-toggle-flags rg-cur-search)))
 
       (rg-custom-toggle-flag-bar)
       (should-not (member "--foo" rg-toggle-command-line-flags))
@@ -182,7 +182,7 @@ on emacs version."
 
 (ert-deftest rg-unit-test/custom-toggle-key-binding ()
   "Test `rg-define-toggle' macro key bindings."
-  (let ((rg-last-search (rg-search-create :pattern "regexp" :files "elisp" :dir "/tmp/test")))
+  (let ((rg-cur-search (rg-search-create :pattern "regexp" :files "elisp" :dir "/tmp/test")))
     (cl-letf (((symbol-function #'rg-recompile) #'ignore))
       (rg-define-toggle "--baz" "b")
       (should (functionp 'rg-custom-toggle-flag-baz))
@@ -191,7 +191,7 @@ on emacs version."
 (ert-deftest rg-unit-test/custom-toggle-double-definition ()
   "Test multiple clashing definitions of same flag and bindings in
 `rg-define-toggle' macro."
-  (let ((rg-last-search (rg-search-create :pattern "regexp" :files "elisp" :dir "/tmp/test")))
+  (let ((rg-cur-search (rg-search-create :pattern "regexp" :files "elisp" :dir "/tmp/test")))
     (cl-letf (((symbol-function #'rg-recompile) #'ignore))
       (rg-define-toggle "--qux" nil t)
       (should (functionp 'rg-custom-toggle-flag-qux))
@@ -668,20 +668,20 @@ and ungrouped otherwise."
         (should (rg-wait-for-search-result))
         (should (cl-every 'equal
                           (list "Hello" "all" parent-dir)
-                          (list (rg-search-pattern rg-last-search)
-                                (rg-search-files rg-last-search)
-                                (rg-search-dir rg-last-search))))
-        (should (cl-every 'equal '("--text") (rg-search-toggle-flags rg-last-search)))
-        (message "%s" rg-last-search)
+                          (list (rg-search-pattern rg-cur-search)
+                                (rg-search-files rg-cur-search)
+                                (rg-search-dir rg-cur-search))))
+        (should (cl-every 'equal '("--text") (rg-search-toggle-flags rg-cur-search)))
+        (message "%s" rg-cur-search)
         (rg-recompile)
-        (message "%s" rg-last-search)
+        (message "%s" rg-cur-search)
         (should (rg-wait-for-search-result))
         (should (cl-every 'equal
                           (list "Hello" "all" parent-dir)
-                          (list (rg-search-pattern rg-last-search)
-                                (rg-search-files rg-last-search)
-                                (rg-search-dir rg-last-search))))
-        (should (cl-every 'equal '("--text") (rg-search-toggle-flags rg-last-search)))))))
+                          (list (rg-search-pattern rg-cur-search)
+                                (rg-search-files rg-cur-search)
+                                (rg-search-dir rg-cur-search))))
+        (should (cl-every 'equal '("--text") (rg-search-toggle-flags rg-cur-search)))))))
 
 (ert-deftest rg-integration/display-exit-message ()
   "Verify exit messages."
@@ -719,7 +719,7 @@ and ungrouped otherwise."
     (rg-run "hello" "all" "tmp/test" nil 'confirm)
     (should (eq called-history 'rg-history))
     (should (equal called-prompt "Confirm: "))
-    (should-not (null rg-last-search))
+    (should-not (null rg-cur-search))
     ;; We use the stub about which does not update the history
     (should (null rg-history))
     (rg-with-current-result)))
@@ -737,7 +737,7 @@ and ungrouped otherwise."
                changed-command)))
     (rg-run "hello" "all" "tmp/test" nil 'confirm)
     (should (equal changed-command (concat original-command " world")))
-    (should (rg-search-full-command rg-last-search))
+    (should (rg-search-full-command rg-cur-search))
     ;; We use the stub about which does not update the history
     (should (null rg-history))
     (rg-with-current-result)))
