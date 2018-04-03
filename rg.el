@@ -246,7 +246,8 @@ line flags to use.")
   "Command string for invoking rg.")
 
 (defvar rg-cur-search (rg-search-create)
-  "Stores parameters of last search.  Becomes buffer local in `rg-mode' buffers.")
+  "Stores parameters of last search.
+Becomes buffer local in `rg-mode' buffers.")
 
 (defvar-local rg-hit-count 0
   "Stores number of hits in a search.")
@@ -849,25 +850,14 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
          (rg-rerun-with-changes (:flags flags)
            (setq flags (rg-list-toggle ,flagvalue flags)))))))
 
-(defmacro rg-save-vars (varlist &rest body)
-  "Save variables in VARLIST and restore them to original values after BODY has been run."
-  (declare (indent 1))
-  (let ((set-pairs
-         (cl-loop for var in varlist
-                  collect `(,(cl-gensym) ,var))))
-    `(let ,set-pairs
-       (unwind-protect
-           (progn ,@body)
-         ,@(cl-loop for pair in set-pairs
-                    collect `(setq ,@(reverse pair)))))))
-
 (defun rg-recompile ()
   "Run `recompile' while preserving some buffer local variables."
   (interactive)
   ;; Buffer locals will be reset in recompile so we need save them
   ;; here.
-  (rg-save-vars (rg-cur-search)
-    (recompile)))
+  (let ((cur-search rg-cur-search))
+    (recompile)
+    (setq rg-cur-search cur-search)))
 
 (defun rg-rerun-toggle-case ()
   "Rerun last search with toggled case sensitivity setting."
