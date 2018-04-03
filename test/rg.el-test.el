@@ -328,17 +328,6 @@ matching alias."
       (should (equal "Some match" (match-string 0)))
       (should (eq saved-pos (point))))))
 
-(ert-deftest rg-unit/regexp-quote ()
-  "Test `rg-regexp-quote' with some 'random' strings."
-  (should (equal (rg-regexp-quote ")-[abs|]^$_+=(^\?)")
-                 "\\)-\\[abs\\|\\]\\^\\$_\\+=\\(\\^\\?\\)"))
-  (should (equal (rg-regexp-quote "(?i)a+(?-i)b+")
-                 "\\(\\?i\\)a\\+\\(\\?-i\\)b\\+"))
-  (should (equal (rg-regexp-quote "AaAaAbbBBBb")
-                 "AaAaAbbBBBb"))
-  (should (equal (rg-regexp-quote "^(.*)|{}")
-                 "\\^\\(\\.\\*\\)\\|\\{\\}")))
-
 (ert-deftest rg-unit-test/global-keymap ()
   "Test global keymap."
   ;; Default prefix

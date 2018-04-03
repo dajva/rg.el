@@ -745,10 +745,6 @@ Example:
            (rg-rerun))
        (message "Can't refine search since full command line search was used."))))
 
-(defun rg-regexp-quote (regexp)
-  "Return an 'rg' REGEXP string which match exactly STRING and nothing else."
-  (replace-regexp-in-string "[][*.^\\|+?{}$()\]" "\\\\\\&" regexp))
-
 (defun rg-apply-case-flag (pattern)
   "Make sure -i is added to the command if needed.
 The value of the `rg-ignore-case' variable and the case of the
