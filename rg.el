@@ -582,20 +582,6 @@ Returns the new list."
       (delete elem list)
     (push elem list)))
 
-(defun rg-push-uniq (elem list)
-  "Add ELEM to LIST if not present.
-Returns the new list."
-  (if (member elem list)
-      list
-    (push elem list)))
-
-(defun rg-delete-uniq (elem list)
-  "Remove ELEM from LIST if present.
-Returns the new list."
-  (if (member elem list)
-      (delete elem list)
-    list))
-
 (defun rg-header-render-label (labelform)
   "Return a fontified header label.
 LABELFORM is either a string to render or a form where the `car' is a
@@ -773,9 +759,9 @@ detailed info."
                    (and (eq rg-ignore-case 'case-fold-search) case-fold-search))
                (isearch-no-upper-case-p pattern t)))
       (setq rg-toggle-command-line-flags
-            (rg-push-uniq "-i" rg-toggle-command-line-flags))
+            (add-to-list 'rg-toggle-command-line-flags "-i" ))
     (setq rg-toggle-command-line-flags
-          (rg-delete-uniq "-i" rg-toggle-command-line-flags))))
+          (delete "-i" rg-toggle-command-line-flags))))
 
 (defun rg-single-font-lock-match (face pos limit direction)
   "Return position of next match of 'font-lock-face property that equals FACE.
@@ -839,9 +825,9 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
     `(progn
        ,(if default
             `(setq rg-toggle-command-line-flags
-                   (rg-push-uniq ,flagvalue rg-toggle-command-line-flags))
+                   (add-to-list 'rg-toggle-command-line-flags ,flagvalue))
           `(setq rg-toggle-command-line-flags
-                 (rg-delete-uniq ,flagvalue rg-toggle-command-line-flags)))
+                 (delete ,flagvalue rg-toggle-command-line-flags)))
        ,(when key
           `(define-key rg-mode-map ,key (quote ,(intern funname))))
        (defun ,(intern funname) ()
