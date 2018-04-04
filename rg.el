@@ -957,6 +957,7 @@ from a saved buffer in which case the saved buffer will be reused."
         (kill-buffer buf)))))
 
 (defun rg-ibuffer-search-updated()
+  "This function is executed when search list buffer is updated."
   (let ((list-buffer (get-buffer rg-search-list-buffer-name)))
     (when list-buffer
       (with-current-buffer list-buffer
@@ -1009,8 +1010,8 @@ from a saved buffer in which case the saved buffer will be reused."
 
 ;;;###autoload
 (defun rg-enable-default-bindings(&optional prefix)
-  "Enable the global `rg' default key bindings under PREFIX key. If
-prefix is not supplied `rg-keymap-prefix' is used."
+  "Enable the global `rg' default key bindings under PREFIX key.
+If prefix is not supplied `rg-keymap-prefix' is used."
   (interactive)
   (setq prefix (or prefix rg-keymap-prefix))
   (when prefix
