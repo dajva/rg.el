@@ -3,7 +3,7 @@
 
 (package-file "rg.el")
 
-(files "rg.el")
+(files "rg.el" "rg-result.el")
 
 (development
  (depends-on "cl-lib" "0.5")
