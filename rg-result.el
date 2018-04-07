@@ -28,6 +28,7 @@
 
 (require 'cl-lib)
 (require 'grep)
+(require 'rg-header)
 
 ;; Forward declarations.
 (declare-function rg-build-command "rg.el")
@@ -91,26 +92,6 @@ new content and filtered through the `rg-filter' function.")
 (defface rg-file-tag-face
   '((t :inherit font-lock-function-name-face))
   "face for file tag in grouped layout"
-  :group 'rg-face)
-
-(defface rg-toggle-on-face
-  '((t :inherit rg-file-tag-face))
-  "face for toggle 'on' text in header."
-  :group 'rg-face)
-
-(defface rg-toggle-off-face
-  '((t :inherit rg-error-face))
-  "face for toggle 'off' text in header."
-  :group 'rg-face)
-
-(defface rg-literal-face
-  '((t :inherit rg-filename-face))
-  "face for literal label in header."
-  :group 'rg-face)
-
-(defface rg-regexp-face
-  '((t :inherit compilation-line-number))
-  "face for regexp label in header."
   :group 'rg-face)
 
 
@@ -259,59 +240,6 @@ This function is called from `compilation-filter-hook'."
       (when (re-search-backward "^File: \\(.*\\)$" (point-min) t)
         (list (match-string 1))))))
 
-(defun rg-header-render-label (labelform)
-  "Return a fontified header label.
-LABELFORM is either a string to render or a form where the `car' is a
-conditional and the two following items are then and else specs.
-Specs are lists where the the `car' is the labels string and the
-`cadr' is font to use for that string."
-  (list '(:propertize "[" font-lock-face (header-line bold))
-        (cond
-         ((stringp labelform)
-          `(:propertize ,labelform font-lock-face (header-line bold)))
-         ((listp labelform)
-          (let* ((condition (nth 0 labelform))
-                 (then (nth 1 labelform))
-                 (else (nth 2 labelform)))
-            `(:eval (if ,condition
-                        (propertize ,(nth 0 then) 'font-lock-face '(,(nth 1 then) header-line bold))
-                      (propertize ,(nth 0 else) 'font-lock-face '(,(nth 1 else) header-line bold))))))
-         (t (error "Not a string or list")))
-        '(:propertize "]" font-lock-face (header-line bold))
-        '(": ")))
-
-(defun rg-header-render-toggle (on)
-  "Return a fontified toggle symbol.
-If ON is non nil, render \"on\" string, otherwise render \"off\"
-string."
-  `(:eval (let* ((on ,on)
-                 (value (if on "on " "off"))
-                 (face (if on 'rg-toggle-on-face 'rg-toggle-off-face)))
-            (propertize value 'font-lock-face `(bold ,face)))))
-
-(defun rg-create-header-line ()
-  "Create the header line if `rg-show-header' is enabled."
-  (when rg-show-header
-    (let ((itemspace "  "))
-      (setq header-line-format
-            (if (rg-search-full-command rg-cur-search)
-                (list (rg-header-render-label "command line") "no refinement")
-              (list
-               (rg-header-render-label '((rg-search-literal rg-cur-search)
-                                         ("literal" rg-literal-face)
-                                         ("regexp" rg-regexp-face)))
-               '(:eval (rg-search-pattern rg-cur-search)) itemspace
-               (rg-header-render-label "files")
-               '(:eval (rg-search-files rg-cur-search)) itemspace
-               (rg-header-render-label "case")
-               (rg-header-render-toggle
-                '(not (member "-i" (rg-search-toggle-flags rg-cur-search)))) itemspace
-                (rg-header-render-label "ign")
-                (rg-header-render-toggle
-                 '(not (member "--no-ignore" (rg-search-toggle-flags rg-cur-search)))) itemspace
-                 (rg-header-render-label "hits")
-                 '(:eval (format "%d" rg-hit-count))))))))
-
 (define-compilation-mode rg-mode "rg"
   "Major mode for `rg' search results.
 Commands:
@@ -347,7 +275,9 @@ Commands:
   (set (make-local-variable 'compilation-disable-input) t)
   (set (make-local-variable 'compilation-error-screen-columns) nil)
   (make-local-variable 'rg-cur-search)
-  (rg-create-header-line)
+  (when rg-show-header
+    (rg-create-header-line 'rg-cur-search
+                           (rg-search-full-command rg-cur-search)))
   (add-hook 'compilation-filter-hook 'rg-filter nil t) )
 
 (defun rg-rerun ()
