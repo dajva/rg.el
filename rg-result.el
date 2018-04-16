@@ -356,36 +356,28 @@ backwards and positive means forwards."
   (rg-rerun-toggle-flag "--no-ignore")
   (rg-rerun))
 
-(defun rg-rerun-change-search-string ()
+(defun rg-rerun-change-search-string (literal)
   "Rerun last search but prompt for new search pattern."
   (let ((pattern (rg-search-pattern rg-cur-search))
-        (read-from-minibuffer-orig (symbol-function 'read-from-minibuffer)) )
+        (read-from-minibuffer-orig (symbol-function 'read-from-minibuffer)))
     ;; Override read-from-minibuffer in order to insert the original
     ;; pattern in the input area.
     (cl-letf (((symbol-function #'read-from-minibuffer)
                (lambda (prompt &optional _ &rest args)
                  (apply read-from-minibuffer-orig prompt pattern args))))
-      (setf (rg-search-pattern rg-cur-search)
-            (rg-read-pattern (rg-search-literal rg-cur-search) pattern)))
+      (setf (rg-search-pattern rg-cur-search) (rg-read-pattern literal pattern)))
+    (setf (rg-search-literal rg-cur-search) literal)
     (rg-rerun)))
 
 (defun rg-rerun-change-regexp ()
   "Rerun last search but prompt for new regexp."
   (interactive)
-  (let ((literal-orig (rg-search-literal rg-cur-search)))
-    (setf (rg-search-literal rg-cur-search) nil)
-    (condition-case nil
-        (rg-rerun-change-search-string)
-      ((error quit) (setf (rg-search-literal rg-cur-search) literal-orig)))))
+  (rg-rerun-change-search-string nil))
 
 (defun rg-rerun-change-literal ()
   "Rerun last search but prompt for new literal."
   (interactive)
-  (let ((literal-orig (rg-search-literal rg-cur-search)))
-    (setf (rg-search-literal rg-cur-search) t)
-    (condition-case nil
-        (rg-rerun-change-search-string)
-      ((error quit) (setf (rg-search-literal rg-cur-search) literal-orig)))))
+  (rg-rerun-change-search-string t))
 
 (defun rg-rerun-change-files()
   "Rerun last search but prompt for new files."
