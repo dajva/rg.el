@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 1985-1987, 1993-1999, 2001-2015 Free Software
 ;; Foundation, Inc.
-;; Copyright (C) 2016-2017 David Landell <david.landell@sunnyhill.email>
+;; Copyright (C) 2016-2018 David Landell <david.landell@sunnyhill.email>
 ;;
 ;; Author: David Landell <david.landell@sunnyhill.email>
 ;;         Roland McGrath <roland@gnu.org>
