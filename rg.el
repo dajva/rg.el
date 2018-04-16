@@ -418,8 +418,7 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
        (defun ,(intern funname) ()
          ,(format "Rerun last search with flag '%s' toggled." flagvalue)
          (interactive)
-         (rg-rerun-with-changes (:flags flags)
-           (setq flags (rg-list-toggle ,flagvalue flags)))))))
+         (rg-rerun-toggle-flag ,flagvalue)))))
 
 (defun rg-save-search-as-name (newname)
   "Save the search result in current *rg* result buffer.

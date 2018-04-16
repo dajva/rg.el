@@ -628,11 +628,11 @@ and ungrouped otherwise."
     (rg-run "hello" "elisp" (concat parent-dir "data"))
     (rg-with-current-result
       (cl-letf (((symbol-function #'rg-read-pattern) #'ignore))
-        (rg-rerun-with-changes (:files files :dir dir :pattern pattern :flags flags)
-          (setq files "all")
-          (setq pattern "Hello")
-          (setq dir parent-dir)
-          (setq flags '("--text")))
+        (setf (rg-search-files rg-cur-search) "all")
+        (setf (rg-search-pattern rg-cur-search) "Hello")
+        (setf (rg-search-dir rg-cur-search) parent-dir)
+        (setf (rg-search-toggle-flags rg-cur-search) '("--text"))
+        (rg-rerun))
         (should (rg-wait-for-search-result))
         (should (cl-every 'equal
                           (list "Hello" "all" parent-dir)
@@ -649,7 +649,7 @@ and ungrouped otherwise."
                           (list (rg-search-pattern rg-cur-search)
                                 (rg-search-files rg-cur-search)
                                 (rg-search-dir rg-cur-search))))
-        (should (cl-every 'equal '("--text") (rg-search-toggle-flags rg-cur-search)))))))
+        (should (cl-every 'equal '("--text") (rg-search-toggle-flags rg-cur-search))))))
 
 (ert-deftest rg-integration/display-exit-message ()
   "Verify exit messages."

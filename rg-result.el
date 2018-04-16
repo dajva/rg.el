@@ -297,55 +297,6 @@ Commands:
     (setq default-directory compilation-directory)
     (rg-recompile)))
 
-(eval-and-compile
-  (defun rg-rerun-local-bindings (varplist)
-    (let ((pattern (plist-get varplist :pattern))
-          (files (plist-get varplist :files))
-          (dir (plist-get varplist :dir))
-          (flags (plist-get varplist :flags))
-          (bindings nil))
-      (when pattern
-        (setq bindings (append bindings
-                               `((,pattern (rg-search-pattern rg-cur-search))))))
-      (when files
-        (setq bindings (append bindings
-                               `((,files (rg-search-files rg-cur-search))))))
-      (when dir
-        (setq bindings (append bindings
-                               `((,dir (rg-search-dir rg-cur-search))))))
-      (when flags
-        (setq bindings (append bindings
-                               `((,flags (rg-search-toggle-flags rg-cur-search))))))
-      bindings)))
-
-(defmacro rg-rerun-with-changes (varplist &rest body)
-  "Rerun last search with changed parameters.
-VARPLIST is a property list of the form (:parameter1 symbol1
-[:parameter2 symbol2] ...) that specifies the parameters that will be
-exposed in BODY.  The values of the parameters will be bound to
-corresponding symbols.
-
-BODY can modify the exposed parameters and these will be used together
-with the non exposed unmodified parameters to rerun the the search.
-
-Supported properties are :pattern, :files, :dir and :flags, where the
-three first are bound to the corresponding parameters in `rg' from
-`rg-cur-search'.
-
-Example:
-\(rg-rerun-with-changes \(:pattern searchstring\)
-\(setq searchstring \"new string\"\)\)"
-  (declare (debug ((&rest symbolp symbolp) body))
-           (indent 1))
-  (let ((bindings (rg-rerun-local-bindings varplist)))
-    `(if (null (rg-search-full-command rg-cur-search))
-         (let ,bindings
-           ,@body
-           ,@(cl-loop for binding in bindings
-                   collect `(setf ,@(reverse binding)))
-           (rg-rerun))
-       (message "Can't refine search since full command line search was used."))))
-
 (defun rg-single-font-lock-match (face pos limit direction)
   "Return position of next match of 'font-lock-face property that equals FACE.
 POS is the start position of the search and LIMIT is the limit of the
@@ -388,29 +339,35 @@ backwards and positive means forwards."
     (recompile)
     (setq rg-cur-search cur-search)))
 
+(defun rg-rerun-toggle-flag (flag)
+  "Toggle FLAG in `rg-cur-search`."
+  (setf (rg-search-toggle-flags rg-cur-search)
+        (rg-list-toggle flag (rg-search-toggle-flags rg-cur-search))))
+
 (defun rg-rerun-toggle-case ()
   "Rerun last search with toggled case sensitivity setting."
   (interactive)
-  (rg-rerun-with-changes (:flags flags)
-    (setq flags (rg-list-toggle "-i" flags))))
+  (rg-rerun-toggle-flag "-i")
+  (rg-rerun))
 
 (defun rg-rerun-toggle-ignore ()
   "Rerun last search with toggled '--no-ignore' flag."
   (interactive)
-  (rg-rerun-with-changes (:flags flags)
-    (setq flags (rg-list-toggle "--no-ignore" flags))))
+  (rg-rerun-toggle-flag "--no-ignore")
+  (rg-rerun))
 
 (defun rg-rerun-change-search-string ()
   "Rerun last search but prompt for new search pattern."
-  (rg-rerun-with-changes (:pattern pattern)
+  (let ((pattern (rg-search-pattern rg-cur-search))
+        (read-from-minibuffer-orig (symbol-function 'read-from-minibuffer)) )
     ;; Override read-from-minibuffer in order to insert the original
     ;; pattern in the input area.
-    (let ((read-from-minibuffer-orig (symbol-function 'read-from-minibuffer)))
-      (cl-letf (((symbol-function #'read-from-minibuffer)
-                 (lambda (prompt &optional _ &rest args)
-                   (apply read-from-minibuffer-orig prompt pattern args))))
-        (setq pattern (rg-read-pattern (rg-search-literal rg-cur-search)
-                                       pattern))))))
+    (cl-letf (((symbol-function #'read-from-minibuffer)
+               (lambda (prompt &optional _ &rest args)
+                 (apply read-from-minibuffer-orig prompt pattern args))))
+      (setf (rg-search-pattern rg-cur-search)
+            (rg-read-pattern (rg-search-literal rg-cur-search) pattern)))
+    (rg-rerun)))
 
 (defun rg-rerun-change-regexp ()
   "Rerun last search but prompt for new regexp."
@@ -433,19 +390,22 @@ backwards and positive means forwards."
 (defun rg-rerun-change-files()
   "Rerun last search but prompt for new files."
   (interactive)
-  (rg-rerun-with-changes (:files files)
-    (setq files (completing-read
-                 (concat "Repeat search in files (default: [" files "]): ")
-                 (rg-get-type-aliases)
-                 nil nil nil 'rg-files-history
-                 files))))
+  (let ((files (rg-search-files rg-cur-search)))
+    (setf (rg-search-files rg-cur-search)
+          (completing-read
+           (concat "Repeat search in files (default: [" files "]): ")
+           (rg-get-type-aliases)
+           nil nil nil 'rg-files-history
+           files))
+    (rg-rerun)))
 
 (defun rg-rerun-change-dir()
   "Rerun last search but prompt for new dir."
   (interactive)
-  (rg-rerun-with-changes (:dir dir)
-    (setq dir (read-directory-name "In directory: "
-                                   dir nil))))
+  (setf (rg-search-dir rg-cur-search)
+        (read-directory-name "In directory: "
+                             (rg-search-dir rg-cur-search) nil))
+  (rg-rerun))
 
 (defun rg-next-file (n)
   "Move point to next file with a match.
