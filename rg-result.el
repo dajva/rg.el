@@ -48,6 +48,11 @@ If nil, the file name is repeated at the beginning of every match line."
   :type 'boolean
   :group 'rg)
 
+(defcustom rg-hide-command t
+  "Hide most of rg command line when non nil."
+  :type 'boolean
+  :group 'rg)
+
 (defvar rg-filter-hook nil
   "Hook for new content in the rg buffer.
 This hook is called every time the rg buffer has been updated with
@@ -132,7 +137,10 @@ Becomes buffer local in `rg-mode' buffers.")
      (2 'rg-error-face nil t))
     ;; "filename-linenumber-" or "linenumber-" format is used for
     ;; context lines in rg
-    ("^\\(?:.+?-\\)?[0-9]+-.*\n" (0 'rg-context-face))))
+    ("^\\(?:.+?-\\)?[0-9]+-.*\n" (0 'rg-context-face))
+    ("^.*rg \\(--color always .*$\\)"
+     (0 '(face rg-context-face))
+     (1 (rg-hide-command-properties)))))
 
 (defvar rg-mode-map
   (let ((map (copy-keymap grep-mode-map)))
@@ -151,8 +159,41 @@ Becomes buffer local in `rg-mode' buffers.")
     map)
   "The keymap for `rg-mode'.")
 
+(defvar rg-ellipsis (if (char-displayable-p ?…) "[…]" "[...]")
+  "Used when hiding command line.")
+
 
 ;; Defuns
+
+;; This solution was mostly copied from emacs grep.el and adjusted to
+;; be more usable.
+(defun rg-hide-command-properties ()
+    "Return properties of button-like ellipsis on part of rg command line."
+  (let ((map (make-sparse-keymap))
+        properties)
+    (define-key map [down-mouse-2] 'mouse-set-point)
+    (define-key map [mouse-2] 'rg-toggle-command-hinding)
+    (define-key map "\C-m" 'rg-toggle-command-hinding)
+    (append
+     `(face nil mouse-face highlight
+            help-echo "RET, mouse-2: show unabbreviated command"
+            keymap ,map rg-command t)
+     (when rg-hide-command
+         `(display ,rg-ellipsis)))))
+
+(defun rg-toggle-command-hinding ()
+  "Toggle showing the hidden part of rg command line."
+  (interactive)
+  (with-silent-modifications
+    (let* ((beg (next-single-property-change (point-min) 'rg-command))
+           (end (when beg
+                  (next-single-property-change beg 'rg-command))))
+      (if end
+          (if (get-text-property beg 'display)
+              (remove-list-of-text-properties beg end '(display))
+            (add-text-properties beg end `(display ,rg-ellipsis)))
+        (user-error "No abbreviated part to hide/show")))))
+
 (defun rg-list-toggle (elem list)
   "Remove ELEM from LIST if present or add it if not present.
 Returns the new list."
@@ -357,7 +398,8 @@ backwards and positive means forwards."
   (rg-rerun))
 
 (defun rg-rerun-change-search-string (literal)
-  "Rerun last search but prompt for new search pattern."
+  "Rerun last search but prompt for new search pattern.
+IF LITERAL is non nil this will trigger a literal search, otherwise a regexp search."
   (let ((pattern (rg-search-pattern rg-cur-search))
         (read-from-minibuffer-orig (symbol-function 'read-from-minibuffer)))
     ;; Override read-from-minibuffer in order to insert the original
