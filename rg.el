@@ -610,7 +610,7 @@ string."
   `(:eval (let* ((on ,on)
                  (value (if on "on " "off"))
                  (face (if on 'rg-toggle-on-face 'rg-toggle-off-face)))
-            (propertize value 'font-lock-face `(bold ,face)))))
+            (propertize value 'font-lock-face `(,face)))))
 
 (defun rg-create-header-line ()
   "Create the header line if `rg-show-header' is enabled."
