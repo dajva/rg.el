@@ -103,8 +103,10 @@
 (defcustom rg-custom-type-aliases
   '(("gn" .    "*.gn *.gni")
     ("gyp" .    "*.gyp *.gypi"))
-  "Alist of file type aliases that are added to the 'rg' built in aliases."
-  :type '(alist :key-type string :value-type string)
+  "A list of file type aliases that are added to the 'rg' built in aliases.
+Each list element may be a (string . string) cons containing the name of the
+type alias and the file patterns, or a lambda returning a similar cons cell."
+  :type '(repeat (choice (cons string string) function))
   :group 'rg)
 
 (defcustom rg-command-line-flags nil
@@ -195,7 +197,7 @@ These are not produced by 'rg --type-list' but we need them anyway.")
           (concat "--type-add "
                   (shell-quote-argument (concat name ":" glob))))
         (split-string globs) " ")))
-   rg-custom-type-aliases))
+   (rg-get-custom-type-aliases)))
 
 (defun rg-is-custom-file-pattern (files)
   "Return non nil if FILES is a custom file pattern."
@@ -249,13 +251,21 @@ are command line flags to use for the search."
      type-list)))
 
 
+(defun rg-get-custom-type-aliases ()
+  "Get alist of custom type aliases.
+Any lambda elements will be evaluated, and nil results will be
+filtered out."
+  (delq nil (mapcar
+             (lambda (ct) (if (functionp ct) (funcall ct) ct))
+             rg-custom-type-aliases)))
+
 (defun rg-get-type-aliases (&optional skip-internal)
   "Return supported type aliases.
 If SKIP-INTERNAL is non nil the `rg-internal-type-aliases' will be
 excluded."
   (unless rg-builtin-type-aliases
     (setq rg-builtin-type-aliases (rg-list-builtin-type-aliases)))
-  (append rg-custom-type-aliases rg-builtin-type-aliases
+  (append (rg-get-custom-type-aliases) rg-builtin-type-aliases
           (unless skip-internal rg-internal-type-aliases)))
 
 (defun rg-default-alias ()

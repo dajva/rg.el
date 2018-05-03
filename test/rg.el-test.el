@@ -463,7 +463,7 @@ Test `:flags' directive."
         (should (= 0 (s-count-matches "bar.baz.*hello" bufstr)))))))
 
 (ert-deftest rg-integration-test/search-alias-custom ()
-  "Test that aliases defined in `rg-custom-type-aliases' works if explicitly selected."
+  "Test that aliases defined in `rg-custom-type-aliases' work if explicitly selected."
   :tags '(need-rg)
   (let ((rg-ignore-case 'force)
         (rg-custom-type-aliases '(("test" . "*.baz"))))
@@ -476,7 +476,7 @@ Test `:flags' directive."
         (should (= 3 (s-count-matches "bar.baz.*hello" bufstr)))))))
 
 (ert-deftest rg-integration-test/search-alias-all-custom ()
-  "Test that aliases defined in `rg-custom-type-ailiases' works if
+  "Test that aliases defined in `rg-custom-type-ailiases' work if
   implicitly selected via '--type all'."
   :tags '(need-rg)
   (let ((rg-ignore-case 'force)
@@ -486,6 +486,19 @@ Test `:flags' directive."
       (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
         (should (= 3 (s-count-matches "foo.el.*hello" bufstr)))
         (should (= 3 (s-count-matches "bar.el.*hello" bufstr)))
+        (should (= 3 (s-count-matches "foo.baz.*hello" bufstr)))
+        (should (= 3 (s-count-matches "bar.baz.*hello" bufstr)))))))
+
+(ert-deftest rg-integration-test/search-alias-custom-lambda ()
+  "Test that aliases defined via lambdas in `rg-custom-type-aliases' work."
+  :tags '(need-rg)
+  (let ((rg-ignore-case 'force)
+        (rg-custom-type-aliases '((lambda () '("test" . "*.baz")))))
+    (rg-run "hello" "test" (concat default-directory "test/data"))
+    (rg-with-current-result
+      (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
+        (should (= 0 (s-count-matches "foo.el.*hello" bufstr)))
+        (should (= 0 (s-count-matches "bar.el.*hello" bufstr)))
         (should (= 3 (s-count-matches "foo.baz.*hello" bufstr)))
         (should (= 3 (s-count-matches "bar.baz.*hello" bufstr)))))))
 
