@@ -25,7 +25,7 @@ package-test:
 	-@rm -r /tmp/$(PKG_FULL_NAME)-elpa 2> /dev/null || true
 	cask package
 	PKG_FULL_NAME=$(PKG_FULL_NAME) emacs -batch -Q -l test/package-bootstrap.el \
-		--eval "(package-install-file \"dist/$(PKG_FULL_NAME).tar\") (rg \"rg\" \"elisp\" \"/tmp/$(PKG_FULL_NAME)-elpa\")"
+		--eval "(package-install-file (expand-file-name \"dist/$(PKG_FULL_NAME).tar\")) (rg \"rg\" \"elisp\" \"/tmp/$(PKG_FULL_NAME)-elpa\")"
 
 style-check:
 	cask emacs -batch -Q $(STYLE_CHECK) -f run-emacs-lisp-flycheck-and-exit $(SOURCES)
