@@ -65,6 +65,14 @@
 ;; (setq rg-custom-type-aliases
 ;;   '(("foo" .    "*.foo *.bar")
 ;;     ("baz" .    "*.baz *.qux")))
+;;
+;; You may also add lambdas to `rg-custom-type-aliases' to add aliases
+;; dynamically based on mode, directory, project, etc.:
+;; (add-to-list
+;;  'rg-custom-type-aliases
+;;  (lambda ()
+;;    (when (in-frontend-app)
+;;      (cons "ui" "*.js *.hbs *.json"))))
 
 ;; The `rg-define-toggle' macro can be used to define a toggle-able
 ;; flag for the rg command line.  Such flags can then be toggled from
@@ -105,7 +113,8 @@
     ("gyp" .    "*.gyp *.gypi"))
   "A list of file type aliases that are added to the 'rg' built in aliases.
 Each list element may be a (string . string) cons containing the name of the
-type alias and the file patterns, or a lambda returning a similar cons cell."
+type alias and the file patterns, or a lambda returning a similar cons cell.
+A lambda should return nil if it currently has no type aliases to contribute."
   :type '(repeat (choice (cons string string) function))
   :group 'rg)
 

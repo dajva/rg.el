@@ -141,6 +141,17 @@ Custom type patterns as for rgrep are supported via customizing of
     ("baz" .    "*.baz *.qux")))
 ```
 
+You may also add lambdas to `rg-custom-type-aliases` to add aliases
+dynamically based on mode, directory, project, etc.
+
+```el
+ (add-to-list
+  'rg-custom-type-aliases
+  (lambda ()
+    (when (in-frontend-app)
+      (cons "ui" "*.js *.hbs *.json"))))
+```
+
 ### `rg-command-line-flags`
 Additional command line flags that will be appended to the ripgrep
 command line. Must either be a list of flags or a function that
