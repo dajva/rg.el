@@ -172,8 +172,8 @@ Becomes buffer local in `rg-mode' buffers.")
   (let ((map (make-sparse-keymap))
         properties)
     (define-key map [down-mouse-2] 'mouse-set-point)
-    (define-key map [mouse-2] 'rg-toggle-command-hinding)
-    (define-key map "\C-m" 'rg-toggle-command-hinding)
+    (define-key map [mouse-2] 'rg-toggle-command-hiding)
+    (define-key map "\C-m" 'rg-toggle-command-hiding)
     (append
      `(face nil mouse-face highlight
             help-echo "RET, mouse-2: show unabbreviated command"
@@ -181,7 +181,7 @@ Becomes buffer local in `rg-mode' buffers.")
      (when rg-hide-command
          `(display ,rg-ellipsis)))))
 
-(defun rg-toggle-command-hinding ()
+(defun rg-toggle-command-hiding ()
   "Toggle showing the hidden part of rg command line."
   (interactive)
   (with-silent-modifications

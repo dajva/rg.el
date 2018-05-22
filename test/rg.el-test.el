@@ -561,6 +561,36 @@ Test `:flags' directive."
                   (rg-project-root "/tmp/foo.el"))
                  "/tmp/")))
 
+(defmacro rg-test-with-command-start (&rest body)
+  "Run search and set `command-start` to begining of rg command when running BODY."
+  `(progn
+     (rg-run "hello" "elisp" (concat default-directory "test/data"))
+     (rg-with-current-result
+       ;; font-lock-mode is disabled by default in batch mode so
+       ;; request explicit fontification
+       (font-lock-fontify-buffer)
+       (let ((command-start (next-single-property-change (point-min) 'rg-command)))
+         ,@body))))
+
+(ert-deftest rg-integration/command-hiding-hide ()
+  "Test command hiding when `rg-hide-command` is non nil."
+  :tags '(need-rg)
+  (rg-test-with-command-start
+     (should command-start)
+     (should (get-text-property command-start 'display))
+     (rg-toggle-command-hiding)
+     (should-not (get-text-property command-start 'display))))
+
+(ert-deftest rg-integration/command-hiding-nohide ()
+  "Test command hiding when `rg-hide-command` is nil."
+  :tags '(need-rg)
+  (let ((rg-hide-command nil))
+    (rg-test-with-command-start
+        (should command-start)
+        (should-not (get-text-property command-start 'display))
+        (rg-toggle-command-hiding)
+        (should (get-text-property command-start 'display)))))
+
 (ert-deftest rg-integration/navigate-file-group-in-grouped-result ()
   "Test group navigation in grouped result."
   :tags '(need-rg)
