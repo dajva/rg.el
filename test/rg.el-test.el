@@ -142,13 +142,6 @@ on emacs version."
       (rg-rerun-change-dir)
       (should (cl-every 'equal (rg-search-new "regexp" "elisp" "/tmp/new") rg-cur-search)))))
 
-(defun simulate-rg-run (pattern files dir)
-  (setq-default rg-cur-search
-                (rg-search-create
-                 :pattern pattern
-                 :files files
-                 :toggle-flags rg-toggle-command-line-flags)))
-
 (ert-deftest rg-unit-test/custom-toggle ()
   "Test `rg-define-toggle' macro."
   (let ((rg-cur-search (rg-search-create :pattern "regexp" :files "elisp" :dir "/tmp/test")))
@@ -646,16 +639,6 @@ If GROUPED is is non nil grouped result are used."
   :tags '(need-rg)
   (rg-test-highlight-match t)
   (rg-test-highlight-match nil))
-
-(defun rg-file-tag-face-exist-in-result (grouped)
-  "Search and return non nil if 'rg-file-tag-face exist in buffer.
-GROUPED control if `rg-group-result' is used."
-  (let((rg-group-result grouped)
-       pos)
-    (rg-run "hello" "elisp" (concat default-directory "test/data"))
-    (rg-with-current-result
-      (setq pos (rg-single-font-lock-match 'rg-file-tag-face (point-min) (point-max) 1))
-      (not (eq (point-max) pos)))))
 
 (ert-deftest rg-integration/group-result-variable ()
   "Test that grouped result is triggered if `rg-group-result' is non nil

@@ -86,4 +86,21 @@ the original global kemap"
        ,@body
        (use-global-map ,saved-global-map))))
 
+(defun simulate-rg-run (pattern files dir)
+  (setq-default rg-cur-search
+                (rg-search-create
+                 :pattern pattern
+                 :files files
+                 :toggle-flags rg-toggle-command-line-flags)))
+
+(defun rg-file-tag-face-exist-in-result (grouped)
+  "Search and return non nil if 'rg-file-tag-face exist in buffer.
+GROUPED control if `rg-group-result' is used."
+  (let((rg-group-result grouped)
+       pos)
+    (rg-run "hello" "elisp" (concat default-directory "test/data"))
+    (rg-with-current-result
+      (setq pos (rg-single-font-lock-match 'rg-file-tag-face (point-min) (point-max) 1))
+      (not (eq (point-max) pos)))))
+
 ;;; test-helper.el ends here
