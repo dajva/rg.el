@@ -383,7 +383,8 @@ backwards and positive means forwards."
 (defun rg-rerun-toggle-flag (flag)
   "Toggle FLAG in `rg-cur-search`."
   (setf (rg-search-toggle-flags rg-cur-search)
-        (rg-list-toggle flag (rg-search-toggle-flags rg-cur-search))))
+        (rg-list-toggle flag (rg-search-toggle-flags rg-cur-search)))
+  (rg-rerun))
 
 (defun rg-rerun-toggle-case ()
   "Rerun last search with toggled case sensitivity setting."
