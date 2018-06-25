@@ -389,14 +389,12 @@ backwards and positive means forwards."
 (defun rg-rerun-toggle-case ()
   "Rerun last search with toggled case sensitivity setting."
   (interactive)
-  (rg-rerun-toggle-flag "-i")
-  (rg-rerun))
+  (rg-rerun-toggle-flag "-i"))
 
 (defun rg-rerun-toggle-ignore ()
   "Rerun last search with toggled '--no-ignore' flag."
   (interactive)
-  (rg-rerun-toggle-flag "--no-ignore")
-  (rg-rerun))
+  (rg-rerun-toggle-flag "--no-ignore"))
 
 (defun rg-rerun-change-search-string (literal)
   "Rerun last search but prompt for new search pattern.
