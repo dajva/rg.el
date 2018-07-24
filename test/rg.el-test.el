@@ -536,16 +536,20 @@ Test `:flags' directive."
       (should (= 1 (s-count-matches "bar.el.*hello" bufstr))))))
 
 (ert-deftest rg-integration-test/project-root ()
-  "Test that all paths in `rt-project-root' gives valid results."
-  ;; projectile
-  (rg-check-git-project-root)
-  (eval-after-load 'projectile
-    (fmakunbound 'projectile-project-root))
-
-  ;; ffip requires emacs 24.3 so not possible to test with cask right now.
+  "Test that all paths in `rt-project-root' gives valid results.
+This test abuse the internal priority of `rg-project-root', by first
+checking the root and then successively disable the internally used
+method. "
+  ;; projectile require emacs 25.1 so can't test with cask since we
+  ;; require emacs 24.3.
   ;; (rg-check-git-project-root)
-  ;; (with-eval-after-load 'find-file-in-project
-  ;;   (fmakunbound 'ffip-project-root))
+  ;; (eval-after-load 'projectile
+  ;;   (fmakunbound 'projectile-project-root))
+
+  ;; ffip
+  (rg-check-git-project-root)
+  (eval-after-load 'find-file-in-project
+    (fmakunbound 'ffip-project-root))
 
   ;; vc-backend
   (rg-check-git-project-root)
