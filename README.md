@@ -172,16 +172,16 @@ Default value is `nil` (off).
 Variable that controls when case sensitive search is made or not.
 The following values can be set:
 
-### `rg-hide-command`
-Hide most of command line by default. This is enabled by default and
-can be set to `nil` to show full command line by default.
-
 | Symbol | Description |
 |-----|--------|
 | `'case-fold-search` | Smart search based on `case-fold-search` setting. |
 | `'smart` | Smart search. Case sensitive if at least one character is uppercase, otherwise ignore case. |
 | `'force` | Force ignore case. |
 | `nil` | Always case sensitive search. |
+
+### `rg-hide-command`
+Hide most of command line by default. This is enabled by default and
+can be set to `nil` to show full command line by default.
 
 ### `rg-keymap-prefix`
 This variable sets the default prefix used for the global key
