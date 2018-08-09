@@ -294,7 +294,7 @@ excluded."
                         filename))
         (rg-get-type-aliases t)))
      ;; Default when an alias for the file can't be determined
-     '("all" . "*"))))
+     '("all" . "all gn defined file types"))))
 
 (defun rg-read-files ()
   "Read files argument for interactive rg."
