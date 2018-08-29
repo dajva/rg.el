@@ -118,6 +118,13 @@ A lambda should return nil if it currently has no type aliases to contribute."
   :type '(repeat (choice (cons string string) function))
   :group 'rg)
 
+(defcustom rg-executable
+  (or (executable-find "rg")
+      (error "'rg' executable is not in path"))
+  "'rg' executable."
+  :type 'string
+  :group 'rg)
+
 (defcustom rg-command-line-flags nil
   "List of command line flags for rg.
 Alternatively a function returning a list of flags."
@@ -163,7 +170,7 @@ line flags to use.")
   "Cache for 'rg --type-list'.")
 
 (defvar rg-command
-  (concat (executable-find "rg")
+  (concat rg-executable
           " --color always --colors match:fg:red -n")
   "Command string for invoking rg.")
 
@@ -243,11 +250,9 @@ are command line flags to use for the search."
 
 (defun rg-list-builtin-type-aliases ()
   "Invokes rg --type-list and puts the result in an alist."
-  (unless (executable-find "rg")
-    (error "'rg' is not in path"))
   (let ((type-list (nbutlast (split-string
                               (shell-command-to-string
-                               (concat (executable-find "rg") " --type-list"))
+                               (concat rg-executable " --type-list"))
                               "\n") 1)))
     (mapcar
      (lambda (type-alias)
@@ -347,8 +352,6 @@ If LITERAL is non nil prompt for literal string.  DEFAULT is the default pattern
 If LITERAL is nil interpret PATTERN as regexp, otherwise as a literal.
 CONFIRM allows the user to confirm and modify the command before
 executing.  FLAGS is additional command line flags to use in the search."
-  (unless (executable-find "rg")
-    (error "'rg' is not in path"))
   (unless (and (stringp pattern) (> (length pattern) 0))
     (signal 'user-error '("Empty string: No search done")))
   (unless (and (file-directory-p dir) (file-readable-p dir))
