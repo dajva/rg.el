@@ -118,9 +118,7 @@ A lambda should return nil if it currently has no type aliases to contribute."
   :type '(repeat (choice (cons string string) function))
   :group 'rg)
 
-(defcustom rg-executable
-  (or (executable-find "rg")
-      (error "'rg' executable is not in path"))
+(defcustom rg-executable (executable-find "rg")
   "'rg' executable."
   :type 'string
   :group 'rg)
@@ -169,11 +167,6 @@ line flags to use.")
 (defvar rg-builtin-type-aliases nil
   "Cache for 'rg --type-list'.")
 
-(defvar rg-command
-  (concat rg-executable
-          " --color always --colors match:fg:red -n")
-  "Command string for invoking rg.")
-
 (defvar rg-toggle-command-line-flags nil
   "List of command line flags defined by `rg-define-toggle' macro.")
 
@@ -202,6 +195,18 @@ These are not produced by 'rg --type-list' but we need them anyway.")
 
 
 ;; Defuns
+(defun rg-executable ()
+  "Return the 'rg' executable.
+Raises an error if it can not be found."
+  (unless rg-executable
+    (error "No 'rg' executable found"))
+  rg-executable)
+
+(defun rg-command ()
+  "Command string for invoking rg."
+  (concat (rg-executable)
+          " --color always --colors match:fg:red -n"))
+
 (defun rg-build-type-add-args ()
   "Build a list of --type-add: 'foo:*.foo' flags for each type in `rg-custom-type-aliases'."
   (mapcar
@@ -244,7 +249,7 @@ are command line flags to use for the search."
           (list "-e <R>" "."))))
 
     (grep-expand-template
-     (mapconcat 'identity (cons rg-command (delete-dups command-line)) " ")
+     (mapconcat 'identity (cons (rg-command) (delete-dups command-line)) " ")
      pattern
      (if (rg-is-custom-file-pattern files) "custom" files))))
 
@@ -252,7 +257,7 @@ are command line flags to use for the search."
   "Invokes rg --type-list and puts the result in an alist."
   (let ((type-list (nbutlast (split-string
                               (shell-command-to-string
-                               (concat rg-executable " --type-list"))
+                               (concat (rg-executable) " --type-list"))
                               "\n") 1)))
     (mapcar
      (lambda (type-alias)
