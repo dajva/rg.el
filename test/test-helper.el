@@ -27,7 +27,7 @@
 ;;; Code:
 
 (when (require 'undercover nil t)
-  (undercover "rg.el"))
+  (undercover "*.el"))
 
 (require 'cl-lib)
 (require 'ert)
