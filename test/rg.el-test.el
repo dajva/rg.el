@@ -90,19 +90,19 @@
     (cl-letf (((symbol-function #'rg-rerun) #'ignore)
               ((symbol-function #'rg-read-pattern) (lambda (&rest _) "new-pattern")))
       (rg-rerun-change-regexp)
-      (should (cl-every 'equal
-                        (rg-search-create :pattern "new-pattern"
-                                          :files "elisp"
-                                          :dir "/tmp/test"
-                                          :literal nil)
-                        rg-cur-search))
+      (should (equal
+               (rg-search-create :pattern "new-pattern"
+                                 :files "elisp"
+                                 :dir "/tmp/test"
+                                 :literal nil)
+               rg-cur-search))
       (rg-rerun-change-literal)
-      (should (cl-every 'equal
-                         (rg-search-create :pattern "new-pattern"
-                                           :files "elisp"
-                                           :dir "/tmp/test"
-                                           :literal t)
-                        rg-cur-search))
+      (should (equal
+               (rg-search-create :pattern "new-pattern"
+                                 :files "elisp"
+                                 :dir "/tmp/test"
+                                 :literal t)
+               rg-cur-search))
       (rg-rerun-change-regexp)
       (should (eq (rg-search-literal rg-cur-search) nil)))))
 
@@ -132,7 +132,7 @@ on emacs version."
     (cl-letf (((symbol-function #'rg-rerun) #'ignore)
               ((symbol-function #'completing-read) (lambda (&rest _) "cpp")))
       (rg-rerun-change-files)
-      (should (cl-every 'equal (rg-search-new "regexp" "cpp" "/tmp/test") rg-cur-search)))))
+      (should (equal (rg-search-new "regexp" "cpp" "/tmp/test") rg-cur-search)))))
 
 (ert-deftest rg-unit-test/rerun-change-dir ()
   "Test result of `rg-rerun-change-dir'."
@@ -140,7 +140,7 @@ on emacs version."
     (cl-letf (((symbol-function #'rg-rerun) #'ignore)
               ((symbol-function #'read-directory-name) (lambda (&rest _) "/tmp/new")))
       (rg-rerun-change-dir)
-      (should (cl-every 'equal (rg-search-new "regexp" "elisp" "/tmp/new") rg-cur-search)))))
+      (should (equal (rg-search-new "regexp" "elisp" "/tmp/new") rg-cur-search)))))
 
 (ert-deftest rg-unit-test/custom-toggle ()
   "Test `rg-define-toggle' macro."
@@ -664,20 +664,20 @@ and ungrouped otherwise."
         (setf (rg-search-toggle-flags rg-cur-search) '("--text"))
         (rg-rerun))
         (should (rg-wait-for-search-result))
-        (should (cl-every 'equal
-                          (list "Hello" "all" parent-dir)
-                          (list (rg-search-pattern rg-cur-search)
-                                (rg-search-files rg-cur-search)
-                                (rg-search-dir rg-cur-search))))
-        (should (cl-every 'equal '("--text") (rg-search-toggle-flags rg-cur-search)))
+        (should (equal
+                 (list "Hello" "all" parent-dir)
+                 (list (rg-search-pattern rg-cur-search)
+                       (rg-search-files rg-cur-search)
+                       (rg-search-dir rg-cur-search))))
+        (should (equal '("--text") (rg-search-toggle-flags rg-cur-search)))
         (rg-recompile)
         (should (rg-wait-for-search-result))
-        (should (cl-every 'equal
-                          (list "Hello" "all" parent-dir)
-                          (list (rg-search-pattern rg-cur-search)
-                                (rg-search-files rg-cur-search)
-                                (rg-search-dir rg-cur-search))))
-        (should (cl-every 'equal '("--text") (rg-search-toggle-flags rg-cur-search))))))
+        (should (equal
+                 (list "Hello" "all" parent-dir)
+                 (list (rg-search-pattern rg-cur-search)
+                       (rg-search-files rg-cur-search)
+                       (rg-search-dir rg-cur-search))))
+        (should (equal '("--text") (rg-search-toggle-flags rg-cur-search))))))
 
 (ert-deftest rg-integration/display-exit-message ()
   "Verify exit messages."
