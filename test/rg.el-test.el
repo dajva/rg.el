@@ -231,7 +231,7 @@ alias."
                              (s-replace "----" "[^ ]+"
                                         (regexp-quote
                                          (shell-quote-argument "custom:----")))))))
-    (should (s-matches? (rg-regexp-anywhere-but-last "-e query") notype-command))
+    (should (s-matches? (rg-regexp-anywhere "-e query") notype-command))
     (should-not (s-matches? type-pattern notype-command))
     (should-not (s-matches? type-add-pattern notype-command))
     (should (s-matches? type-pattern builtin-type-command))
@@ -670,9 +670,7 @@ and ungrouped otherwise."
                                 (rg-search-files rg-cur-search)
                                 (rg-search-dir rg-cur-search))))
         (should (cl-every 'equal '("--text") (rg-search-toggle-flags rg-cur-search)))
-        (message "%s" rg-cur-search)
         (rg-recompile)
-        (message "%s" rg-cur-search)
         (should (rg-wait-for-search-result))
         (should (cl-every 'equal
                           (list "Hello" "all" parent-dir)
@@ -730,13 +728,13 @@ and ungrouped otherwise."
              (original-command nil)
              ((symbol-function #'read-from-minibuffer)
               (lambda (_ign1 command _ign2 _ign3 _ign4)
-                (setq changed-command (concat command " world"))
+                (setq changed-command (concat command "\\ world"))
                 (setq original-command command)
                 changed-command)))
     (rg-run "hello" "all" "tmp/test" nil 'confirm)
-    (should (equal changed-command (concat original-command " world")))
+    (should (equal changed-command (concat original-command "\\ world")))
     (should (rg-search-full-command rg-cur-search))
-    ;; We use the stub about which does not update the history
+    ;; We use the stub above which does not update the history
     (should (null rg-history))
     (rg-with-current-result)))
 

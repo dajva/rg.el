@@ -69,7 +69,7 @@ repository."
 "Evaluate BODY in current result buffer when search has finished."
   (declare (indent 0))
   `(with-current-buffer "*rg*"
-     (should (rg-wait-for-search-result))
+     (rg-wait-for-search-result)
      (let ((result (progn ,@body)))
        (kill-buffer "*rg*")
        result)))

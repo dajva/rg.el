@@ -246,7 +246,9 @@ are command line flags to use for the search."
             (list "--fixed-strings"))
           (when (not (equal files "everything"))
             (list "--type <F>"))
-          (list "-e <R>" "."))))
+          (list "-e <R>")
+          (when (eq system-type 'windows-nt)
+            (list ".")))))
 
     (grep-expand-template
      (mapconcat 'identity (cons (rg-command) (delete-dups command-line)) " ")
