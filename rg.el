@@ -410,7 +410,7 @@ detailed info."
     (setq rg-toggle-command-line-flags
           (delete "-i" rg-toggle-command-line-flags))))
 
-(defun rg-rename-target ()
+(defun rg-get-rename-target ()
   "Return the buffer that will be target for renaming."
   (let ((buffer (if (eq major-mode 'rg-mode)
                     (current-buffer)
@@ -455,7 +455,7 @@ The result buffer will be renamed to *rg NEWNAME*.  New searches will use the
 standard *rg* buffer unless the search is done from a saved buffer in
 which case the saved buffer will be reused."
   (interactive "sSave search as name: ")
-  (let ((buffer (rg-rename-target)))
+  (let ((buffer (rg-get-rename-target)))
     (with-current-buffer buffer
       (rename-buffer (concat "*rg " newname "*")))))
 
@@ -466,7 +466,7 @@ To choose a custom name, use `rg-save-search-as-name' instead.  New
 searches will use the standard *rg* buffer unless the search is done
 from a saved buffer in which case the saved buffer will be reused."
   (interactive)
-  (let ((buffer (rg-rename-target)))
+  (let ((buffer (rg-get-rename-target)))
     (with-current-buffer buffer
       (rename-uniquely)
       ;; If the new buffer name became '*rg*', just rename again to make

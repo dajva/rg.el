@@ -66,37 +66,54 @@ new content and filtered through the `rg-filter' function.")
 
 (defface rg-match-face
   `((t :inherit ,grep-match-face))
-  "face for match highlight"
+  "Face for match highlight."
   :group 'rg-face)
 
 (defface rg-error-face
   `((t :inherit ,grep-error-face))
-  "face for error"
+  "Face for error."
   :group 'rg-face)
 
 (defface rg-context-face
   `((t :inherit ,grep-context-face))
-  "face for context lines"
+  "Face for context lines."
   :group 'rg-face)
 
 (defface rg-info-face
   '((t :inherit compilation-info))
-  "face for info"
+  "Face for info."
   :group 'rg-face)
 
 (defface rg-warning-face
   '((t :inherit compilation-warning))
-  "face for warning"
+  "Face for warning."
   :group 'rg-face)
 
 (defface rg-filename-face
   '((t :inherit rg-info-face))
-  "face for filename"
+  "Face for filename."
   :group 'rg-face)
 
 (defface rg-file-tag-face
   '((t :inherit font-lock-function-name-face))
-  "face for file tag in grouped layout"
+  "Face for file tag in grouped layout."
+  :group 'rg-face)
+
+(defface rg-line-number-face
+  '((t :inherit compilation-line-number))
+  "Face for line numbers."
+  :group 'rg-face)
+
+(defface rg-column-number-face
+  '((t :inherit compilation-column-number))
+  "Face for column numbers."
+  :group 'rg-face)
+
+(defface rg-match-position-face
+  '((t :inherit default))
+  "Face that is being appended to file positions.
+This is the start of each matching line. This includes line number
+and, depending on configuration, also column number and file name."
   :group 'rg-face)
 
 
@@ -298,8 +315,11 @@ Commands:
 \\{rg-mode-map}"
   (setq grep-last-buffer (current-buffer))
   (set (make-local-variable 'tool-bar-map) grep-mode-tool-bar-map)
-  (set (make-local-variable 'compilation-error-face)
-       'rg-filename-face)
+  (set (make-local-variable 'compilation-error-face) 'rg-filename-face)
+  (set (make-local-variable 'compilation-message-face) 'rg-match-position-face)
+  (set (make-local-variable 'compilation-line-face) 'rg-line-number-face)
+  (set (make-local-variable 'compilation-column-face) 'rg-column-number-face)
+
   (set (make-local-variable 'compilation-error-regexp-alist)
        '(rg-group-with-column rg-nogroup-with-column rg-group-no-column  rg-nogroup-no-column))
   (set (make-local-variable 'compilation-error-regexp-alist-alist)
@@ -319,7 +339,7 @@ Commands:
   (when rg-show-header
     (rg-create-header-line 'rg-cur-search
                            (rg-search-full-command rg-cur-search)))
-  (add-hook 'compilation-filter-hook 'rg-filter nil t) )
+  (add-hook 'compilation-filter-hook 'rg-filter nil t))
 
 (defun rg-rerun ()
   "Run `rg-recompile' with `compilation-arguments' taken from `rg-cur-search'."
