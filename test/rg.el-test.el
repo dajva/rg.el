@@ -558,35 +558,71 @@ method. "
                   (rg-project-root "/tmp/foo.el"))
                  "/tmp/")))
 
-(defmacro rg-test-with-command-start (&rest body)
-  "Run search and set `command-start` to begining of rg command when running BODY."
-  `(progn
-     (rg-run "hello" "elisp" (concat default-directory "test/data"))
-     (rg-with-current-result
-       ;; font-lock-mode is disabled by default in batch mode so
-       ;; request explicit fontification
-       (font-lock-fontify-buffer)
-       (let ((command-start (next-single-property-change (point-min) 'rg-command)))
-         ,@body))))
-
 (ert-deftest rg-integration/command-hiding-hide ()
   "Test command hiding when `rg-hide-command` is non nil."
   :tags '(need-rg)
   (rg-test-with-command-start
-     (should command-start)
-     (should (get-text-property command-start 'display))
+     (should (get-text-property (point) 'display))
      (rg-toggle-command-hiding)
-     (should-not (get-text-property command-start 'display))))
+     (should-not (get-text-property (point) 'display))))
 
 (ert-deftest rg-integration/command-hiding-nohide ()
   "Test command hiding when `rg-hide-command` is nil."
   :tags '(need-rg)
   (let ((rg-hide-command nil))
     (rg-test-with-command-start
-        (should command-start)
-        (should-not (get-text-property command-start 'display))
+        (should-not (get-text-property (point) 'display))
         (rg-toggle-command-hiding)
-        (should (get-text-property command-start 'display)))))
+        (should (get-text-property (point) 'display)))))
+
+(ert-deftest rg-integration/positions-line-only ()
+  "Test line position format without alignment."
+  :tags '(need-rg)
+  (rg-test-with-first-error
+   (should (looking-at "[0-9]:"))))
+
+(ert-deftest rg-integration/positions-line-column ()
+  "Test line and column position format without alignment."
+  :tags '(need-rg)
+  (let ((rg-show-columns t))
+    (rg-test-with-first-error
+     (should (looking-at "[0-9]+:[0-9]+:")))))
+
+(ert-deftest rg-integration/positions-align-line ()
+  "Test line position format with alignment."
+  :tags '(need-rg)
+  (let ((rg-align-position-numbers t))
+    (rg-test-with-first-error
+     (should (looking-at " \\{0,3\\}[0-9]\\{1,4\\}:"))
+     (should (equal (length (match-string 0))
+                    (1+ rg-align-line-number-field-length))))
+    (let ((rg-align-position-content-separator "#"))
+      (rg-test-with-first-error
+       (should (looking-at (concat " \\{0,4\\}[0-9]\\{1,5\\}"
+                                   rg-align-position-content-separator)))))))
+
+(ert-deftest rg-integration/positions-align-line-column ()
+  "Test line and column position format with alignment."
+  :tags '(need-rg)
+  (let ((rg-show-columns t)
+        (rg-align-position-numbers t))
+    (rg-test-with-first-error
+     (should (looking-at " \\{0,3\\}[0-9]\\{1,4\\}: \\{0,2\\}[0-9]\\{1,3\\}:"))
+     (should (equal (length (match-string 0))
+                    (+ rg-align-line-number-field-length
+                       rg-align-column-number-field-length
+                       2))))
+    (let ((rg-align-position-content-separator ";")
+          (rg-align-line-column-separator "&"))
+      (rg-test-with-first-error
+       (should (looking-at (concat " \\{0,3\\}[0-9]\\{1,4\\}"
+                                   rg-align-line-column-separator
+                                   " \\{0,2\\}[0-9]\\{1,3\\}"
+                                   rg-align-position-content-separator)))
+       (should (equal (length (match-string 0))
+                      (+ rg-align-line-number-field-length
+                         rg-align-column-number-field-length
+                         2)))))))
 
 (ert-deftest rg-integration/navigate-file-group-in-grouped-result ()
   "Test group navigation in grouped result."

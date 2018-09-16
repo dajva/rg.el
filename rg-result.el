@@ -29,6 +29,8 @@
 (require 'cl-lib)
 (require 'grep)
 (require 'rg-header)
+(require 's)
+(require 'subr-x)
 
 ;; Forward declarations.
 (declare-function rg-build-command "rg.el")
@@ -37,6 +39,11 @@
 
 
 ;; Customizations/public vars
+(defcustom rg-show-columns nil
+  "If t, show the columns of the matches in the output buffer."
+  :type 'boolean
+  :group 'rg)
+
 (defcustom rg-group-result nil
   "Group matches in the same file together.
 If nil, the file name is repeated at the beginning of every match line."
@@ -51,6 +58,33 @@ If nil, the file name is repeated at the beginning of every match line."
 (defcustom rg-hide-command t
   "Hide most of rg command line when non nil."
   :type 'boolean
+  :group 'rg)
+
+(defcustom rg-align-position-numbers nil
+  "If non nil, alignment of line and colum numbers is turned on."
+  :type 'boolean
+  :group 'rg)
+
+(defcustom rg-align-line-number-field-length 4
+  "Field length of aligned line numbers."
+  :type 'integer
+  :group 'rg)
+
+(defcustom rg-align-column-number-field-length 3
+  "Field length of aligned column numbers."
+  :type 'integer
+  :group 'rg)
+
+(defcustom rg-align-line-column-separator nil
+  "Separator used between line and column numbers.
+Depends on `rg-show-columns'.  Default is ':'."
+  :type 'string
+  :group 'rg)
+
+(defcustom rg-align-position-content-separator nil
+  "Separator used between position numbers and the matching file content.
+Default is ':'."
+  :type 'string
   :group 'rg)
 
 (defvar rg-filter-hook nil
@@ -113,7 +147,7 @@ new content and filtered through the `rg-filter' function.")
   '((t :inherit default))
   "Face that is being appended to file positions.
 This is the start of each matching line. This includes line number
-and, depending on configuration, also column number and file name."
+and, depending on configuration, column number and file name."
   :group 'rg-face)
 
 
@@ -154,7 +188,7 @@ Becomes buffer local in `rg-mode' buffers.")
      (2 'rg-error-face nil t))
     ;; "filename-linenumber-" or "linenumber-" format is used for
     ;; context lines in rg
-    ("^\\(?:.+?-\\)?[0-9]+-.*\n" (0 'rg-context-face))
+    ("^ *\\(?:.+?-\\)?[0-9]+-.*\n" (0 'rg-context-face))
     ("^.*rg \\(--color always .*$\\)"
      (0 '(face rg-context-face))
      (1 (rg-hide-command-properties)))))
@@ -237,6 +271,39 @@ Set up `compilation-exit-message-function' and run `grep-setup-hook'."
   ;; Run this hook to intergrate with wgrep
   (run-hooks 'grep-setup-hook))
 
+(defun rg-prepend-space (text length)
+  "Prepend TEXT with LENGTH number of spaces."
+  (let ((space-count (- length (length text))))
+    (concat (s-repeat space-count " ") text)))
+
+(defun rg-align-position-numbers-in-region (beg end)
+  "Align numbers in region defined by BEG and END."
+  (goto-char beg)
+  (let ((line-col-separator (or rg-align-line-column-separator ":"))
+        (pos-content-separator (or rg-align-position-content-separator ":")))
+    (while (re-search-forward
+            "^\033\\[[0]*m\033\\[32m\\([0-9]*?\\)\033\\[[0]*m\\(:\\|-\\)\\(?:\033\\[[0]*m\\([0-9]*?\\)\033\\[[0]*m:\\)?"
+            end 1)
+      (replace-match (concat
+                      (rg-prepend-space
+                       (match-string 1)
+                       (+ rg-align-line-number-field-length
+                          (if (and rg-show-columns
+                                   (equal (match-string 2) "-"))
+                              ;; Context lines
+                              (1+ rg-align-column-number-field-length)
+                            0)))
+                      (when-let (column-match (match-string 3))
+                        (concat line-col-separator
+                                (rg-prepend-space
+                                 column-match
+                                 rg-align-column-number-field-length)))
+                      (if (equal (match-string 2) "-")
+                          ;; Keep context separators
+                          "-"
+                        pos-content-separator))
+                     t t))))
+
 (defun rg-filter ()
   "Handle match highlighting escape sequences inserted by the rg process.
 This function is called from `compilation-filter-hook'."
@@ -267,10 +334,16 @@ This function is called from `compilation-filter-hook'."
                                      'face nil 'font-lock-face 'rg-match-face)
                          t t)
           (setq rg-hit-count (+ rg-hit-count 1)))
+
+        ;; Align and format line and column numbers.
+        (when rg-align-position-numbers
+          (rg-align-position-numbers-in-region beg end))
+
         ;; Delete all remaining escape sequences
         (goto-char beg)
         (while (re-search-forward "\033\\[[0-9;]*[0mK]" end 1)
-          (replace-match "" t t))))
+          (replace-match "" t t))
+        ))
     (run-hooks 'rg-filter-hook)))
 
 ;; The regexp and filter functions below were taken from ag.el
@@ -279,17 +352,21 @@ This function is called from `compilation-filter-hook'."
   "^\\(.+?\\):\\([1-9][0-9]*\\):\\([1-9][0-9]*\\):"
   "A regexp pattern that groups output into filename, line number and column number.")
 
-(defconst rg-file-line-column-pattern-group
-  "^\\([1-9][0-9]*\\):\\([1-9][0-9]*\\):"
-  "A regexp pattern to match line number and column number with grouped output.")
+(defun rg-file-line-column-pattern-group ()
+  "A regexp pattern to match line number and column number with grouped output."
+  (concat "^ *\\([1-9][0-9]*\\)"
+          (regexp-quote (or rg-align-line-column-separator ":"))
+          " *\\([1-9][0-9]*\\)"
+          (regexp-quote (or rg-align-position-content-separator ":"))))
 
 (defconst rg-file-line-pattern-nogroup
   "^\\(.+?\\):\\([1-9][0-9]*\\):"
   "A regexp pattern that groups output into filename, line number.")
 
-(defconst rg-file-line-pattern-group
-  "^\\([1-9][0-9]*\\):"
-  "A regexp pattern to match line number with grouped output.")
+(defun rg-file-line-pattern-group ()
+  "A regexp pattern to match line number with grouped output."
+  (concat "^ *\\([1-9][0-9]*\\)"
+          (regexp-quote (or rg-align-position-content-separator ":"))))
 
 (defun rg-match-grouped-filename ()
   "Match filename backwards when a line/column match is found in grouped output mode."
@@ -325,8 +402,8 @@ Commands:
   (set (make-local-variable 'compilation-error-regexp-alist-alist)
        (list (cons 'rg-nogroup-no-column (list rg-file-line-pattern-nogroup 1 2))
              (cons 'rg-nogroup-with-column (list rg-file-line-column-pattern-nogroup 1 2 3))
-             (cons 'rg-group-with-column (list rg-file-line-column-pattern-group 'rg-match-grouped-filename 1 2))
-             (cons 'rg-group-no-column (list rg-file-line-pattern-group 'rg-match-grouped-filename 1))))
+             (cons 'rg-group-with-column (list (rg-file-line-column-pattern-group) 'rg-match-grouped-filename 1 2))
+             (cons 'rg-group-no-column (list (rg-file-line-pattern-group) 'rg-match-grouped-filename 1))))
 
   ;; compilation-directory-matcher can't be nil, so we set it to a regexp that
   ;; can never match.
@@ -372,7 +449,10 @@ backward."
         (progn
           (setq pos (funcall single-property-change-func pos 'font-lock-face nil limit))
           (and (not (equal pos limit))
-               (not (eq (get-text-property pos 'font-lock-face) face))))))
+               (not (let ((properties (get-text-property pos 'font-lock-face)))
+                      (if (listp properties)
+                          (member face properties)
+                        (eq face properties))))))))
   pos)
 
 (defun rg-navigate-file-group (steps)

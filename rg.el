@@ -129,11 +129,6 @@ Alternatively a function returning a list of flags."
   :type '(choice function (repeat string))
   :group 'rg)
 
-(defcustom rg-show-columns nil
-  "If t, show the columns of the matches in the output buffer."
-  :type 'boolean
-  :group 'rg)
-
 (defcustom rg-ignore-case 'case-fold-search
   "Decides which mode of case insensitive search that is enabled.
 CASE-FOLD-SEARCH means that the variable `case-fold-search' will
