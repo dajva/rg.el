@@ -5,6 +5,7 @@
 
 (files
  "rg.el"
+ "rg-compat.el"
  "rg-result.el"
  "rg-header.el"
  "rg-ibuffer.el")

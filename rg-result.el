@@ -28,9 +28,9 @@
 
 (require 'cl-lib)
 (require 'grep)
+(require 'rg-compat)
 (require 'rg-header)
 (require 's)
-(require 'subr-x)
 
 ;; Forward declarations.
 (declare-function rg-build-command "rg.el")
@@ -293,7 +293,7 @@ Set up `compilation-exit-message-function' and run `grep-setup-hook'."
                               ;; Context lines
                               (1+ rg-align-column-number-field-length)
                             0)))
-                      (when-let (column-match (match-string 3))
+                      (rg-when-let (column-match (match-string 3))
                         (concat line-col-separator
                                 (rg-prepend-space
                                  column-match
