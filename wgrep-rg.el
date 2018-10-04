@@ -54,7 +54,7 @@
 `rg-group-result' is true or when you call rg with --heading.")
 
 (defvar wgrep-rg-ungrouped-result-regexp
-  "^\\(.+?\\):\\([[:digit:]]+\\)\\(?:-\\|:[[:digit:]]+:\\)"
+  "^\\(.+?\\)(?:-\\|:)\\([[:digit:]]+\\)\\(?:-\\|:[[:digit:]]+:\\)"
   "Regular expression for an ungrouped result.
 You get \"ungrouped results\" when `rg-group-result' is false or
 when you manage to call rg with --no-heading.")
@@ -111,53 +111,37 @@ when you manage to call rg with --no-heading.")
         ;; Matches are like: 999:55:line content here
         ;; Context lines are like: 999-line content here
         ;;
-        ;; When context is enabled, matches from different parts of
-        ;; the same file are separated by a line containing just "--".
-        ;; The group of matches from a single file is terminated by a
-        ;; blank line.
+        ;; When context is enabled, the group of matches from a single
+        ;; file is terminated by a blank line.
         (while (and (zerop (forward-line 1))
-                    (looking-at
-                     (concat "^\\([[:digit:]]+\\)\\(?::[[:digit:]]+:\\|-\\)"
-                             "\\|\\(^--$\\)")))
-          (if (match-beginning 2)
-              ;; Ignore "--" line.
-              (add-text-properties (match-beginning 0) (match-end 0)
-                                   '(wgrep-ignore t))
-            (add-text-properties (match-beginning 0) (match-end 0)
-                                 (list 'wgrep-line-filename file-name
-                                       'wgrep-line-number
-                                       (string-to-number (match-string 1))))))))
+                    (looking-at "^\\([[:digit:]]+\\)\\(?::[[:digit:]]+:\\|:\\)"))
+          (add-text-properties (match-beginning 0) (match-end 0)
+                               (list 'wgrep-line-filename file-name
+                                     'wgrep-line-number
+                                     (string-to-number (match-string 1)))))))
     (when (bobp)
       ;; Search above never moved point, so match non-grouped results
       ;; (`rg-group-result' is/was probably false).
       (let (last-file-name)
         ;; Matches are like: /foo/bar:999:55:line content here
-        ;; Context lines are like: /foo/bar:999-line content here
-        ;;
-        ;; With context lines, matches from different parts of the
-        ;; file are separated by a line containing just "--".
-        (while (re-search-forward (concat wgrep-rg-ungrouped-result-regexp
-                                          "\\|\\(^--$\\)")
+        ;; Context lines are like: /foo/bar-999-line content here
+        (while (re-search-forward wgrep-rg-ungrouped-result-regexp
                                   nil t)
-          (if (match-beginning 3)
-              ;; Ignore the "--" separator.
-              (add-text-properties (match-beginning 0) (match-end 0)
-                                   '(wgrep-ignore t))
-            (let ((file-name (match-string-no-properties 1))
-                  (line-number (string-to-number (match-string 2))))
-              (unless (equal file-name last-file-name)
-                ;; This line is a result from a different file than
-                ;; the last match (or else this is the first match in
-                ;; the results).  Write the special file name property
-                ;; for wgrep.
-                (let ((file-name-prop
-                       (wgrep-construct-filename-property file-name)))
-                  (add-text-properties (match-beginning 1) (match-end 1)
-                                       (list file-name-prop file-name)))
-                (setq last-file-name file-name))
-              (add-text-properties (match-beginning 0) (match-end 0)
-                                   (list 'wgrep-line-filename file-name
-                                         'wgrep-line-number line-number)))))))))
+          (let ((file-name (match-string-no-properties 1))
+                (line-number (string-to-number (match-string 2))))
+            (unless (equal file-name last-file-name)
+              ;; This line is a result from a different file than
+              ;; the last match (or else this is the first match in
+              ;; the results).  Write the special file name property
+              ;; for wgrep.
+              (let ((file-name-prop
+                     (wgrep-construct-filename-property file-name)))
+                (add-text-properties (match-beginning 1) (match-end 1)
+                                     (list file-name-prop file-name)))
+              (setq last-file-name file-name))
+            (add-text-properties (match-beginning 0) (match-end 0)
+                                 (list 'wgrep-line-filename file-name
+                                       'wgrep-line-number line-number))))))))
 
 ;;;###autoload
 (defun wgrep-rg-setup ()
