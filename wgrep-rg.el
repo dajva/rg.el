@@ -1,11 +1,10 @@
-;;; wgrep-ag.el --- Writable ag buffer and apply the changes to files
+;;; wgrep-rg.el --- Writable rg buffer and apply the changes to files
 
 ;; Author: Masahiro Hayashi <mhayashi1120@gmail.com>
+;; Rewritten by: Dale Sedivec <dale@codefu.org>
+;; Maintainer: David Landell <david.landell@sunnyhill.email>
 ;; Keywords: grep edit extensions
-;; Package-Requires: ((wgrep "2.1.5"))
-;; URL: http://github.com/mhayashi1120/Emacs-wgrep/raw/master/wgrep-ag.el
-;; Emacs: GNU Emacs 22 or later
-;; Version: 0.1.9
+;; URL: http://github.com/davja/rg.el
 
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
@@ -24,22 +23,22 @@
 
 ;;; Commentary:
 
-;; wgrep-ag allows you to edit a ag buffer and apply those changes to
+;; wgrep-rg allows you to edit a rg buffer and apply those changes to
 ;; the file buffer.
 
 ;;; Install:
 
-;; 1. Install ag.el
+;; 1. Install rg.el
 ;;
-;;   https://github.com/Wilfred/ag.el
+;;   https://github.com/davja/rg.el
 
 ;; 2. Install wgrep.el
 
 ;; 3. Put this file into load-path'ed directory, and byte compile it if
 ;; desired. And put the following expression into your ~/.emacs.
 ;;
-;;     (autoload 'wgrep-ag-setup "wgrep-ag")
-;;     (add-hook 'ag-mode-hook 'wgrep-ag-setup)
+;;     (autoload 'wgrep-rg-setup "wgrep-rg")
+;;     (add-hook 'rg-mode-hook 'wgrep-rg-setup)
 
 ;;; Usage:
 
@@ -49,24 +48,24 @@
 
 (require 'wgrep)
 
-(defvar wgrep-ag-grouped-result-file-regexp "^File:[[:space:]]+\\(.*\\)$"
+(defvar wgrep-rg-grouped-result-file-regexp "^File:[[:space:]]+\\(.*\\)$"
   "Regular expression for the start of results for a file in grouped results.
-\"Grouped results\" are what you get from ag.el when
-`ag-group-matches' is true or when you call ag with --group.")
+\"Grouped results\" are what you get from rg.el when
+`rg-group-result' is true or when you call rg with --heading.")
 
-(defvar wgrep-ag-ungrouped-result-regexp
+(defvar wgrep-rg-ungrouped-result-regexp
   "^\\(.+?\\):\\([[:digit:]]+\\)\\(?:-\\|:[[:digit:]]+:\\)"
   "Regular expression for an ungrouped result.
-You get \"ungrouped results\" when `ag-group-matches' is false or
-when you manage to call ag with --nogroup.")
+You get \"ungrouped results\" when `rg-group-result' is false or
+when you manage to call rg with --no-heading.")
 
-(defun wgrep-ag-prepare-header/footer ()
+(defun wgrep-rg-prepare-header/footer ()
   (save-excursion
     (goto-char (point-min))
     ;; Look for the first useful result line.
-    (let ((result-line-regexp (concat wgrep-ag-grouped-result-file-regexp
+    (let ((result-line-regexp (concat wgrep-rg-grouped-result-file-regexp
                                       "\\|"
-                                      wgrep-ag-ungrouped-result-regexp)))
+                                      wgrep-rg-ungrouped-result-regexp)))
       (if (not (re-search-forward result-line-regexp nil t))
           ;; No results in this buffer, let's mark the whole thing as
           ;; header.
@@ -86,7 +85,7 @@ when you manage to call ag with --nogroup.")
           (add-text-properties (point) (point-max)
                                '(read-only t wgrep-footer t)))))))
 
-(defun wgrep-ag-parse-command-results ()
+(defun wgrep-rg-parse-command-results ()
   ;; Note that this function is called with the buffer narrowed to
   ;; exclude the header and the footer.  (We're going to assert that
   ;; fact here, because we use (bobp) result a bit further down to
@@ -94,9 +93,9 @@ when you manage to call ag with --nogroup.")
   (unless (bobp)
     (error "Expected to be called with point at beginning of buffer"))
   (save-excursion
-    ;; First look for grouped results (`ag-group-matches' is/was
+    ;; First look for grouped results (`rg-group-result' is/was
     ;; probably true).
-    (while (re-search-forward wgrep-ag-grouped-result-file-regexp nil t)
+    (while (re-search-forward wgrep-rg-grouped-result-file-regexp nil t)
       ;; Ignore the line that introduces matches from a file, so that
       ;; wgrep doesn't let you edit it.
       (add-text-properties (match-beginning 0) (match-end 0)
@@ -130,14 +129,14 @@ when you manage to call ag with --nogroup.")
                                        (string-to-number (match-string 1))))))))
     (when (bobp)
       ;; Search above never moved point, so match non-grouped results
-      ;; (`ag-group-matches' is/was probably false).
+      ;; (`rg-group-result' is/was probably false).
       (let (last-file-name)
         ;; Matches are like: /foo/bar:999:55:line content here
         ;; Context lines are like: /foo/bar:999-line content here
         ;;
         ;; With context lines, matches from different parts of the
         ;; file are separated by a line containing just "--".
-        (while (re-search-forward (concat wgrep-ag-ungrouped-result-regexp
+        (while (re-search-forward (concat wgrep-rg-ungrouped-result-regexp
                                           "\\|\\(^--$\\)")
                                   nil t)
           (if (match-beginning 3)
@@ -161,20 +160,20 @@ when you manage to call ag with --nogroup.")
                                          'wgrep-line-number line-number)))))))))
 
 ;;;###autoload
-(defun wgrep-ag-setup ()
+(defun wgrep-rg-setup ()
   (set (make-local-variable 'wgrep-header/footer-parser)
-       'wgrep-ag-prepare-header/footer)
+       'wgrep-rg-prepare-header/footer)
   (set (make-local-variable 'wgrep-results-parser)
-       'wgrep-ag-parse-command-results)
+       'wgrep-rg-parse-command-results)
   (wgrep-setup-internal))
 
 ;;;###autoload
-(add-hook 'ag-mode-hook 'wgrep-ag-setup)
+(add-hook 'rg-mode-hook 'wgrep-rg-setup)
 
 ;; For `unload-feature'
-(defun wgrep-ag-unload-function ()
-  (remove-hook 'ag-mode-hook 'wgrep-ag-setup))
+(defun wgrep-rg-unload-function ()
+  (remove-hook 'rg-mode-hook 'wgrep-rg-setup))
 
-(provide 'wgrep-ag)
+(provide 'wgrep-rg)
 
-;;; wgrep-ag.el ends here
+;;; wgrep-rg.el ends here
