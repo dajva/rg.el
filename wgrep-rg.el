@@ -74,14 +74,10 @@ when you manage to call rg with --no-heading.")
         (add-text-properties (point-min) (line-beginning-position)
                              '(read-only t wgrep-header t))
         (goto-char (point-max))
-        (re-search-backward result-line-regexp nil t)
-        ;; Point is now at the beginning of the result nearest the end
-        ;; of the buffer, AKA the last result.  Move to the start of
-        ;; the line after the last result, and mark everything from
-        ;; that line forward as wgrep-footer.  If we can't move to the
-        ;; line after the last line then there apparently is no
-        ;; footer.
-        (when (zerop (forward-line 1))
+        (re-search-backward "^rg finished .*$" nil t)
+        ;; Move to the start of the line after the last result, and
+        ;; mark everything from that line forward as wgrep-footer.
+        (when (zerop (forward-line -1))
           (add-text-properties (point) (point-max)
                                '(read-only t wgrep-footer t)))))))
 
@@ -109,7 +105,7 @@ when you manage to call rg with --no-heading.")
                              (list (wgrep-construct-filename-property file-name)
                                    file-name))
         ;; Matches are like: 999:55:line content here
-        ;; Context lines are like: 999-line content here
+        ;; Context lines are like: 999-line- content here
         ;;
         ;; When context is enabled, the group of matches from a single
         ;; file is terminated by a blank line.
