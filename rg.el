@@ -6,7 +6,7 @@
 ;;
 ;; Author: David Landell <david.landell@sunnyhill.email>
 ;;         Roland McGrath <roland@gnu.org>
-;; Version: 1.5.0
+;; Version: 1.6.1
 ;; URL: https://github.com/dajva/rg.el
 ;; Package-Requires: ((cl-lib "0.5") (emacs "24.3") (s "1.10.0"))
 ;; Keywords: matching, tools
