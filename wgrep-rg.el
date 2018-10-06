@@ -54,7 +54,7 @@
 `rg-group-result' is true or when you call rg with --heading.")
 
 (defvar wgrep-rg-ungrouped-result-regexp
-  "^\\(.+?\\)(?:-\\|:)\\([[:digit:]]+\\)\\(?:-\\|:[[:digit:]]+:\\)"
+  "^\\([^ \t]+?\\)\\(?:-\\|:\\)\\([[:digit:]]+\\)\\(?:-\\|:\\)\\([[:digit:]]+:\\)*"
   "Regular expression for an ungrouped result.
 You get \"ungrouped results\" when `rg-group-result' is false or
 when you manage to call rg with --no-heading.")
@@ -104,13 +104,14 @@ when you manage to call rg with --no-heading.")
         (add-text-properties (match-beginning 1) (match-end 1)
                              (list (wgrep-construct-filename-property file-name)
                                    file-name))
-        ;; Matches are like: 999:55:line content here
-        ;; Context lines are like: 999-line- content here
-        ;;
-        ;; When context is enabled, the group of matches from a single
-        ;; file is terminated by a blank line.
+        ;; Matches are like: 999{separator}55{separator}line content here
+        ;; Context lines are like: 999-line content here
         (while (and (zerop (forward-line 1))
-                    (looking-at "^\\([[:digit:]]+\\)\\(?::[[:digit:]]+:\\|:\\)"))
+                    (or
+                     (looking-at (rg-file-line-column-pattern-group))
+                     (looking-at (rg-file-line-pattern-group))
+                     ;; Context lines
+                     (looking-at "^ *\\([1-9][0-9]*\\)-")))
           (add-text-properties (match-beginning 0) (match-end 0)
                                (list 'wgrep-line-filename file-name
                                      'wgrep-line-number
