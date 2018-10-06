@@ -46,6 +46,7 @@
 
 ;;; Code:
 
+(require 'rg-result)
 (require 'wgrep)
 
 (defvar wgrep-rg-grouped-result-file-regexp "^File:[[:space:]]+\\(.*\\)$"
@@ -60,6 +61,9 @@ You get \"ungrouped results\" when `rg-group-result' is false or
 when you manage to call rg with --no-heading.")
 
 (defun wgrep-rg-prepare-header/footer ()
+  "Add wgrep related text properties for header and footer.
+This is needed in order for wgrep to ignore thos areas when parsing
+the content."
   (save-excursion
     (goto-char (point-min))
     ;; Look for the first useful result line.
@@ -82,6 +86,9 @@ when you manage to call rg with --no-heading.")
                                '(read-only t wgrep-footer t)))))))
 
 (defun wgrep-rg-parse-command-results ()
+  "Parse the rg results for wgrep usage.
+This makes non content of the buffer readonly and marks specific areas
+with wgrep text properties to allow for wgrep to do its job."
   ;; Note that this function is called with the buffer narrowed to
   ;; exclude the header and the footer.  (We're going to assert that
   ;; fact here, because we use (bobp) result a bit further down to
@@ -142,6 +149,7 @@ when you manage to call rg with --no-heading.")
 
 ;;;###autoload
 (defun wgrep-rg-setup ()
+  "Setup wgrep rg support."
   (set (make-local-variable 'wgrep-header/footer-parser)
        'wgrep-rg-prepare-header/footer)
   (set (make-local-variable 'wgrep-results-parser)
@@ -153,6 +161,7 @@ when you manage to call rg with --no-heading.")
 
 ;; For `unload-feature'
 (defun wgrep-rg-unload-function ()
+  "Allow for unloading wgrep rg support."
   (remove-hook 'rg-mode-hook 'wgrep-rg-setup))
 
 (provide 'wgrep-rg)

@@ -8,7 +8,8 @@
  "rg-compat.el"
  "rg-result.el"
  "rg-header.el"
- "rg-ibuffer.el")
+ "rg-ibuffer.el"
+ "wgrep-rg.el")
 
 (development
  (depends-on "cl-lib" "0.5")
@@ -18,4 +19,5 @@
  (depends-on "find-file-in-project")
  (depends-on "s")
  (depends-on "seq")
- (depends-on "undercover"))
+ (depends-on "undercover")
+ (depends-on "wgrep"))
