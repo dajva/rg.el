@@ -34,6 +34,7 @@
 (require 'rg)
 (require 's)
 (require 'seq)
+(require 'wgrep-rg)
 
 (defun rg-regexp-anywhere (needle)
   (s-replace "%%%%" needle "\\( \\|^\\)%%%%\\( \\|$\\)"))
@@ -67,8 +68,7 @@ repository."
 
 (defmacro rg-with-current-result (&rest body)
   "Evaluate BODY in current result buffer when search has finished."
-  (declare (indent 0)
-           (debug t))
+  (declare (indent 0) (debug t))
   `(with-current-buffer "*rg*"
      (rg-wait-for-search-result)
      (let ((result (progn ,@body)))
@@ -78,7 +78,7 @@ repository."
 (defmacro rg-with-temp-global-keymap (&rest body)
   "Evaluate BODY with a temporary keymap as global map.
 Restore original global keymap afterwards."
-  (declare (indent 0))
+  (declare (indent 0) (debug t))
   (let ((saved-global-map (cl-gensym))
         (temp-global-map (cl-gensym)))
     `(let ((,saved-global-map (current-global-map))
@@ -89,7 +89,7 @@ Restore original global keymap afterwards."
 
 (defmacro rg-test-with-fontified-buffer (&rest body)
   "Run search and make sure buffer is fontified when executing BODY."
-  (declare (indent 0))
+  (declare (indent 0) (debug t))
   `(progn
      (rg-run "hello" "elisp" (concat default-directory "test/data"))
      (rg-with-current-result
@@ -101,7 +101,7 @@ Restore original global keymap afterwards."
 
 (defmacro rg-test-with-command-start (&rest body)
   "Run search and put point to begining of rg command when running BODY."
-  (declare (indent 0))
+  (declare (indent 0) (debug t))
   (let ((command-start (cl-gensym)))
     `(rg-test-with-fontified-buffer
        (let ((,command-start (next-single-property-change (point-min) 'rg-command)))
@@ -112,7 +112,7 @@ Restore original global keymap afterwards."
 
 (defmacro rg-test-with-first-error (&rest body)
   "Run search and put point at start of first error line when running BODY."
-  (declare (indent 0))
+  (declare (indent 0) (debug t))
   `(let ((rg-group-result t))
      (rg-test-with-fontified-buffer
        (compilation-next-error 1)
