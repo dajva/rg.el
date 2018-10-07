@@ -87,9 +87,8 @@
 ;; search info and allow jumping to results.
 
 ;; The default configuration of this package is compatible with `wgrep'.
-;; If grouped mode and/or show columns is enabled you need to install
-;; the wgrep-ag package from MELPA and configure it like this:
-;; (add-hook 'rg-mode-hook 'wgrep-ag-setup)
+;; Add this to your config:
+;; (add-hook 'rg-mode-hook 'wgrep-rg-setup)
 
 ;;; Code:
 

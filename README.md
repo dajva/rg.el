@@ -38,9 +38,7 @@ defer loading if you have autoloading setup.
 ### wgrep
 
 The default configuration of this package is compatible with `wgrep`.
-If grouped mode and/or show columns is enabled you need to install the
-[wgrep-ag](http://melpa.org/#/wgrep-ag) package from MELPA and
-configure it like this:
+Just add the snippet below to your config:
 
 ``` el
 (add-hook 'rg-mode-hook 'wgrep-ag-setup)
@@ -128,6 +126,7 @@ search for quick reruns with refined parameters.
 | `s` | Save search result to unique name |
 | `S` | Save search result, prompt for name |
 | `t` | Edit search string as literal |
+| `w` | Switch to wgrep mode (if available) |
 
 ## Customize
 
