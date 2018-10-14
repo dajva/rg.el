@@ -48,8 +48,10 @@
 
 (require 'wgrep)
 
+;; Forward declarations
 (declare-function rg-file-line-column-pattern-group "rg-result.el")
 (declare-function rg-file-line-pattern-group "rg-result.el")
+(defvar rg-mode-hook)
 
 (defvar wgrep-rg-grouped-result-file-regexp "^File:[[:space:]]+\\(.*\\)$"
   "Regular expression for the start of results for a file in grouped results.
@@ -168,6 +170,11 @@ with wgrep text properties to allow for wgrep to do its job."
   (set (make-local-variable 'wgrep-results-parser)
        'wgrep-rg-parse-command-results)
   (wgrep-setup-internal))
+
+(defun wgrep-rg-warn-ag-setup ()
+  "Print warning message if old ag setup is used."
+  (when (memq 'wgrep-ag-setup rg-mode-hook)
+    (message "Warning: wgrep-ag is no longer supported by this package. Please remove wgrep-ag-setup from rg-mode-hook.")))
 
 ;;;###autoload
 (add-hook 'rg-mode-hook 'wgrep-rg-setup)

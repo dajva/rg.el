@@ -31,6 +31,7 @@
 (require 'rg-compat)
 (require 'rg-header)
 (require 's)
+(require 'wgrep-rg)
 
 ;; Forward declarations.
 (declare-function rg-build-command "rg.el")
@@ -205,13 +206,11 @@ Becomes buffer local in `rg-mode' buffers.")
     (define-key map "s" 'rg-save-search)
     (define-key map "S" 'rg-save-search-as-name)
     (define-key map "t" 'rg-rerun-change-literal)
+    (define-key map "w" 'wgrep-change-to-wgrep-mode)
     (define-key map "\C-n" 'rg-next-file)
     (define-key map "\C-p" 'rg-prev-file)
     map)
   "The keymap for `rg-mode'.")
-
-(with-eval-after-load 'wgrep
-  (define-key rg-mode-map "w" 'rg-rerun-change-literal))
 
 (defvar rg-ellipsis (if (char-displayable-p ?…) "[…]" "[...]")
   "Used when hiding command line.")

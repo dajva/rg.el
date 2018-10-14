@@ -33,7 +33,7 @@
 ;; This package is a frontend to ripgrep (rg) and works in a similar
 ;; way to Emacs built in `rgrep' command or external `ag' if you like.
 ;; It depends on and reuse parts of built in grep with adjustments to
-;; ripgrep and is compatible with `wgrep'.
+;; ripgrep is using `wgrep' for inline editing of search result.
 
 ;; Install the package and and use the default key bindings:
 ;; (rg-enable-default-bindings)
@@ -86,9 +86,7 @@
 ;; `rg-list-searches' will display a list of all search buffers with
 ;; search info and allow jumping to results.
 
-;; The default configuration of this package is compatible with `wgrep'.
-;; Add this to your config:
-;; (add-hook 'rg-mode-hook 'wgrep-rg-setup)
+;; This package use `wgrep' for inline editing of search results.
 
 ;;; Code:
 
@@ -355,6 +353,7 @@ CONFIRM allows the user to confirm and modify the command before
 executing.  FLAGS is additional command line flags to use in the search."
   (unless (and (stringp pattern) (> (length pattern) 0))
     (signal 'user-error '("Empty string: No search done")))
+  (wgrep-rg-warn-ag-setup)
   (unless (and (file-directory-p dir) (file-readable-p dir))
     (setq dir default-directory))
   (rg-apply-case-flag pattern)

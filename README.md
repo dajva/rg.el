@@ -37,13 +37,9 @@ defer loading if you have autoloading setup.
 
 ### wgrep
 
-The default configuration of this package is compatible with `wgrep`.
-Just add the snippet below to your config:
-
-``` el
-(add-hook 'rg-mode-hook 'wgrep-ag-setup)
-```
-
+This package use [wgrep](https://github.com/mhayashi1120/Emacs-wgrep)
+for doing changes to matched files from the rg results buffer. No
+setup is needed
 
 
 ## Usage
@@ -126,7 +122,7 @@ search for quick reruns with refined parameters.
 | `s` | Save search result to unique name |
 | `S` | Save search result, prompt for name |
 | `t` | Edit search string as literal |
-| `w` | Switch to wgrep mode (if available) |
+| `w` | Switch to wgrep mode |
 
 ## Customize
 

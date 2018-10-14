@@ -26,8 +26,6 @@
 
 ;;; Code:
 
-(add-hook 'rg-mode-hook 'wgrep-rg-setup)
-
 
 ;; Integration tests
 
