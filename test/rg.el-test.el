@@ -117,14 +117,8 @@ on emacs version."
                                                  (setq called 'read-regexp)
                                                  (setq prompt-result pr))))
       (rg-read-pattern nil "foo")
-      (if (and (<= emacs-major-version 24)
-               (<= emacs-minor-version 2))
-          (progn
-            (should (eq called 'read-string))
-            (should (equal prompt-result "Regexp search for (default \"foo\"): ")))
-        (progn
-          (should (eq called 'read-regexp))
-          (should (equal prompt-result "Regexp search for")))))))
+      (should (eq called 'read-regexp))
+      (should (equal prompt-result "Regexp search for")))))
 
 (ert-deftest rg-unit-test/rerun-change-files ()
   "Test result of `rg-rerun-change-files'."
@@ -541,7 +535,7 @@ This test abuse the internal priority of `rg-project-root', by first
 checking the root and then successively disable the internally used
 method. "
   ;; projectile require emacs 25.1 so can't test with cask since we
-  ;; require emacs 24.3.
+  ;; support emacs 24.4.
   ;; (rg-check-git-project-root)
   ;; (eval-after-load 'projectile
   ;;   (fmakunbound 'projectile-project-root))

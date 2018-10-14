@@ -8,7 +8,7 @@
 ;;         Roland McGrath <roland@gnu.org>
 ;; Version: 1.5.0
 ;; URL: https://github.com/dajva/rg.el
-;; Package-Requires: ((cl-lib "0.5") (emacs "24.3") (s "1.10.0") (wgrep "2.1.10"))
+;; Package-Requires: ((cl-lib "0.5") (emacs "24.4") (s "1.10.0") (wgrep "2.1.10"))
 ;; Keywords: matching, tools
 
 ;; This file is not part of GNU Emacs.
@@ -320,15 +320,7 @@ If LITERAL is non nil prompt for literal string.  DEFAULT is the default pattern
   (let ((default (or default (grep-tag-default)))
         (prompt (concat (if literal "Literal" "Regexp")
                         " search for")))
-    (with-no-warnings
-      (if (and (= emacs-major-version 24)
-               (< emacs-minor-version 3))
-          (read-string
-           (concat prompt
-                   (if (and default (> (length default) 0))
-                       (format " (default \"%s\"): " default) ": "))
-           default 'rg-pattern-history)
-        (read-regexp prompt default 'rg-pattern-history)))))
+    (read-regexp prompt default 'rg-pattern-history)))
 
 (defun rg-project-root (file)
   "Find the project root of the given FILE."
