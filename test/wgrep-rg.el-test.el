@@ -102,6 +102,8 @@
 (defun rg-check-wgrep-header ()
   (goto-char (point-min))
   (should (get-text-property (point) 'wgrep-header))
+  ;; Jump over "rg-started" line that could match error regexp.
+  (goto-char (next-single-property-change (point-min) 'rg-command))
   (rg-next-file 1)
   (should-not (get-text-property (point) 'wgrep-header))
   (backward-char)
@@ -110,6 +112,8 @@
 (defun rg-check-wgrep-footer ()
   (goto-char (1- (point-max)))
   (should (get-text-property (point) 'wgrep-footer))
+  ;; "rg finished" line sometimes match error regexp so skip that.
+  (forward-line -1)
   (compilation-previous-error 1)
   (should-not (get-text-property (point) 'wgrep-footer))
   (forward-line)
@@ -140,10 +144,14 @@
   (rg-check-wgrep-footer)
 
   (goto-char (point-min))
-  (compilation-next-error 1)
+  ;; Jump over "rg-started" line that could match error regexp.
+  (goto-char (next-single-property-change (point-min) 'rg-command))
+  (compilation-next-file 1)
   (rg-check-wgrep-current-line)
 
   (goto-char (point-max))
+  ;; "rg finished" line sometimes match error regexp so skip that.
+  (forward-line -1)
   (compilation-previous-error 1)
   (rg-check-wgrep-current-line))
 

@@ -250,30 +250,30 @@ matching alias."
     (find-file "test/data/foo.baz")
     (should (equal (car (rg-default-alias)) "test"))))
 
-(ert-deftest rg-unit-test/single-font-lock-match ()
-  "Test that `rg-single-font-lock-match' find font-lock-face matches correctly."
+(ert-deftest rg-unit-test/navigate-file-message ()
+  "Test that `rg-navigate-file-message' find font-lock-face matches correctly."
   (let (pos limit)
     (with-temp-buffer
       (insert
        "noproperty"
-       (propertize "match1" 'font-lock-face 'rg-file-tag-face)
-       (propertize "someotherproperty" 'face 'rg-match-face)
-       (propertize "othermatch" 'font-lock-face 'rg-filename-face)
-       (propertize "match2" 'font-lock-face 'rg-file-tag-face))
-      (setq pos (rg-single-font-lock-match 'rg-file-tag-face (point-min) (point-max) 1))
+       (propertize "match1" 'rg-file-message t)
+       (propertize "someotherproperty" 'rg-file-message nil)
+       "noproperty2"
+       (propertize "othermatch" 'rg-file-message t))
+      (setq pos (rg-navigate-file-message (point-min) (point-max) 1))
       (goto-char pos)
       (should (looking-at "match1"))
-      (setq pos (rg-single-font-lock-match 'rg-file-tag-face pos (point-max) 1))
+      (setq pos (rg-navigate-file-message pos (point-max) 1))
       (goto-char pos)
-      (should (looking-at "match2"))
-      (setq pos (rg-single-font-lock-match 'rg-file-tag-face pos (point-min) -1))
+      (should (looking-at "othermatch"))
+      (setq pos (rg-navigate-file-message pos (point-min) -1))
       (goto-char pos)
       (should (looking-at "match1"))
-      (setq pos (rg-single-font-lock-match 'rg-filename-face pos (point-max) 1))
+      (setq pos (rg-navigate-file-message pos (point-max) 1))
       (goto-char pos)
       (should (looking-at "othermatch"))
       (setq limit (+ pos 4))
-      (setq pos (rg-single-font-lock-match 'rg-file-tag-face pos limit 1))
+      (setq pos (rg-navigate-file-message pos limit 1))
       (should (eq pos limit)))))
 
 (ert-deftest rg-unit/next-prev-file ()
@@ -684,8 +684,8 @@ If GROUPED is is non nil grouped result are used."
   "Test that grouped result is triggered if `rg-group-result' is non nil
 and ungrouped otherwise."
   :tags '(need-rg)
-  (should-not (rg-file-tag-face-exist-in-result nil))
-  (should (rg-file-tag-face-exist-in-result t)))
+  (should-not (rg-file-message-exist-in-result nil))
+  (should (rg-file-message-exist-in-result t)))
 
 (ert-deftest rg-integration/recompile ()
   "Make sure that `rg-recompile' preserves search parameters."

@@ -46,8 +46,10 @@
 
 ;;; Code:
 
-(require 'rg-result)
 (require 'wgrep)
+
+(declare-function rg-file-line-column-pattern-group "rg-result.el")
+(declare-function rg-file-line-pattern-group "rg-result.el")
 
 (defvar wgrep-rg-grouped-result-file-regexp "^File:[[:space:]]+\\(.*\\)$"
   "Regular expression for the start of results for a file in grouped results.
@@ -55,7 +57,7 @@
 `rg-group-result' is true or when you call rg with --heading.")
 
 (defvar wgrep-rg-ungrouped-result-regexp
-  "^\\([^ \t]+?\\)\\(?:-\\|:\\)\\([[:digit:]]+\\)\\(?:-\\|:\\)\\([[:digit:]]+:\\)*"
+  "^\\(.+?\\)\\(?:-\\|:\\)\\([1-9][0-9]*\\)\\(?:-\\|:\\)\\([1-9][0-9]*:\\)*"
   "Regular expression for an ungrouped result.
 You get \"ungrouped results\" when `rg-group-result' is false or
 when you manage to call rg with --no-heading.")
@@ -70,20 +72,31 @@ the content."
     (let ((result-line-regexp (concat wgrep-rg-grouped-result-file-regexp
                                       "\\|"
                                       wgrep-rg-ungrouped-result-regexp)))
-      (if (not (re-search-forward result-line-regexp nil t))
-          ;; No results in this buffer, let's mark the whole thing as
-          ;; header.
-          (add-text-properties (point-min) (point-max)
-                               '(read-only t wgrep-header t))
-        (add-text-properties (point-min) (line-beginning-position)
-                             '(read-only t wgrep-header t))
+      (while
+          (progn
+            (if (not (re-search-forward result-line-regexp nil t))
+                ;; No results in this buffer, let's mark the whole thing as
+                ;; header.
+                (progn
+                  (add-text-properties (point-min) (point-max)
+                                       '(read-only t wgrep-header t))
+                  nil)
+              (save-excursion
+                (beginning-of-line)
+                ;; The ungrouped result regexp also match the "rg started"
+                ;; line. If that happens continue searching.
+                (if (looking-at-p "rg started.*")
+                    'continue
+                  (add-text-properties (point-min) (point)
+                                       '(read-only t wgrep-header t))
+                  nil)))))
         (goto-char (point-max))
         (re-search-backward "^rg finished .*$" nil t)
         ;; Move to the start of the line after the last result, and
         ;; mark everything from that line forward as wgrep-footer.
         (when (zerop (forward-line -1))
           (add-text-properties (point) (point-max)
-                               '(read-only t wgrep-footer t)))))))
+                               '(read-only t wgrep-footer t))))))
 
 (defun wgrep-rg-parse-command-results ()
   "Parse the rg results for wgrep usage.

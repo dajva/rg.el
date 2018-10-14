@@ -127,14 +127,35 @@ Restore original global keymap afterwards."
                  :files files
                  :toggle-flags rg-toggle-command-line-flags)))
 
-(defun rg-file-tag-face-exist-in-result (grouped)
+(defun rg-file-message-exist-in-result (grouped)
   "Search and return non nil if 'rg-file-tag-face exist in buffer.
 GROUPED control if `rg-group-result' is used."
   (let((rg-group-result grouped)
        pos)
     (rg-run "hello" "elisp" (concat default-directory "test/data"))
     (rg-with-current-result
-      (setq pos (rg-single-font-lock-match 'rg-file-tag-face (point-min) (point-max) 1))
-      (not (eq (point-max) pos)))))
+      (not (eq (point-max) (next-single-property-change (point-min)
+                                             'rg-file-message
+                                             nil (point-max)))))))
+
+(defun rg-single-font-lock-match (face pos limit direction)
+  "Return position of next match of 'font-lock-face property that equals FACE.
+POS is the start position of the search and LIMIT is the limit of the
+search.  If FACE is not found within LIMIT, LIMIT is returned.  If
+DIRECTION is positive search forward in the buffer, otherwise search
+backward."
+  (let ((single-property-change-func
+         (if (> direction 0)
+             'next-single-property-change
+           'previous-single-property-change)))
+    (while
+        (progn
+          (setq pos (funcall single-property-change-func pos 'font-lock-face nil limit))
+          (and (not (equal pos limit))
+               (not (let ((properties (get-text-property pos 'font-lock-face)))
+                      (if (listp properties)
+                          (member face properties)
+                        (eq face properties))))))))
+  pos)
 
 ;;; test-helper.el ends here

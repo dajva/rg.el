@@ -324,10 +324,13 @@ This function is called from `compilation-filter-hook'."
         (when rg-group-result
           (while (re-search-forward "^\033\\[[0]*m\033\\[35m\\(.*?\\)\033\\[[0]*m$" end 1)
             (replace-match (concat (propertize "File:"
-                                               'face nil 'font-lock-face 'rg-file-tag-face)
+                                               'rg-file-message t
+                                               'face nil
+                                               'font-lock-face 'rg-file-tag-face)
                                    " "
                                    (propertize (match-string 1)
-                                               'face nil 'font-lock-face 'rg-filename-face))
+                                               'face nil
+                                               'font-lock-face 'rg-filename-face))
                            t t))
           (goto-char beg))
 
@@ -345,14 +348,13 @@ This function is called from `compilation-filter-hook'."
         ;; Delete all remaining escape sequences
         (goto-char beg)
         (while (re-search-forward "\033\\[[0-9;]*[0mK]" end 1)
-          (replace-match "" t t))
-        ))
+          (replace-match "" t t))))
     (run-hooks 'rg-filter-hook)))
 
 ;; The regexp and filter functions below were taken from ag.el
 ;; Kudos to the people from https://github.com/Wilfred/ag.el for these.
 (defconst rg-file-line-column-pattern-nogroup
-  "^\\([^ \t]+?\\):\\([1-9][0-9]*\\):\\([1-9][0-9]*\\):"
+  "^\\(.+?\\):\\([1-9][0-9]*\\):\\([1-9][0-9]*\\):"
   "A regexp pattern that groups output into filename, line number and column number.")
 
 (defun rg-file-line-column-pattern-group ()
@@ -363,7 +365,7 @@ This function is called from `compilation-filter-hook'."
           (regexp-quote (or rg-align-position-content-separator ":"))))
 
 (defconst rg-file-line-pattern-nogroup
-  "^\\([^ \t]+?\\):\\([1-9][0-9]*\\):"
+  "^\\(.+?\\):\\([1-9][0-9]*\\):"
   "A regexp pattern that groups output into filename, line number.")
 
 (defun rg-file-line-pattern-group ()
@@ -438,25 +440,22 @@ Commands:
     (setq default-directory compilation-directory)
     (rg-recompile)))
 
-(defun rg-single-font-lock-match (face pos limit direction)
-  "Return position of next match of 'font-lock-face property that equals FACE.
+(defun rg-navigate-file-message (pos limit direction)
+  "Return position of next 'rg-file-message text property.
 POS is the start position of the search and LIMIT is the limit of the
-search.  If FACE is not found within LIMIT, LIMIT is returned.  If
+search.  If the property is not found within LIMIT, LIMIT is returned.  If
 DIRECTION is positive search forward in the buffer, otherwise search
 backward."
-  (let ((single-property-change-func
+  (let ((prop-change-func
          (if (> direction 0)
              'next-single-property-change
            'previous-single-property-change)))
     (while
         (progn
-          (setq pos (funcall single-property-change-func pos 'font-lock-face nil limit))
-          (and (not (equal pos limit))
-               (not (let ((properties (get-text-property pos 'font-lock-face)))
-                      (if (listp properties)
-                          (member face properties)
-                        (eq face properties))))))))
-  pos)
+          (setq pos (funcall prop-change-func pos 'rg-file-message nil limit))
+          (and (not (eq pos limit))
+               (not (get-text-property pos 'rg-file-message)))))
+    pos))
 
 (defun rg-navigate-file-group (steps)
   "Move point to the a matched result group in the compilation buffer.
@@ -469,7 +468,7 @@ backwards and positive means forwards."
              (point-min)
            (point-max))))
     (while  (and (> steps-left 0) (not (equal pos limit)))
-      (setq pos (rg-single-font-lock-match 'rg-file-tag-face pos limit steps))
+      (setq pos (rg-navigate-file-message pos limit steps))
       (setq steps-left (- steps-left 1)))
     (unless (equal pos limit)
       (goto-char pos))))
