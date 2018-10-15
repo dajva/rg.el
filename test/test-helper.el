@@ -87,23 +87,29 @@ Restore original global keymap afterwards."
        ,@body
        (use-global-map ,saved-global-map))))
 
-(defmacro rg-test-with-fontified-buffer (&rest body)
-  "Run search and make sure buffer is fontified when executing BODY."
-  (declare (indent 0) (debug t))
-  `(progn
-     (rg-run "hello" "elisp" (concat default-directory "test/data"))
-     (rg-with-current-result
-      ;; font-lock-mode is disabled by default in batch mode so
-      ;; request explicit fontification
-      ;; Shoud use `font-lock-ensure' but not available in emacs 24.
-      (font-lock-fontify-buffer)
-      ,@body)))
+(defmacro rg-test-with-fontified-buffer (search &rest body)
+  "Run SEARCH and make sure buffer is fontified when executing BODY.
+SEARCH can either be a search string or a form invocating `rg-run'."
+  (declare (indent 1) (debug t))
+  (let ((invocation
+         (if (stringp search)
+             `(rg-run ,search "elisp" (concat default-directory "test/data"))
+           search)))
+    (cl-assert (consp invocation))
+    `(progn
+       ,invocation
+       (rg-with-current-result
+         ;; font-lock-mode is disabled by default in batch mode so
+         ;; request explicit fontification
+         ;; Shoud use `font-lock-ensure' but not available in emacs 24.
+         (font-lock-fontify-buffer)
+         ,@body))))
 
 (defmacro rg-test-with-command-start (&rest body)
   "Run search and put point to begining of rg command when running BODY."
   (declare (indent 0) (debug t))
   (let ((command-start (cl-gensym)))
-    `(rg-test-with-fontified-buffer
+    `(rg-test-with-fontified-buffer "hello"
        (let ((,command-start (next-single-property-change (point-min) 'rg-command)))
          (should ,command-start)
          (should-not (eq ,command-start (point-max)))
@@ -114,7 +120,7 @@ Restore original global keymap afterwards."
   "Run search and put point at start of first error line when running BODY."
   (declare (indent 0) (debug t))
   `(let ((rg-group-result t))
-     (rg-test-with-fontified-buffer
+     (rg-test-with-fontified-buffer "hello"
        (compilation-next-error 1)
        (should-not (eq (point) (point-max)))
        (beginning-of-line)
