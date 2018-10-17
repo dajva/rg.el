@@ -555,7 +555,7 @@ method. "
 (ert-deftest rg-integration/command-hiding-hide ()
   "Test command hiding when `rg-hide-command` is non nil."
   :tags '(need-rg)
-  (rg-test-with-command-start
+  (rg-test-with-command-start "hello"
      (should (get-text-property (point) 'display))
      (rg-toggle-command-hiding)
      (should-not (get-text-property (point) 'display))))
@@ -564,7 +564,7 @@ method. "
   "Test command hiding when `rg-hide-command` is nil."
   :tags '(need-rg)
   (let ((rg-hide-command nil))
-    (rg-test-with-command-start
+    (rg-test-with-command-start "hello"
         (should-not (get-text-property (point) 'display))
         (rg-toggle-command-hiding)
         (should (get-text-property (point) 'display)))))
@@ -572,26 +572,26 @@ method. "
 (ert-deftest rg-integration/positions-line-only ()
   "Test line position format without alignment."
   :tags '(need-rg)
-  (rg-test-with-first-error
+  (rg-test-with-first-error "hello"
    (should (looking-at "[0-9]:"))))
 
 (ert-deftest rg-integration/positions-line-column ()
   "Test line and column position format without alignment."
   :tags '(need-rg)
   (let ((rg-show-columns t))
-    (rg-test-with-first-error
+    (rg-test-with-first-error "hello"
      (should (looking-at "[0-9]+:[0-9]+:")))))
 
 (ert-deftest rg-integration/positions-align-line ()
   "Test line position format with alignment."
   :tags '(need-rg)
   (let ((rg-align-position-numbers t))
-    (rg-test-with-first-error
+    (rg-test-with-first-error "hello"
      (should (looking-at " \\{0,3\\}[0-9]\\{1,4\\}:"))
      (should (equal (length (match-string 0))
                     (1+ rg-align-line-number-field-length))))
     (let ((rg-align-position-content-separator "#"))
-      (rg-test-with-first-error
+      (rg-test-with-first-error "hello"
        (should (looking-at (concat " \\{0,4\\}[0-9]\\{1,5\\}"
                                    rg-align-position-content-separator)))))))
 
@@ -600,7 +600,7 @@ method. "
   :tags '(need-rg)
   (let ((rg-show-columns t)
         (rg-align-position-numbers t))
-    (rg-test-with-first-error
+    (rg-test-with-first-error "hello"
      (should (looking-at " \\{0,3\\}[0-9]\\{1,4\\}: \\{0,2\\}[0-9]\\{1,3\\}:"))
      (should (equal (length (match-string 0))
                     (+ rg-align-line-number-field-length
@@ -608,7 +608,7 @@ method. "
                        2))))
     (let ((rg-align-position-content-separator ";")
           (rg-align-line-column-separator "&"))
-      (rg-test-with-first-error
+      (rg-test-with-first-error "hello"
        (should (looking-at (concat " \\{0,3\\}[0-9]\\{1,4\\}"
                                    rg-align-line-column-separator
                                    " \\{0,2\\}[0-9]\\{1,3\\}"
@@ -617,6 +617,53 @@ method. "
                       (+ rg-align-line-number-field-length
                          rg-align-column-number-field-length
                          2)))))))
+
+(ert-deftest rg-integration/positions-align-context-line ()
+  "Test line position format with alignment."
+  :tags '(need-rg)
+  (let ((rg-align-position-numbers t)
+        (ctx-line-rx " \\{0,4\\}[1-9]-")
+        (match-line-rx " \\{0,3\\}[0-9]\\{1,4\\}:")
+        ctx-match line-match)
+    (rg-test-with-first-error
+      (rg-run "amid" "elisp"
+              (concat default-directory "test/data")
+              nil nil '("--context 3"))
+      (forward-line 1)
+      (should (looking-at ctx-line-rx))
+      (setq ctx-match (match-string 0))
+      (forward-line -1)
+      (should (looking-at match-line-rx))
+      (setq line-match (match-string 0))
+      (should (equal (length ctx-match) (length line-match)))
+      (forward-line -1)
+      (should (looking-at ctx-line-rx))
+      (setq ctx-match (match-string 0))
+      (should (equal (length ctx-match) (length line-match))))))
+
+(ert-deftest rg-integration/positions-align-context-line-column ()
+  "Test line position format with alignment."
+  :tags '(need-rg)
+  (let ((rg-show-columns t)
+        (rg-align-position-numbers t)
+        (contex-line-rx " \\{0,9\\}[1-9]-")
+        (match-line-rx " \\{0,3\\}[0-9]\\{1,4\\}: \\{0,2\\}[0-9]\\{1,3\\}:")
+        ctx-match line-match)
+    (rg-test-with-first-error
+      (rg-run "amid" "elisp"
+              (concat default-directory "test/data")
+              nil nil '("--context 3"))
+      (forward-line 1)
+      (should (looking-at contex-line-rx))
+      (setq ctx-match (match-string 0))
+      (forward-line -1)
+      (should (looking-at match-line-rx))
+      (setq line-match (match-string 0))
+      (should (equal (length ctx-match) (length line-match)))
+      (forward-line -1)
+      (should (looking-at contex-line-rx))
+      (setq ctx-match (match-string 0))
+      (should (equal (length ctx-match) (length line-match))))))
 
 (ert-deftest rg-integration/navigate-file-group-in-grouped-result ()
   "Test group navigation in grouped result."

@@ -105,22 +105,22 @@ SEARCH can either be a search string or a form invocating `rg-run'."
          (font-lock-fontify-buffer)
          ,@body))))
 
-(defmacro rg-test-with-command-start (&rest body)
+(defmacro rg-test-with-command-start (search &rest body)
   "Run search and put point to begining of rg command when running BODY."
   (declare (indent 0) (debug t))
   (let ((command-start (cl-gensym)))
-    `(rg-test-with-fontified-buffer "hello"
+    `(rg-test-with-fontified-buffer ,search
        (let ((,command-start (next-single-property-change (point-min) 'rg-command)))
          (should ,command-start)
          (should-not (eq ,command-start (point-max)))
          (goto-char ,command-start)
          ,@body))))
 
-(defmacro rg-test-with-first-error (&rest body)
+(defmacro rg-test-with-first-error (search &rest body)
   "Run search and put point at start of first error line when running BODY."
   (declare (indent 0) (debug t))
   `(let ((rg-group-result t))
-     (rg-test-with-fontified-buffer "hello"
+     (rg-test-with-fontified-buffer ,search
        (compilation-next-error 1)
        (should-not (eq (point) (point-max)))
        (beginning-of-line)
