@@ -40,7 +40,7 @@
 ;;
 ;; The default key binding prefix is C-c s but can be changed by
 ;; supplying a prefix of choice to the above function call:
-;; (rg-enable-default-bindings "\M-s")
+;; (rg-enable-default-bindings)
 
 ;; `rg' is the main entry point but there are functions for easy
 ;; searching:

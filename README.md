@@ -29,17 +29,17 @@ load path and add this to `init.el`
 
 ``` el
 (require 'rg)
-(rg-enable-default-bindings (kbd "M-s"))
+(rg-enable-default-bindings)
 ```
 
-`rg` and friends is an autoloaded symbol so it's also possible to
-defer loading if you have autoloading setup.
+`rg` and friends are autoloaded symbols which means it's also possible
+to defer loading if you have autoloading setup.
 
 ### wgrep
 
 This package use [wgrep](https://github.com/mhayashi1120/Emacs-wgrep)
 for doing changes to matched files from the rg results buffer. No
-setup is needed
+setup is needed.
 
 
 ## Usage
@@ -187,6 +187,42 @@ for the bindings to be enabled.
 Controls if the search info header is shown in the result
 buffer. This is enabled by default but can be disabled by setting this
 variable to `nil`.
+
+### Position numbers alignment
+It's possible to control how the line and column numbers are displayed
+in the result buffer.
+
+Example settings:
+``` emacs-lisp
+(setq rg-align-position-numbers t)
+(setq rg-align-line-number-field-length 3)
+(setq rg-align-column-number-field-length 3)
+(setq rg-align-line-column-separator "#")
+(setq rg-align-position-content-separator "|")
+```
+Will yield the following format:
+
+```
+  1#  2|match1
+888# 10|match2
+```
+
+#### `rg-align-position-numbers`
+Setting this to `t` will align line and column numbers in columns
+padded with whitespace.
+
+#### `rg-align-line-number-field-length`
+Defines the length of the line number field.
+
+#### `rg-align-column-number-field-length`
+Defines the length of the column number field.
+
+#### `rg-align-line-column-separator`
+Separator string used between line and column numbers.
+
+#### `rg-align-position-content-separator`
+Separator string used between the position numbers and matched
+content.
 
 ### `rg-define-toggle`
 This is a macro that can be used to define custom `ripgrep` flag
