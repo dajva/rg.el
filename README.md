@@ -82,7 +82,6 @@ There are some aliases with special meanings in `rg.el`.
 |-----|--------|
 | _all_ | all defined types including `rg-custom-type-aliases` |
 | _everything_ | all files, i.e. running rg without `--type` flag |
-| _custom_ | used internally in ``rg.el`` for mapping custom globs. Do not use this in `rg-custom-type-aliases` |
 
 ### Key bindings
 This package comes with a set of predefined key bindings that can be
