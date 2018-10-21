@@ -189,8 +189,9 @@ buffer. This is enabled by default but can be disabled by setting this
 variable to `nil`.
 
 ### Position numbers alignment
-It's possible to control how the line and column numbers are displayed
-in the result buffer.
+When operating `rg.el` in grouped output mode (`rg-group-result` is
+non nil), it's possible to control how the line and column numbers are
+displayed in the result buffer.
 
 Example settings:
 ``` emacs-lisp
@@ -203,6 +204,7 @@ Example settings:
 Will yield the following format:
 
 ```
+File: matched_file.foo
   1#  2|match1
 888# 10|match2
 ```
