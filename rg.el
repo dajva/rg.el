@@ -231,13 +231,12 @@ are command line flags to use for the search."
           (list
            (if rg-group-result "--heading" "--no-heading"))
           (when (rg-is-custom-file-pattern files)
-            (list (concat "--glob " (shell-quote-argument files))))
+            (list (concat "--type-add " (shell-quote-argument (concat "custom:" files)))))
           (when rg-show-columns
             (list "--column"))
           (when literal
             (list "--fixed-strings"))
-          (unless (or (rg-is-custom-file-pattern files)
-                      (equal files "everything"))
+          (when (not (equal files "everything"))
             (list "--type <F>"))
           (list "-e <R>")
           (when (eq system-type 'windows-nt)
@@ -246,8 +245,7 @@ are command line flags to use for the search."
     (grep-expand-template
      (mapconcat 'identity (cons (rg-command) (delete-dups command-line)) " ")
      pattern
-     (unless (rg-is-custom-file-pattern files)
-       files))))
+     (if (rg-is-custom-file-pattern files) "custom" files))))
 
 (defun rg-list-builtin-type-aliases ()
   "Invokes rg --type-list and puts the result in an alist."

@@ -206,7 +206,10 @@ alias."
     (setq full-command (rg-build-command "foo" "everything" nil nil))
     (should-not (s-matches? "rg.*? +--type.*? +foo" full-command))
     (setq full-command (rg-build-command "foo" "bar" nil nil))
-    (should (s-matches? "rg.*? +--glob bar [^ ]* +foo" full-command))))
+    (should (s-matches? (concat "rg.*? +--type-add +"
+                                (regexp-quote (shell-quote-argument "custom:bar"))
+                                " +--type +\"?custom.*? +foo")
+                        full-command))))
 
 (ert-deftest rg-unit-test/build-command-type ()
   "Test `rg-build-template' template creation."
@@ -216,13 +219,19 @@ alias."
          (builtin-type-command (rg-build-command "query" "elisp" nil nil))
          (custom-type-command (rg-build-command "query" "glob" nil nil))
          (type-pattern (rg-regexp-anywhere-but-last "--type [^ ]+"))
-         (glob-pattern (rg-regexp-anywhere-but-last "--glob [^ ]+")))
+         (type-add-pattern (rg-regexp-anywhere-but-last
+                            (concat
+                             "--type-add "
+                             (s-replace "----" "[^ ]+"
+                                        (regexp-quote
+                                         (shell-quote-argument "custom:----")))))))
     (should (s-matches? (rg-regexp-anywhere "-e query") notype-command))
     (should-not (s-matches? type-pattern notype-command))
-    (should-not (s-matches? glob-pattern notype-command))
+    (should-not (s-matches? type-add-pattern notype-command))
     (should (s-matches? type-pattern builtin-type-command))
-    (should-not (s-matches? glob-pattern builtin-type-command))
-    (should (s-matches? glob-pattern custom-type-command))))
+    (should-not (s-matches? type-add-pattern builtin-type-command))
+    (should (s-matches? type-add-pattern custom-type-command))
+    (should (s-matches? (rg-regexp-anywhere-but-last "--type custom") custom-type-command))))
 
 (ert-deftest rg-unit-test/default-alias ()
   "Test that `rg-default-alias' detects the current file and selects
