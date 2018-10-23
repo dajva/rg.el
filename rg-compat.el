@@ -3,7 +3,7 @@
 ;; Copyright (C) 2018 David Landell <david.landell@sunnyhill.email>
 ;;
 ;; Author: David Landell <david.landell@sunnyhill.email>
-;; URL: https://github.com/davja/
+;; URL: https://github.com/dajva/rg.el
 
 ;; This file is not part of GNU Emacs.
 
