@@ -4,7 +4,7 @@
 ;; Rewritten by: Dale Sedivec <dale@codefu.org>
 ;; Maintainer: David Landell <david.landell@sunnyhill.email>
 ;; Keywords: grep edit extensions
-;; URL: http://github.com/davja/rg.el
+;; URL: http://github.com/dajva/rg.el
 
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
@@ -30,7 +30,7 @@
 
 ;; 1. Install rg.el
 ;;
-;;   https://github.com/davja/rg.el
+;;   https://github.com/dajva/rg.el
 
 ;; 2. Install wgrep.el
 
