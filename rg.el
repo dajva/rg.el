@@ -373,25 +373,25 @@ executing.  FLAGS is additional command line flags to use in the search."
               (read-from-minibuffer "Confirm: "
                                     command nil nil 'rg-history))
       (add-to-history 'rg-history command))
-    (cond
-     ((and confirmed (not (string= confirmed command)))
-      ;; If user changed command we can't know the parts of the
-      ;; search and needs to disable result buffer modifications.
-      (setf (rg-search-full-command rg-cur-search) t)
-      (setq command confirmed))
-     (t
-      (setq-default rg-cur-search
-                    (rg-search-create
-                     :pattern pattern
-                     :files files
-                     :dir dir
-                     :literal literal
-                     :toggle-flags rg-toggle-command-line-flags
-                     :flags flags))))
-    (let ((default-directory dir))
+    (let ((default-directory dir)
+          (search (rg-search-create
+                   :pattern pattern
+                   :files files
+                   :dir dir
+                   :literal literal
+                   :toggle-flags rg-toggle-command-line-flags
+                   :flags flags)))
+      (when (and confirmed
+                 (not (string= confirmed command)))
+        ;; If user changed command we can't know the parts of the
+        ;; search and needs to disable result buffer modifications.
+        (setf (rg-search-full-command search) t)
+        (setq command confirmed))
+
       ;; Setting process-setup-function makes exit-message-function work
       ;; even when async processes aren't supported.
-      (compilation-start command 'rg-mode))
+      (with-current-buffer (compilation-start command 'rg-mode)
+        (rg-mode-init search)))
     (if (eq next-error-last-buffer (current-buffer))
         (setq default-directory dir))))
 

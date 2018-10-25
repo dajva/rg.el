@@ -165,9 +165,10 @@ and, depending on configuration, column number and file name."
   toggle-flags           ; toggle command line flags
   flags)                 ; search specific flags
 
-(defvar rg-cur-search (rg-search-create)
+(defvar-local rg-cur-search nil
   "Stores parameters of last search.
 Becomes buffer local in `rg-mode' buffers.")
+(put 'rg-cur-search 'permanent-local t)
 
 (defvar-local rg-hit-count 0
   "Stores number of hits in a search.")
@@ -416,11 +417,16 @@ Commands:
        'rg-process-setup)
   (set (make-local-variable 'compilation-disable-input) t)
   (set (make-local-variable 'compilation-error-screen-columns) nil)
-  (make-local-variable 'rg-cur-search)
+  (add-hook 'compilation-filter-hook 'rg-filter nil t))
+
+(defun rg-mode-init (search)
+  "Initiate rg-mode with SEARCH in current buffer."
+  (unless (eq major-mode 'rg-mode)
+    (error "Function rg-mode-init called in non rg mode buffer"))
+  (setq rg-cur-search search)
   (when rg-show-header
     (rg-create-header-line 'rg-cur-search
-                           (rg-search-full-command rg-cur-search)))
-  (add-hook 'compilation-filter-hook 'rg-filter nil t))
+                           (rg-search-full-command rg-cur-search))))
 
 (defun rg-rerun ()
   "Run `rg-recompile' with `compilation-arguments' taken from `rg-cur-search'."
@@ -475,11 +481,7 @@ backwards and positive means forwards."
 (defun rg-recompile ()
   "Run `recompile' while preserving some buffer local variables."
   (interactive)
-  ;; Buffer locals will be reset in recompile so we need save them
-  ;; here.
-  (let ((cur-search rg-cur-search))
-    (recompile)
-    (setq rg-cur-search cur-search)))
+  (recompile))
 
 (defun rg-rerun-toggle-flag (flag)
   "Toggle FLAG in `rg-cur-search`."

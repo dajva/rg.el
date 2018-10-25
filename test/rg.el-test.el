@@ -783,19 +783,20 @@ and ungrouped otherwise."
   "Test confirm and full command search"
   :tags '(need-rg)
   (cl-letf* ((rg-history nil)
-             (called-prompt nil) (called-history nil)
+             (called-prompt nil)
+             (called-history nil)
              ((symbol-function #'read-from-minibuffer)
               (lambda (prompt command _ign1 _ign2 history)
                 (setq called-prompt prompt)
                 (setq called-history history)
                 command)))
     (rg-run "hello" "all" "tmp/test" nil 'confirm)
-    (should (eq called-history 'rg-history))
-    (should (equal called-prompt "Confirm: "))
-    (should-not (null rg-cur-search))
-    ;; We use the stub about which does not update the history
-    (should (null rg-history))
-    (rg-with-current-result)))
+    (rg-with-current-result
+      (should (eq called-history 'rg-history))
+      (should (equal called-prompt "Confirm: "))
+      (should-not (null rg-cur-search))
+      ;; We use the stub about which does not update the history
+      (should (null rg-history)))))
 
 (ert-deftest rg-integration/run-confirm-changed-command ()
   "Test confirm and full command search"
@@ -809,11 +810,11 @@ and ungrouped otherwise."
                 (setq original-command command)
                 changed-command)))
     (rg-run "hello" "all" "tmp/test" nil 'confirm)
-    (should (equal changed-command (concat original-command "\\ world")))
-    (should (rg-search-full-command rg-cur-search))
-    ;; We use the stub above which does not update the history
-    (should (null rg-history))
-    (rg-with-current-result)))
+    (rg-with-current-result
+      (should (equal changed-command (concat original-command "\\ world")))
+      (should (rg-search-full-command rg-cur-search))
+      ;; We use the stub above which does not update the history
+      (should (null rg-history)))))
 
 (ert-deftest rg-integration/dwim-search ()
   "Test `rg-dwim'."
