@@ -387,7 +387,6 @@ executing.  FLAGS is additional command line flags to use in the search."
         ;; search and needs to disable result buffer modifications.
         (setf (rg-search-full-command search) t)
         (setq command confirmed))
-
       ;; Setting process-setup-function makes exit-message-function work
       ;; even when async processes aren't supported.
       (with-current-buffer (compilation-start command 'rg-mode)

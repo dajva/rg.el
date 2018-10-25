@@ -170,7 +170,7 @@ on emacs version."
 (ert-deftest rg-unit-test/custom-toggle-key-binding ()
   "Test `rg-define-toggle' macro key bindings."
   (let ((rg-cur-search (rg-search-create :pattern "regexp" :files "elisp" :dir "/tmp/test")))
-    (cl-letf (((symbol-function #'rg-recompile) #'ignore))
+    (cl-letf (((symbol-function #'recompile) #'ignore))
       (rg-define-toggle "--baz" "b")
       (should (functionp 'rg-custom-toggle-flag-baz))
       (should (eq 'rg-custom-toggle-flag-baz (lookup-key rg-mode-map "b"))))))
@@ -179,7 +179,7 @@ on emacs version."
   "Test multiple clashing definitions of same flag and bindings in
 `rg-define-toggle' macro."
   (let ((rg-cur-search (rg-search-create :pattern "regexp" :files "elisp" :dir "/tmp/test")))
-    (cl-letf (((symbol-function #'rg-recompile) #'ignore))
+    (cl-letf (((symbol-function #'recompile) #'ignore))
       (rg-define-toggle "--qux" nil t)
       (should (functionp 'rg-custom-toggle-flag-qux))
       (should-not (eq 'rg-custom-toggle-flag-qux (lookup-key rg-mode-map "q")))
@@ -729,7 +729,7 @@ and ungrouped otherwise."
   (should (rg-file-message-exist-in-result t)))
 
 (ert-deftest rg-integration/recompile ()
-  "Make sure that `rg-recompile' preserves search parameters."
+  "Make sure that `recompile' preserves search parameters."
   :tags '(need-rg)
   (let ((parent-dir (concat (expand-file-name default-directory) "test/")))
     (rg-run "hello" "elisp" (concat parent-dir "data"))
@@ -747,7 +747,7 @@ and ungrouped otherwise."
                        (rg-search-files rg-cur-search)
                        (rg-search-dir rg-cur-search))))
         (should (equal '("--text") (rg-search-toggle-flags rg-cur-search)))
-        (rg-recompile)
+        (recompile)
         (should (rg-wait-for-search-result))
         (should (equal
                  (list "Hello" "all" parent-dir)

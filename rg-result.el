@@ -30,6 +30,7 @@
 (require 'grep)
 (require 'rg-compat)
 (require 'rg-header)
+(require 'rg-history)
 (require 's)
 (require 'wgrep-rg)
 
@@ -156,7 +157,7 @@ and, depending on configuration, column number and file name."
 
 (cl-defstruct (rg-search (:constructor rg-search-create)
                          (:constructor rg-search-new (pattern files dir))
-                         (:copier nil))
+                         (:copier rg-search-copy))
   pattern                ; search pattern
   files                  ; files to search
   dir                    ; base directory
@@ -169,6 +170,10 @@ and, depending on configuration, column number and file name."
   "Stores parameters of last search.
 Becomes buffer local in `rg-mode' buffers.")
 (put 'rg-cur-search 'permanent-local t)
+
+(defvar-local rg-search-history nil
+  "Stores the search history per rg-mode buffer.")
+(put 'rg-search-history 'permanent-local t)
 
 (defvar-local rg-hit-count 0
   "Stores number of hits in a search.")
@@ -200,7 +205,7 @@ Becomes buffer local in `rg-mode' buffers.")
     (define-key map "c" 'rg-rerun-toggle-case)
     (define-key map "d" 'rg-rerun-change-dir)
     (define-key map "f" 'rg-rerun-change-files)
-    (define-key map "g" 'rg-recompile)
+    (define-key map "g" 'recompile)
     (define-key map "i" 'rg-rerun-toggle-ignore)
     (define-key map "l" 'rg-list-searches)
     (define-key map "r" 'rg-rerun-change-regexp)
@@ -210,6 +215,8 @@ Becomes buffer local in `rg-mode' buffers.")
     (define-key map "w" 'wgrep-change-to-wgrep-mode)
     (define-key map "\C-n" 'rg-next-file)
     (define-key map "\C-p" 'rg-prev-file)
+    (define-key map "\C-f" 'rg-forward-history)
+    (define-key map "\C-b" 'rg-back-history)
     map)
   "The keymap for `rg-mode'.")
 
@@ -417,6 +424,8 @@ Commands:
        'rg-process-setup)
   (set (make-local-variable 'compilation-disable-input) t)
   (set (make-local-variable 'compilation-error-screen-columns) nil)
+  (unless rg-search-history
+    (setq rg-search-history (rg-history-create)))
   (add-hook 'compilation-filter-hook 'rg-filter nil t))
 
 (defun rg-mode-init (search)
@@ -424,12 +433,15 @@ Commands:
   (unless (eq major-mode 'rg-mode)
     (error "Function rg-mode-init called in non rg mode buffer"))
   (setq rg-cur-search search)
+  (rg-history-push (rg-search-copy rg-cur-search)
+                   rg-search-history)
   (when rg-show-header
     (rg-create-header-line 'rg-cur-search
                            (rg-search-full-command rg-cur-search))))
 
-(defun rg-rerun ()
-  "Run `rg-recompile' with `compilation-arguments' taken from `rg-cur-search'."
+(defun rg-rerun (&optional no-history)
+  "Run `recompile' with `compilation-arguments' taken from `rg-cur-search'.
+If NO-HISTORY is non nil skip adding the search to the search history."
   (let ((pattern (rg-search-pattern rg-cur-search))
         (files (rg-search-files rg-cur-search))
         (dir (rg-search-dir rg-cur-search))
@@ -443,7 +455,10 @@ Commands:
     ;; default-directory is used as the base for file paths.
     (setq compilation-directory dir)
     (setq default-directory compilation-directory)
-    (rg-recompile)))
+    (unless no-history
+      (rg-history-push (rg-search-copy rg-cur-search)
+                       rg-search-history))
+    (recompile)))
 
 (defun rg-navigate-file-message (pos limit direction)
   "Return position of next 'rg-file-message text property.
@@ -477,11 +492,6 @@ backwards and positive means forwards."
       (setq steps-left (- steps-left 1)))
     (unless (equal pos limit)
       (goto-char pos))))
-
-(defun rg-recompile ()
-  "Run `recompile' while preserving some buffer local variables."
-  (interactive)
-  (recompile))
 
 (defun rg-rerun-toggle-flag (flag)
   "Toggle FLAG in `rg-cur-search`."
@@ -564,6 +574,24 @@ previous file with grouped matches."
   (if rg-group-result
       (rg-navigate-file-group (- n))
     (compilation-previous-error n)))
+
+(defun rg-back-history ()
+  "Navigate back in the search history."
+  (interactive)
+  (rg-if-let (prev (rg-history-back rg-search-history))
+      (progn
+        (setq rg-cur-search (rg-search-copy prev))
+        (rg-rerun 'no-history))
+    (message "No more history elements for back.")))
+
+(defun rg-forward-history ()
+  "Navigate forward in the search history."
+  (interactive)
+  (rg-if-let (next (rg-history-forward rg-search-history))
+      (progn
+        (setq rg-cur-search (rg-search-copy next))
+        (rg-rerun 'no-history))
+    (message "No more history elements for forward.")))
 
 (provide 'rg-result)
 

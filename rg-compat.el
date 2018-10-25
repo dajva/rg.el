@@ -29,8 +29,10 @@
 ;; subr-x is not available in Emacs 24.4.
 (if (and (require 'subr-x nil 'noerror)
          (fboundp 'when-let))
-    (defalias 'rg-when-let 'when-let)
-  ;; Somewhat simplified version of emacs 25 when-let
+    (progn
+      (defalias 'rg-when-let 'when-let)
+      (defalias 'rg-if-let 'if-let))
+  ;; Somewhat simplified versions of emacs 25 when-let, if-let
   ;; TODO: Drop with emacs 24 support.
   (defmacro rg-when-let (bindings &rest body)
     "Process BINDINGS and if all values are non-nil eval BODY.
@@ -38,20 +40,38 @@ Argument BINDINGS is a list of tuples whose car is a symbol to be
 bound and (optionally) used in BODY, and its cadr is a sexp to be
 evalled to set symbol's value.  In the special case you only want
 to bind a single value, BINDINGS can just be a plain tuple."
+    (declare (indent 1)
+             (debug ([&or (&rest (symbolp form)) (symbolp form)] body)))
+    (let ((checked-bindings (rg-create-checked-bindings bindings)))
+      `(let* ,checked-bindings
+         (when ,(caar (last checked-bindings))
+           ,@body))))
+
+  (defmacro rg-if-let (bindings then &rest else)
+    "Process BINDINGS and if all values are non-nil eval THEN, else ELSE.
+Argument BINDINGS is a list of tuples whose car is a symbol to be
+bound and (optionally) used in THEN, and its cadr is a sexp to be
+evalled to set symbol’s value.  In the special case you only want
+to bind a single value, BINDINGS can just be a plain tuple."
     (declare (indent 2)
              (debug ([&or (&rest (symbolp form)) (symbolp form)] body)))
-    (when (and (<= (length bindings) 2)
-               (not (listp (car bindings))))
-      ;; Adjust the single binding case
-      (setq bindings (list bindings)))
-    (let ((binding-ok t)
-           checked-bindings)
-      (dolist (binding bindings)
-        (push `(,(car binding) (and ,binding-ok ,(cadr binding))) checked-bindings)
-        (setq binding-ok (car binding)))
-      `(let* ,(nreverse checked-bindings)
-         (when ,binding-ok
-           ,@body)))))
+    (let ((checked-bindings (rg-create-checked-bindings bindings)))
+      `(let* ,checked-bindings
+         (if ,(caar (last checked-bindings))
+             ,then
+           ,@else))))
+
+  (eval-and-compile
+    (defun rg-create-checked-bindings (bindings)
+      (when (and (<= (length bindings) 2)
+                 (not (listp (car bindings))))
+        ;; Adjust the single binding case
+        (setq bindings (list bindings)))
+      (let ((binding-ok t)
+            checked-bindings)
+        (dolist (binding bindings (nreverse checked-bindings))
+          (push `(,(car binding) (and ,binding-ok ,(cadr binding))) checked-bindings)
+          (setq binding-ok (car binding)))))))
 
 (provide 'rg-compat)
 

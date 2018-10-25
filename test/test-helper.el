@@ -32,6 +32,7 @@
 (require 'cl-lib)
 (require 'ert)
 (require 'rg)
+(require 'rg-history)
 (require 's)
 (require 'seq)
 (require 'wgrep-rg)
