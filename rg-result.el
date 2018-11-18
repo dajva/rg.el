@@ -428,6 +428,12 @@ Commands:
     (setq rg-search-history (rg-history-create)))
   (add-hook 'compilation-filter-hook 'rg-filter nil t))
 
+(defun rg-maybe-show-header ()
+  "Recreate header if enabled."
+  (when rg-show-header
+    (rg-create-header-line 'rg-cur-search
+                           (rg-search-full-command rg-cur-search))))
+
 (defun rg-mode-init (search)
   "Initiate rg-mode with SEARCH in current buffer."
   (unless (eq major-mode 'rg-mode)
@@ -435,9 +441,7 @@ Commands:
   (setq rg-cur-search search)
   (rg-history-push (rg-search-copy rg-cur-search)
                    rg-search-history)
-  (when rg-show-header
-    (rg-create-header-line 'rg-cur-search
-                           (rg-search-full-command rg-cur-search))))
+  (rg-maybe-show-header))
 
 (defun rg-rerun (&optional no-history)
   "Run `recompile' with `compilation-arguments' taken from `rg-cur-search'.
@@ -449,8 +453,9 @@ If NO-HISTORY is non nil skip adding the search to the search history."
         (toggle-flags (rg-search-toggle-flags rg-cur-search))
         (flags (rg-search-flags rg-cur-search)))
     (setcar compilation-arguments
-            (rg-build-command pattern files literal
-                              (append toggle-flags flags)))
+            (or (rg-search-full-command rg-cur-search)
+                (rg-build-command pattern files literal
+                                  (append toggle-flags flags))))
     ;; compilation-directory is used as search dir and
     ;; default-directory is used as the base for file paths.
     (setq compilation-directory dir)
@@ -458,7 +463,8 @@ If NO-HISTORY is non nil skip adding the search to the search history."
     (unless no-history
       (rg-history-push (rg-search-copy rg-cur-search)
                        rg-search-history))
-    (recompile)))
+    (recompile)
+    (rg-maybe-show-header)))
 
 (defun rg-navigate-file-message (pos limit direction)
   "Return position of next 'rg-file-message text property.

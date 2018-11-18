@@ -383,10 +383,10 @@ executing.  FLAGS is additional command line flags to use in the search."
                    :flags flags)))
       (when (and confirmed
                  (not (string= confirmed command)))
+        (setq command confirmed)
         ;; If user changed command we can't know the parts of the
         ;; search and needs to disable result buffer modifications.
-        (setf (rg-search-full-command search) t)
-        (setq command confirmed))
+        (setf (rg-search-full-command search) command))
       ;; Setting process-setup-function makes exit-message-function work
       ;; even when async processes aren't supported.
       (with-current-buffer (compilation-start command 'rg-mode)
