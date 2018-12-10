@@ -305,10 +305,14 @@ excluded."
                         filename))
         (rg-get-type-aliases t)))
      ;; Default when an alias for the file can't be determined
-     (cl-find-if
-      (lambda (alias)
-        (string= rg-default-alias-fallback (car alias)))
-      (rg-get-type-aliases)))))
+     (or
+      (cl-find-if
+       (lambda (alias)
+         (string= rg-default-alias-fallback (car alias)))
+       (rg-get-type-aliases))
+      (progn
+        (message "Warning: rg-default-alias-fallback customization does not match any alias. Using \"all\".")
+        (car rg-internal-type-aliases))))))
 
 (defun rg-read-files ()
   "Read files argument for interactive rg."
