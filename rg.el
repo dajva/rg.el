@@ -148,6 +148,13 @@ NIL means case sensitive search will be forced."
   :type 'string
   :group 'rg)
 
+(defcustom rg-default-alias-fallback "all"
+  "The default file alias to use when no alias can be determined.
+This must be a string that can be match against the types returned
+from `rg-get-type-aliases'."
+  :type 'string
+  :group 'rg)
+
 (defvar rg-command-line-flags-function 'identity
   "Function to modify command line flags of a search.
 The argument of the function is an optional list of search specific
@@ -298,7 +305,10 @@ excluded."
                         filename))
         (rg-get-type-aliases t)))
      ;; Default when an alias for the file can't be determined
-     '("all" . "all defined file types"))))
+     (cl-find-if
+      (lambda (alias)
+        (string= rg-default-alias-fallback (car alias)))
+      (rg-get-type-aliases)))))
 
 (defun rg-read-files ()
   "Read files argument for interactive rg."
