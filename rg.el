@@ -96,7 +96,7 @@
 (require 'rg-ibuffer)
 (require 'rg-result)
 (require 's)
-(require 'vc-hooks)
+(require 'vc)
 
 
 ;; Customizations/public vars
@@ -324,19 +324,19 @@ If LITERAL is non nil prompt for literal string.  DEFAULT is the default pattern
 
 (defun rg-project-root (file)
   "Find the project root of the given FILE."
-  (or (when file
-        (let ((backend (vc-backend file)))
-          (or
-           (when (and (require 'projectile nil t)
-                      (fboundp 'projectile-project-root))
-             (projectile-project-root))
-           (when (and (require 'find-file-in-project nil t)
-                      (fboundp 'ffip-project-root))
-             (ffip-project-root))
-           (when backend
-             (vc-call-backend backend 'root file))
-           (file-name-directory file))))
-      default-directory))
+  (or
+   (when (and (require 'projectile nil t)
+              (fboundp 'projectile-project-root))
+     (projectile-project-root))
+   (when (and (require 'find-file-in-project nil t)
+              (fboundp 'ffip-project-root))
+     (ffip-project-root))
+   (condition-case nil
+       (let* ((file (or file default-directory))
+              (backend (vc-responsible-backend file)))
+         (vc-call-backend backend 'root file))
+     (error (progn
+              (file-name-directory file))))))
 
 (defun rg-run (pattern files dir &optional literal confirm flags)
   "Execute rg command with supplied PATTERN, FILES and DIR.
