@@ -123,6 +123,14 @@ search for quick reruns with refined parameters.
 | `S` | Save search result, prompt for name |
 | `t` | Edit search string as literal |
 | `w` | Switch to wgrep mode |
+| `C-f` | Navigate forward in search history |
+| `C-b` | Navigate backward in search history |
+
+### History navigation
+Search history is stored per result buffer. It's possible to navigate back
+and forward in earlier searches with `rg-back-history` and
+`rg-forward-history`. Whenever a search is modified or a new is
+created future searches are cleared.
 
 ## Customize
 

@@ -86,6 +86,11 @@
 ;; `rg-list-searches' will display a list of all search buffers with
 ;; search info and allow jumping to results.
 
+;; Search history is stored per result buffer.  It's possible to
+;; navigate back and forward in earlier searches with
+;; `rg-back-history` and `rg-forward-history`.  Whenever a search is
+;; modified or a new is created future searches are cleared.
+
 ;; This package use `wgrep' for inline editing of search results.
 
 ;;; Code:
