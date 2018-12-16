@@ -537,17 +537,17 @@ method. "
   ;; projectile require emacs 25.1 so can't test with cask since we
   ;; support emacs 24.4.
   ;; (rg-check-git-project-root)
-  ;; (eval-after-load 'projectile
+  ;; (with-eval-after-load 'projectile
   ;;   (fmakunbound 'projectile-project-root))
 
   ;; ffip
   (rg-check-git-project-root)
-  (eval-after-load 'find-file-in-project
+  (with-eval-after-load 'find-file-in-project
     (fmakunbound 'ffip-project-root))
 
   ;; project.el
   (rg-check-git-project-root)
-  (eval-after-load 'project
+  (with-eval-after-load 'project
     (fmakunbound 'project-current))
 
   ;; vc-backend
