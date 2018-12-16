@@ -544,6 +544,11 @@ method. "
   (rg-check-git-project-root)
   (eval-after-load 'find-file-in-project
     (fmakunbound 'ffip-project-root))
+             
+  ;; project.el
+  (rg-check-git-project-root)
+  (eval-after-load 'project
+    (fmakunbound 'project-current))
 
   ;; vc-backend
   (rg-check-git-project-root)
