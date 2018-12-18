@@ -154,6 +154,10 @@ dynamically based on mode, directory, project, etc.
     (when (in-frontend-app)
       (cons "ui" "*.js *.hbs *.json"))))
 ```
+### `rg-default-alias-fallback`
+This setting controls the default alias used when no alias can be
+recognized for the current buffer. Default setting for this is _all_
+and _everything_ is another reasonable value for this variable.
 
 ### `rg-command-line-flags`
 Additional command line flags that will be appended to the ripgrep
