@@ -24,6 +24,8 @@
 
 ;;; Commentary:
 
+;; Tests for search history navigation.
+
 ;;; Code:
 
 
@@ -31,6 +33,7 @@
 ;; Unit tests
 
 (ert-deftest rg-unit/history-navigation ()
+  "Testing the history data structure for navigation."
   (let ((instance (rg-history-create)))
     (should (equal (rg-history-back instance) nil))
     (rg-history-push 'search1 instance)
@@ -45,6 +48,8 @@
     (should (equal (rg-history-forward instance) nil))))
 
 (ert-deftest rg-unit/history-new-search ()
+  "Testing the history data structure behavoir when inserting new
+search after moving in history."
   (let ((instance (rg-history-create)))
     (should (equal (rg-history-back instance) nil))
     (rg-history-push 'search1 instance)
@@ -57,6 +62,28 @@
     (should (equal (rg-history-back instance) 'search2))
     (should (equal (rg-history-back instance) 'search1))
     (should (equal (rg-history-back instance) nil))))
+
+
+;; Integration tests
+
+(ert-deftest rg-integration/history ()
+  "Verify that simple history navigation works."
+  :tags '(need-rg)
+  (rg-run-and-wait #'rg-run
+                   "foo" "all" (concat default-directory "test/data"))
+  (rg-run-and-wait #'rg-run
+                   "bar" "all" (concat default-directory "test/data"))
+  (rg-run-and-wait #'rg-run
+                   "baz" "all" (concat default-directory "test/data"))
+  (with-current-buffer "*rg*"
+     (rg-run-and-wait #'rg-back-history)
+     (should (equal (rg-search-pattern rg-cur-search) "bar"))
+     (rg-run-and-wait #'rg-back-history)
+     (should (equal (rg-search-pattern rg-cur-search) "foo"))
+     (rg-run-and-wait #'rg-forward-history)
+     (should (equal (rg-search-pattern rg-cur-search) "bar"))
+     (rg-run-and-wait #'rg-forward-history)
+     (should (equal (rg-search-pattern rg-cur-search) "baz"))))
 
 (provide 'rg-history.el-test)
 

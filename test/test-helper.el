@@ -46,8 +46,14 @@
 (defun rg-regexp-anywhere-but-last (needle)
   (s-replace "%%%%" needle "\\( \\|^\\)%%%% "))
 
+(defun rg-run-and-wait (fn &rest args)
+  "Run FN  with ARGS and then wait for search to be done."
+  (apply fn args)
+  (with-current-buffer "*rg*"
+    (rg-wait-for-search-result)))
+
 (defun rg-wait-for-search-result ()
-"Wait for the rg process to finish searching and return non nil if the
+  "Wait for the rg process to finish searching and return non nil if the
 search was successful. Timeout is 10 s."
   (let (search-finished)
     (add-hook 'compilation-finish-functions
