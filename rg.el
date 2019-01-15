@@ -208,7 +208,7 @@ Raises an error if it can not be found."
 
 (defun rg-command ()
   "Command string for invoking rg."
-  (concat (rg-executable)
+  (concat (shell-quote-argument (rg-executable))
           " --color always --colors match:fg:red -n"))
 
 (defun rg-build-type-add-args ()
@@ -263,7 +263,7 @@ are command line flags to use for the search."
   "Invokes rg --type-list and puts the result in an alist."
   (let ((type-list (nbutlast (split-string
                               (shell-command-to-string
-                               (concat (rg-executable) " --type-list"))
+                               (concat (shell-quote-argument (rg-executable)) " --type-list"))
                               "\n") 1)))
     (mapcar
      (lambda (type-alias)
