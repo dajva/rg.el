@@ -204,7 +204,7 @@ These are not produced by 'rg --type-list' but we need them anyway.")
 Raises an error if it can not be found."
   (unless rg-executable
     (error "No 'rg' executable found"))
-  rg-executable)
+  (shell-quote-argument rg-executable))
 
 (defun rg-command ()
   "Command string for invoking rg."
