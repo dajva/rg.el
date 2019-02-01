@@ -707,17 +707,33 @@ under the current directory."
   :files current
   :dir current)
 
+;;;###autoload (autoload 'rg-dwim-current-file "rg.el" "" t)
+(rg-define-search rg-dwim-current-file
+  "Search for thing at point in files matching the current file
+name (as a pattern) under the current directory."
+  :query point
+  :format literal
+  :files (file-name-nondirectory (buffer-file-name))
+  :dir current)
+
 ;;;###autoload
 (defun rg-dwim (&optional curdir)
   "Run ripgrep without user interaction figuring out the intention by magic(!).
-The default magic searches for thing at
-point in files matching current file under project root
-directory.  With \\[universal-argument] prefix (CURDIR), search is
-done in current dir instead of project root."
+The default magic searches for thing at point in files matching
+current file under project root directory.
+
+With \\[universal-argument] prefix (CURDIR), search is done in
+current dir instead of project root.
+
+With repeated \\[universal-argument] prefix, search is done in
+the current dir and using the current variable `buffer-file-name'
+as a pattern.  Subdirectories are still searched, so different
+files with the same name pattern still will be searched."
   (interactive "P")
-  (if curdir
-      (rg-dwim-current-dir)
-    (rg-dwim-project-dir)))
+  (cond
+   ((eq  4 (and (consp curdir) (car curdir))) (rg-dwim-current-dir))
+   ((eq 16 (and (consp curdir) (car curdir))) (rg-dwim-current-file))
+   (t     (rg-dwim-project-dir))))
 
 ;;;###autoload (autoload 'rg-literal "rg.el" "" t)
 (rg-define-search rg-literal
