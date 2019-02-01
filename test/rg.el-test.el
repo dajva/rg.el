@@ -840,8 +840,10 @@ and ungrouped otherwise."
     (should (equal called-files "elisp"))
     (should (equal (expand-file-name called-dir) project-dir))
     (should-not (eq called-literal nil))
-    (rg-dwim 'curdir)
-    (should (equal (expand-file-name called-dir) (expand-file-name default-directory)))))
+    (rg-dwim '(4))
+    (should (equal (expand-file-name called-dir) (expand-file-name default-directory)))
+    (rg-dwim '(16))
+    (should (equal called-files "foo.el"))))
 
 (ert-deftest rg-integration/project-search ()
   "Test `rg-project'."
