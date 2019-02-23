@@ -5,7 +5,6 @@
 
 (files
  "rg.el"
- "rg-compat.el"
  "rg-history.el"
  "rg-result.el"
  "rg-header.el"

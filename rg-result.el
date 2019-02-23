@@ -28,10 +28,10 @@
 
 (require 'cl-lib)
 (require 'grep)
-(require 'rg-compat)
 (require 'rg-header)
 (require 'rg-history)
 (require 's)
+(require 'subr-x)
 (require 'wgrep-rg)
 
 ;; Forward declarations.
@@ -312,7 +312,7 @@ Set up `compilation-exit-message-function' and run `grep-setup-hook'."
                               ;; Context lines
                               (1+ rg-align-column-number-field-length)
                             0)))
-                      (rg-when-let (column-match (match-string 3))
+                      (when-let (column-match (match-string 3))
                         (concat line-col-separator
                                 (rg-prepend-space
                                  column-match
@@ -603,7 +603,7 @@ previous file with grouped matches."
 (defun rg-back-history ()
   "Navigate back in the search history."
   (interactive)
-  (rg-if-let (prev (rg-history-back rg-search-history))
+  (if-let (prev (rg-history-back rg-search-history))
       (progn
         (setq rg-cur-search (rg-search-copy prev))
         (rg-rerun 'no-history))
@@ -612,7 +612,7 @@ previous file with grouped matches."
 (defun rg-forward-history ()
   "Navigate forward in the search history."
   (interactive)
-  (rg-if-let (next (rg-history-forward rg-search-history))
+  (if-let (next (rg-history-forward rg-search-history))
       (progn
         (setq rg-cur-search (rg-search-copy next))
         (rg-rerun 'no-history))

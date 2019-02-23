@@ -567,11 +567,9 @@ Test `:flags' directive."
 This test abuse the internal priority of `rg-project-root', by first
 checking the root and then successively disable the internally used
 method. "
-  ;; projectile require emacs 25.1 so can't test with cask since we
-  ;; support emacs 24.4.
-  ;; (rg-check-git-project-root)
-  ;; (with-eval-after-load 'projectile
-  ;;   (fmakunbound 'projectile-project-root))
+  (rg-check-git-project-root)
+  (with-eval-after-load 'projectile
+    (fmakunbound 'projectile-project-root))
 
   ;; ffip
   (rg-check-git-project-root)

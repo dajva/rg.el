@@ -8,7 +8,7 @@
 ;;         Roland McGrath <roland@gnu.org>
 ;; Version: 1.8.0
 ;; URL: https://github.com/dajva/rg.el
-;; Package-Requires: ((cl-lib "0.5") (emacs "24.4") (s "1.10.0") (wgrep "2.1.10"))
+;; Package-Requires: ((cl-lib "0.5") (emacs "25.1") (s "1.10.0") (wgrep "2.1.10"))
 ;; Keywords: matching, tools
 
 ;; This file is not part of GNU Emacs.
@@ -544,20 +544,6 @@ If prefix is not supplied `rg-keymap-prefix' is used."
   (define-key rg-mode-map "\C-c<" nil))
 
 (eval-and-compile
-  ;; Copied macroexp-parse-body from macroexp.el since this is only
-  ;; available in emacs > 25.
-  (defun rg-search-parse-body (args)
-    "Parse a function ARGS into (DECLARATIONS . EXPS)."
-    (let ((decls ()))
-      (while (and (cdr args)
-                  (let ((e (car args)))
-                    (or (stringp e)
-                        (memq (car-safe e)
-                              '(:documentation declare interactive cl-declare)))))
-        (push (pop args) decls))
-      (cons (nreverse decls) args))))
-
-(eval-and-compile
   (defun rg-set-search-defaults (args)
     "Set defaults for required search options missing from ARGS.
 If the :confirm option is missing, set it to NEVER, if
@@ -711,7 +697,7 @@ Example:
   :files \"elisp\"
   :dir (getenv \"HOME\"\)\)"
   (declare (indent defun))
-  (let* ((body (rg-search-parse-body args))
+  (let* ((body (macroexp-parse-body args))
          (decls (car body))
          (search-cfg (rg-set-search-defaults (cdr body)))
          (local-bindings (rg-search-parse-local-bindings search-cfg))

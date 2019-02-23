@@ -108,8 +108,7 @@ SEARCH can either be a search string or a form invocating `rg-run'."
        (rg-with-current-result
          ;; font-lock-mode is disabled by default in batch mode so
          ;; request explicit fontification
-         ;; Shoud use `font-lock-ensure' but not available in emacs 24.
-         (font-lock-fontify-buffer)
+         (font-lock-ensure)
          ,@body))))
 
 (defmacro rg-test-with-command-start (search &rest body)
