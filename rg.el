@@ -565,6 +565,13 @@ the :query option is missing, set it to ASK"
       (setq args (plist-put args :dir 'ask)))
     args))
 
+(defmacro rg-ensure-quoted (arg)
+  "Ensure that ARG is quoted."
+  (if (and (consp arg)
+           (eq (car arg) 'quote))
+      arg
+    `(quote ,arg)))
+
 (eval-and-compile
   (defun rg-search-parse-local-bindings (search-cfg)
     "Parse local bindings for search functions from SEARCH-CFG."
@@ -614,8 +621,8 @@ the :query option is missing, set it to ASK"
 
       (setq binding-list
             (append binding-list
-                    `((flags (funcall rg-command-line-flags-function ,flags-opt)))))
-
+                    `((flags (funcall rg-command-line-flags-function
+                                      (rg-ensure-quoted ,flags-opt))))))
       binding-list)))
 
 (eval-and-compile
