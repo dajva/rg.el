@@ -197,8 +197,8 @@ Becomes buffer local in `rg-mode' buffers.")
     ;; context lines in rg
     ("^ *\\(?:.+?-\\)?[0-9]+-.*\n" (0 'rg-context-face))
     ("^.*rg \\(--color always .*$\\)"
-     (0 '(face rg-context-face))
-     (1 (rg-hide-command-properties)))))
+     (0 (rg-command-line-properties))
+     (1 (rg-hidden-command-line-properties)))))
 
 (defvar rg-mode-map
   (let ((map (copy-keymap grep-mode-map)))
@@ -228,27 +228,31 @@ Becomes buffer local in `rg-mode' buffers.")
 
 ;; This solution was mostly copied from emacs grep.el and adjusted to
 ;; be more usable.
-(defun rg-hide-command-properties ()
-    "Return properties of button-like ellipsis on part of rg command line."
+(defun rg-command-line-properties ()
+  "Return properties for graying out and keymap for hiding command line."
   (let ((map (make-sparse-keymap))
         properties)
     (define-key map [down-mouse-2] 'mouse-set-point)
     (define-key map [mouse-2] 'rg-toggle-command-hiding)
     (define-key map "\C-m" 'rg-toggle-command-hiding)
-    (append
-     `(face nil mouse-face highlight
-            help-echo "RET, mouse-2: show unabbreviated command"
-            keymap ,map rg-command t)
-     (when rg-hide-command
-         `(display ,rg-ellipsis)))))
+    `(face rg-context-face mouse-face highlight
+           help-echo "RET, mouse-2: show unabbreviated command"
+           keymap ,map)))
+
+(defun rg-hidden-command-line-properties ()
+  "Return properties of button-like ellipsis on part of rg command line."
+  (append
+   '(face nil rg-command-hidden-part t)
+   (when rg-hide-command
+     `(display ,rg-ellipsis))))
 
 (defun rg-toggle-command-hiding ()
   "Toggle showing the hidden part of rg command line."
   (interactive)
   (with-silent-modifications
-    (let* ((beg (next-single-property-change (point-min) 'rg-command))
+    (let* ((beg (next-single-property-change (point-min) 'rg-command-hidden-part))
            (end (when beg
-                  (next-single-property-change beg 'rg-command))))
+                  (next-single-property-change beg 'rg-command-hidden-part))))
       (if end
           (if (get-text-property beg 'display)
               (remove-list-of-text-properties beg end '(display))

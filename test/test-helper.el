@@ -117,7 +117,7 @@ SEARCH can either be a search string or a form invocating `rg-run'."
   (declare (indent 0) (debug t))
   (let ((command-start (cl-gensym)))
     `(rg-test-with-fontified-buffer ,search
-       (let ((,command-start (next-single-property-change (point-min) 'rg-command)))
+       (let ((,command-start (next-single-property-change (point-min) 'rg-command-hidden-part)))
          (should ,command-start)
          (should-not (eq ,command-start (point-max)))
          (goto-char ,command-start)

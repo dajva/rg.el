@@ -101,7 +101,7 @@
   (goto-char (point-min))
   (should (get-text-property (point) 'wgrep-header))
   ;; Jump over "rg-started" line that could match error regexp.
-  (goto-char (next-single-property-change (point-min) 'rg-command))
+  (goto-char (next-single-property-change (point-min) 'rg-command-hidden-part))
   (should (get-text-property (point) 'wgrep-header))
   (end-of-line)
   (should (get-text-property (point) 'wgrep-header))
@@ -141,7 +141,7 @@
 (defun rg-move-to-context-line ()
   (goto-char (point-min))
   ;; Jump over "rg-started" line that could match error regexp.
-  (goto-char (next-single-property-change (point-min) 'rg-command))
+  (goto-char (next-single-property-change (point-min) 'rg-command-hidden-part))
   (compilation-next-file 1)
   (forward-line -1))
 
@@ -166,7 +166,7 @@
 
   (goto-char (point-min))
   ;; Jump over "rg-started" line that could match error regexp.
-  (goto-char (next-single-property-change (point-min) 'rg-command))
+  (goto-char (next-single-property-change (point-min) 'rg-command-hidden-part))
   (compilation-next-file 1)
   (rg-check-wgrep-current-line)
 
