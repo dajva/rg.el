@@ -1,0 +1,492 @@
+#+TITLE: Configuration
+#+AUTHOR: David Landell
+#+EMAIL: david.landell@sunnyhill.email
+#+DATE: 2019
+#+LANGUAGE: en
+#+OPTIONS: broken-links:auto, toc:nil, email:nil, num:nil, ^:nil, author:nil, date:nil
+
+#+INCLUDE: "utils.org"
+
+* Customization
+  :PROPERTIES:
+  :CUSTOM_ID: customization
+  :END:
+  Customization is done via the Emacs customization system. The group
+  =rg= is the main group of the package.
+  #+BEGIN_SRC elisp
+  M-x customize-group [RET] rg [RET]
+  #+END_SRC
+  :OPTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-custom-info 'rg-executable '(executable-find "rg"))
+  #+END_SRC
+
+  The /ripgrep/ executable to use. Could be an absolute path or just the
+  base name if the executable is in the path. The default is using
+  =executable-find= to locate the command. If you want to use this
+  package with tramp it might be better to set it to just "rg" in
+  order to let the OS find the binary where it's invoked.
+  :END:
+
+  :OPTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-custom-info 'rg-custom-type-aliases)
+  #+END_SRC
+
+  An association list that maps file type aliases to a space
+  delimited string with file globs. These are combined with the
+  /ripgrep/ builtin file aliases.
+
+  Example:
+  #+BEGIN_SRC elisp
+    (setq rg-custom-type-aliases
+      '(("foo" .    "*.foo *.bar")
+        ("baz" .    "*.baz *.qux")))
+  #+END_SRC
+
+  You may also add lambdas to =rg-custom-type-aliases= to add aliases
+  dynamically based on mode, directory, project, etc.
+
+  #+BEGIN_SRC elisp
+     (add-to-list
+      'rg-custom-type-aliases
+      (lambda ()
+        (when (in-frontend-app)
+          (cons "ui" "*.js *.hbs *.json"))))
+  #+END_SRC
+  :END:
+
+  :OPTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-custom-info 'rg-default-alias-fallback)
+  #+END_SRC
+
+  This setting controls the default alias used when no alias can be
+  recognized for the current buffer. =all= or =everything= are
+  reasonable values for this variable.
+  :END:
+
+  :OPTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-custom-info 'rg-command-line-flags)
+  #+END_SRC
+
+  A list of command line flags that will be appended to the
+  /ripgrep/ command line. Must either be a list of flags or a function
+  that returns a list of flags.
+  :END:
+
+  :OPTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-custom-info 'rg-group-result)
+  #+END_SRC
+
+
+  Controls the layout of the results buffer. If non =nil=, each file name
+  is displayed once and matches are grouped under that filename instead of
+  repeating the filename on each match. This is essentially the layout of
+  the =--no-heading= /ripgrep/ command line flag.
+  :END:
+
+  :OPTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-custom-info 'rg-show-columns)
+  #+END_SRC
+
+
+  Controls if column numbers are used in the search result.
+  :END:
+
+  :OPTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-custom-info 'rg-ignore-case)
+  #+END_SRC
+
+  Setting that controls if case sensitive search is made or not. It
+  can essentially be *on*, *off* or *smart*. The *smart* setting will
+  trigger an analyze of the search string and if it's all lower case,
+  the search will be case /insensitive/, otherwise it will be case
+  /sensitive/. The following values are valid:
+
+  - *case-fold-search* - A non nil value of =case-fold-search= will trigger smart case behavior.
+  - *smart* - Smart case behavior.
+  - *force* - Always ignore case.
+  - *nil* - Always consider case.
+  :END:
+
+  :OPTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-custom-info 'rg-hide-command)
+  #+END_SRC
+
+  Hide most of command line by default. This is enabled by default and can
+  be set to =nil= to show full command line.
+  This can be toggled in the results buffer by clicking on the command line.
+  :END:
+
+  :OPTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-custom-info 'rg-keymap-prefix)
+  #+END_SRC
+
+  This variable sets the default prefix used for the global key bindings.
+  Note that =rg-enable-default-bindings= needs to be invoked for the
+  bindings to be enabled.
+  :END:
+
+  :OPTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-custom-info 'rg-use-transient-menu)
+  #+END_SRC
+
+  Controls whether =rg-menu= will be used by default or not. It's also
+  possible to enable the menu explicitly with
+  #+BEGIN_SRC elisp
+  (rg-enable-menu)
+  #+END_SRC
+  :END:
+
+  :OPTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-custom-info 'rg-show-header)
+  #+END_SRC
+
+  Controls if the search info header is shown in the result buffer. This
+  is enabled by default but can be disabled by setting this variable to
+  =nil=.
+  :END:
+
+  :OPTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-custom-info 'rg-buffer-name)
+  #+END_SRC
+
+  Controls the name of the results buffer. It may be /string/ or /function/.
+  This name will be surrounded by  =*= to yield the final buffer name
+  so if this setting is =foo= the buffer name will be =*foo*=.
+  One useful case of using it is to have separate result buffers per project.
+  One can set this variable in `dir-locals` file or set it to function.
+
+  Example, this function will set results buffer name based on `project-current`:
+  #+BEGIN_SRC elisp
+    (defun my-rg-buffer-name ()
+      (let ((p (project-current)))
+        (if p
+            (format "rg %s" (abbreviate-file-name (cdr p)))
+          "rg"))))
+  #+END_SRC
+  :END:
+
+*** Position numbers alignment
+    :PROPERTIES:
+    :CUSTOM_ID: position-numbers-alignment
+    :END:
+
+    When operating /rg/ in grouped output mode ([[opt:rg-group-result]] is non
+    nil), it's possible to control how the line and column numbers are
+    displayed in the result buffer.
+
+    Example settings:
+
+    #+BEGIN_SRC elisp
+    (setq rg-align-position-numbers t)
+    (setq rg-align-line-number-field-length 3)
+    (setq rg-align-column-number-field-length 3)
+    (setq rg-align-line-column-separator "#")
+    (setq rg-align-position-content-separator "|")
+    #+END_SRC
+
+    Will yield the following format:
+
+    #+BEGIN_EXAMPLE
+    File: matched_file.foo
+      1#  2|match1
+    888# 10|match2
+    #+END_EXAMPLE
+
+    :OPTION:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-custom-info 'rg-align-position-numbers)
+    #+END_SRC
+
+    Setting this to =t= will align line and column numbers in columns padded
+    with white space.
+    :END:
+
+    :OPTION:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-custom-info 'rg-align-line-number-field-length)
+    #+END_SRC
+
+
+    Defines the length of the line number field.
+    :END:
+
+    :OPTION:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-custom-info 'rg-align-column-number-field-length)
+    #+END_SRC
+
+
+    Defines the length of the column number field.
+    :END:
+
+    :OPTION:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-custom-info 'rg-align-line-column-separator)
+    #+END_SRC
+
+
+    Separator string used between line and column numbers. =nil= means
+    use default separator from /ripgrep/.
+    :END:
+
+    :OPTION:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-custom-info 'rg-align-position-content-separator)
+    #+END_SRC
+
+    Separator string used between the position numbers and matched content. =nil= means
+    use default separator from /ripgrep/.
+    :END:
+
+* Faces
+  All faces are in the subgroup =rg-face= of the main group =rg=.
+  #+BEGIN_SRC elisp
+  M-x customize-group [RET] rg-face [RET]
+  #+END_SRC
+*** Results buffer
+    :OPTION:
+    #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-face-info 'rg-match-face)
+    #+END_SRC
+    Face used to highlight matches in result.
+    :END:
+
+    :OPTION:
+    #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-face-info 'rg-error-face)
+    #+END_SRC
+    Face used to highlight errors when invoking /ripgrep/.
+    :END:
+
+    :OPTION:
+    #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-face-info 'rg-context-face)
+    #+END_SRC
+    Face used to highlight context lines in /ripgrep/ output when
+    =--context-lines= flag is used.
+    :END:
+
+    :OPTION:
+    #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-face-info 'rg-info-face)
+    #+END_SRC
+    Face used to highlight general info in results buffer. For instance
+    the number of matches found.
+    :END:
+
+    :OPTION:
+    #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-face-info 'rg-warning-face)
+    #+END_SRC
+    Face used to highlight warnings in the /ripgrep/ output.
+    :END:
+
+    :OPTION:
+    #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-face-info 'rg-filename-face)
+    #+END_SRC
+    Face used to highlight filenames in the output.
+    :END:
+
+    :OPTION:
+    #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-face-info 'rg-file-tag-face)
+    #+END_SRC
+    Face used for the =File:= tag in grouped results output.
+    :END:
+
+    :OPTION:
+    #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-face-info 'rg-line-number-face)
+    #+END_SRC
+    Face used on line numbers.
+    :END:
+
+    :OPTION:
+    #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-face-info 'rg-column-number-face)
+    #+END_SRC
+    Face used on column numbers.
+    :END:
+
+    :OPTION:
+    #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-face-info 'rg-match-position-face)
+    #+END_SRC
+    Face added to file positions. This is the start of a matching line
+    and depending on configuration may be, file name, column number and
+    line number.
+    :END:
+
+
+*** Header line
+    :PROPERTIES:
+    :CUSTOM_ID: header_line_config
+    :END:
+    :OPTION:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-face-info 'rg-toggle-on-face)
+    #+END_SRC
+    Face used for flags that are toggled =on=.
+    :END:
+
+    :OPTION:
+    #+BEGIN_SRC elisp :results value raw :exports results
+   (rg-face-info 'rg-toggle-off-face)
+    #+END_SRC
+    Face used for flags that are toggled =off=.
+    :END:
+
+    :OPTION:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-face-info 'rg-literal-face)
+    #+END_SRC
+    Face used the on the =literal= marker in the header line.
+    :END:
+
+    :OPTION:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-face-info 'rg-regexp-face)
+    #+END_SRC
+    Face used the on the =regexp= marker in the header line.
+    :END:
+
+* Configuration functions
+  :PROPERTIES:
+  :CUSTOM_ID: configuration_functions
+  :END:
+
+  :FUNCTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-function-info 'rg-enable-default-bindings)
+  #+END_SRC
+  Enable the default keyboard bindings for the package with prefix
+  key. If [[opt:rg-use-transient-menu]] is on this will enable the menu
+  instead of activating the global bindings. If =prefix= is not
+  provided [[opt:rg-keymap-prefix]] will be used.
+  :END:
+
+  :FUNCTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-function-info 'rg-enable-menu)
+  #+END_SRC
+  Enable the [[file:usage.org::#the_menu][rg-menu]] with prefix key. This bypass
+  [[opt:rg-use-transient-menu]] setting. If =prefix= is not provided
+  [[opt:rg-keymap-prefix]] will be used.
+  :END:
+
+  :FUNCTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-function-info 'rg-use-old-defaults)
+  #+END_SRC
+  This function is provided to keep backwards compatibility with
+  versions older than 2.0.0. In this version default settings as well
+  as key bindings changed and to bring back the old defaults call this
+  function in your init file.
+  :END:
+
+* Configuration macros
+  :PROPERTIES:
+  :CUSTOM_ID: configuration_macros
+  :END:
+
+  :FUNCTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-function-info 'rg-define-toggle)
+  #+END_SRC
+
+  This is a macro that can be used to define custom /ripgrep/ flag
+  toggling functions in the result buffer. The macro takes the flag
+  (and potential value) as an argument and optionally binds the toggle
+  function to a key. If =default= is non nil the flag is used by default.
+
+  The function defined by this macro will be named as the flag name
+  stripped with leading dashes and prefixed with =rg-custom-toggle-flag-=.
+
+  #+BEGIN_SRC elisp
+    (rg-define-toggle "-uu" "I" t)
+  #+END_SRC
+
+  Creates a function named =rg-custom-toggle-flag-uu= that is on by
+  default and bound to =I= in /rg/ result
+  buffer.
+
+  #+BEGIN_SRC elisp
+    (rg-define-toggle "--context 3" (kbd "C-c c"))
+  #+END_SRC
+
+  Creates a function named =rg-custom-toggle-flag-context= that is off by
+  default and bound to =C-c c= in /rg/ result
+  buffer.
+  :END:
+
+  :FUNCTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-function-info 'rg-define-search)
+  #+END_SRC
+
+  This macro can be used to define custom search functions in a
+  declarative style. Default implementations for common behavior is
+  available and custom forms can also be used.
+
+  It optionally starts with a string that is used as the docstring for
+  the defined function.  The rest of the arguments contain key value pairs
+  according to the specification below.  All keys are optional with
+  specified default if left out.
+
+  - *:query* - Method for retrieving the search string.  Allowed values are
+    =point= which means extract thing at point and =ask= which means
+    prompt the user for a string.  Any form that evaluates to a string
+    is allowed. Default is =ask=.
+  - *:format* - Specifies if =:query= is interpreted literally
+    (=literal=) or as a regexp (=regexp=). Default is =regexp=.
+  - *:files* - Form that evaluates to a file alias or custom file
+    glob. =current= means extract alias from current buffer file name,
+    =ask= will prompt the user. Default is =ask=.
+  - *:dir* - Root search directory.  Allowed values are =ask= for user
+    prompt, =current= for current dir and =project= for project
+    root.  Any form that evaluates to a directory string is also allowed.
+    Default is =ask=.
+  - *:confirm* - =never=, =always=, or =prefix= are allowed values.  Specifies
+    if the the final search command line string can be modified
+    and confirmed the user. Default is =never=.
+  - *:flags* - =ask= or a list of command line flags that will be used when
+    invoking the search.
+  - *:menu* - Bind the command into =rg-menu=.  Must be a list with three
+    items in it.  The first item is the description of the
+    group in witch the new command will appear.  If the group
+    does not exist a new will be created.  The second item is
+    the key binding for this new command (ether a key vector
+    or a key description string) and the third item is the
+    description of the command that will appear in the menu.
+
+  Example:
+  #+BEGIN_SRC elisp
+    (rg-define-search search-everything-at-home
+      "Search files including hidden in home directory"
+      :query ask
+      :format literal
+      :files "everything"
+      :flags ("--hidden")
+      :dir (getenv "HOME")
+      :menu ("Search" "h" "Home"))
+  #+END_SRC
+  :END:
+
+* Customizing the menu
+  :PROPERTIES:
+  :CUSTOM_ID: customizing_the_menu
+  :END:
+  Please refer to the [[https://magit.vc/manual/transient/Modifying-Existing-Transients.html#Modifying-Existing-Transients][transient]] documentation for customizing the menu.

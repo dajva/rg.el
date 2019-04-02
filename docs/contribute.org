@@ -1,0 +1,113 @@
+#+TITLE: Contribute
+#+AUTHOR: David Landell
+#+EMAIL: david.landell@sunnyhill.email
+#+DATE: 2019
+#+LANGUAGE: en
+#+OPTIONS: broken-links:auto, toc:nil, email:nil, num:nil, ^:nil, author:nil, date:nil
+
+#+INCLUDE: "utils.org"
+
+Contributions are very welcome. Development is done in the [[https://github.com/dajva/rg.el][GitHub
+repository]]. If you find a bug, please report it in the [[https://github.com/dajva/rg.el/issues][issue tracker]].
+
+
+* Pull requests
+  :PROPERTIES:
+  :CUSTOM_ID: pull_requests
+  :END:
+  If you want to submit a patch, please submit a [[https://github.com/dajva/rg.el/pulls][GitHub pull
+  request]]. If you want to submit any larger code changes, please create an
+  issue first for discussion. Some features does not fit well into
+  this package and there is also good to agree on the general design
+  before doing any major work.
+
+  The minimum requirements for a pull request to be accepted is that
+  all existing tests pass and test coverage should not decrease. Often
+  a patch also needs additional tests, new/changed documentation etc.
+
+  Don't strive to submit a perfect pull request directly. It's often
+  better to submit something simple that shows the main direction of
+  the new code in order to discuss the best way to proceed and what
+  additions are needed.
+
+* Tests
+  :PROPERTIES:
+  :CUSTOM_ID: tests
+  :END:
+  [[https://cask.readthedocs.io/][Cask]] is used for testing. The tests are written using the Emacs
+  built in ERT framework and executed with [[https://github.com/rejeep/ert-runner.el][ert runner]]. There are also
+  compilation tests, style check, package verification etc.
+*** Setup
+    :PROPERTIES:
+    :CUSTOM_ID: tests_setup
+    :END:
+    - [[https://cask.readthedocs.io/en/latest/guide/installation.html][Install cask]]
+    - Install all developer dependencies:
+      #+BEGIN_SRC bash
+      make deps
+      #+END_SRC
+*** Running
+    :PROPERTIES:
+    :CUSTOM_ID: tests_running
+    :END:
+    - Run the whole test suite:
+      #+BEGIN_SRC bash
+      make test
+      #+END_SRC
+    - Run only the unit/integration tests:
+      #+BEGIN_SRC bash
+      make ert-test
+      #+END_SRC
+    - Manually test the package with Emacs:
+      #+BEGIN_SRC bash
+      cask emacs -Q -L . --eval="(progn (require 'rg) (enable-default-bindings))"
+      #+END_SRC
+
+* Documentation
+  :PROPERTIES:
+  :CUSTOM_ID: documentation
+  :END:
+  The documentation is written in org mode. The export target is
+  [[https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html][restructured text]] suitable for the [[http://www.sphinx-doc.org/en/master/][Sphinx]] documentation
+  generator. Sphinx is used to export the output from org mode to info
+  and HTML documentation. The resulting .rst files are used for the online
+  documentation on [[https://readthedocs.io]].
+
+  The ReadTheDocs documentation is generated after committing to the
+  main repository but the info manual needs to be created locally and
+  submitted as part of a documentation patch. It's advisable to build
+  both locally and verify the output to make sure the changes looks OK.
+*** Setup
+    :PROPERTIES:
+    :CUSTOM_ID: documentation_setup
+    :END:
+    - [[http://www.sphinx-doc.org/en/master/usage/installation.html][Install Sphinx]]
+      #+BEGIN_SRC bash
+      apt-get install python3-sphinx
+      #+END_SRC
+*** Building
+    :PROPERTIES:
+    :CUSTOM_ID: documentation_building
+    :END:
+    - HTML documentation
+      #+BEGIN_SRC bash
+      make html
+      #+END_SRC
+      Open =docs/rst/_build/html/index.html= in a browser.
+    - Info documentation
+      #+BEGIN_SRC bash
+      make info
+      #+END_SRC
+      To view in emacs:
+      #+BEGIN_SRC elisp
+      C-u M-x info [RET]
+      #+END_SRC
+      Then select the =docs/rst/_build/info/rgel.info= file.
+*** Create a patch
+    - Edit the org files in =docs= directory.
+    - When everything looks good in both HTML and info.
+      #+BEGIN_SRC bash
+      make info
+      #+END_SRC
+    - Commit both the changed org files and info file.
+    - Push and create PR.

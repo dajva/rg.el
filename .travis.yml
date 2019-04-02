@@ -28,3 +28,44 @@ install:
 script:
   - emacs --version
   - make test
+jobs:
+  include:
+    - stage: documentation
+      env:
+        - secure: XR6HbwwEjD3Uk4Go/Kjti4roFl5rRhG9lcL6bMx8FUaEaRZP8XVnnN5/JWVPEdqGqx1RE3mrkfDRJSqVd5Up+gR26NtX1hFoAv4Px7eYuBh2q1leCucnEcJO7wvoMa2oX6ip/wwkhRkqbjUAgMsBF4uSZM1ZRnIuj+tQ/pafsnWhwwmGrq+AuLnDDCKA44PvtzfNti/twIg8nM2WlUWO2SbbWp7C0fGnFmbolwjYLCH8zXD/fdaJu+/SBLxwmJPTnZiDUdBZlX9YpEo5ahcYJQOfsTAg0Udb7u94w6+JclDFxFXJUwUn1M73bC2oUiYssP6PmswF/yp3Ytpt2xxxZ3KzGf6mbS7txVN0h4dGqcZEDjuYkeD0vwy1NEHerRWuaLufC0Z6omz9oP6RZnTlphLQd0jmapXG7ZJRyBgqXKdqILhuCM9GESiiMPtaerFz1U7zJuKHJO74lNYsM2XcJbyP3CjmTFCZMe5IT4YjWO1hxj9kXpsrKdeY0S65lGMck04nFmhaQEg9OgcfaYmPNt/X1sS1Vl4nqKS/bXNlmIAPo7ZCCacysZQl6ea3Fvyxg5GB4OnSoXSTwQ+mKrHEUKY8CVmVDBoLdmD9IPlfa+UBDIaDCNYtrmYxRR4Qs4mkBGs5KuD7KMToQGxxI1EfYhuFuZ6hXSESaCEK2/LJQro=
+        - EMACS_CI=emacs-25-3
+      script:
+        - make rst
+      deploy:
+        # Branch changes are commited to master branch
+        - provider: pages
+          github_token: $GITHUB_API_KEY
+          skip_cleanup: true
+          keep_history: true
+          local_dir: docs/rst
+          repo: dajva/rg.el-docs
+          target_branch: master
+          verbose: true
+          on:
+            branch: master
+        # Tagged changes are commited to release branch
+        - provider: pages
+          github_token: $GITHUB_API_KEY
+          skip_cleanup: true
+          keep_history: true
+          local_dir: docs/rst
+          repo: dajva/rg.el-docs
+          target_branch: release
+          verbose: true
+          on:
+            tags: true
+      # Tag the documentation repository if needed.
+      after_deploy: |
+        if [ -n "$TRAVIS_TAG" ]; then
+          git clone https://github.com/dajva/rg.el-docs
+          cd rg.el-docs
+          git checkout release
+          TAG=${TRAVIS_TAG}
+          git tag $TAG
+          git push https://dajva:$GITHUB_API_KEY@github.com/dajva/rg.el-docs $TAG
+        fi

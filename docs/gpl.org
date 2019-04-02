@@ -1,0 +1,13 @@
+#+TITLE: GNU General Public License
+#+AUTHOR: David Landell
+#+EMAIL: david.landell@sunnyhill.email
+#+DATE: 2019
+#+LANGUAGE: en
+#+OPTIONS: broken-links:auto, toc:nil, email:nil, num:nil, ^:nil, author:nil, date:nil
+
+
+#+BEGIN_EXPORT rst
+.. _gpl:
+#+END_EXPORT
+
+#+INCLUDE: "../LICENSE" example

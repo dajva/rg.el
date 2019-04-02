@@ -1,0 +1,564 @@
+#+TITLE: Usage
+#+AUTHOR: David Landell
+#+EMAIL: david.landell@sunnyhill.email
+#+DATE: 2019
+#+LANGUAGE: en
+#+OPTIONS: broken-links:auto, toc:nil, email:nil, num:nil, ^:nil, author:nil, date:nil
+
+#+INCLUDE: "utils.org"
+
+* Installation
+  :PROPERTIES:
+  :CUSTOM_ID: installation
+  :END:
+  This version of /rg/ is supported on GNU Emacs
+  {{{elisp((rg-emacs-min-version))}}} or later on Linux systems. It
+  might work on older Emacsen and on other systems but such
+  configurations are not tested. Patches for other OS:es are welcome.
+
+  :RUBRIC:
+  MELPA
+  :END:
+  Packages are published on [[https://stable.melpa.org/#/rg][MELPA Stable]] and [[http://melpa.org/#/rg][MELPA]]. From within Emacs,
+  run =M-x package-install [RET] rg [RET]= to install from those
+  sources.
+
+  Enable default key bindings:
+  #+BEGIN_SRC elisp
+      (rg-enable-default-bindings)
+  #+END_SRC
+  The above will enable the default key map under the default prefix
+  key {{{elisp_code((edmacro-format-keys rg-keymap-prefix))}}}.
+
+  :RUBRIC:
+  Manual
+  :END:
+  Releases can alternatively be downloaded from [[https://github.com/dajva/rg.el/releases/latest][GitHub]] and installed
+  manually. Put all elisp files in main directory in your load path
+  and =require= the package in your init file.
+
+  #+BEGIN_SRC elisp
+      (require 'rg)
+      (rg-enable-default-bindings)
+  #+END_SRC
+
+  You would also need to make sure all package requirements are
+  met. For this version these are:
+  #+BEGIN_SRC elisp :results value raw :exports results
+      (mapconcat
+       (lambda (dep)
+         (format "- *%s* _%s_" (car dep) (cdr dep)))
+       rg-package-deps
+       "\n")
+  #+END_SRC
+
+  /rg/ is using autoloaded symbols which means it's also possible
+  to defer loading if you have autoloading setup. That usually comes
+  out of the box with =package-install=.
+
+
+  :RUBRIC:
+  wgrep
+  :END:
+  This package use [[https://github.com/mhayashi1120/Emacs-wgrep][wgrep]] for editing capabilities in the rg results
+  buffer. No setup is needed.
+
+* Searching
+  :PROPERTIES:
+  :CUSTOM_ID: searching
+  :END:
+  Searching is done by invoking one of the different frontend
+  commands. This package is built around recursive search based on three
+  parameters; a single /directory/, /file type/ filter, and a search
+  /pattern/. These three parameters can interactively be selected or
+  figured out automatically by the package, depending on which command
+  that is used.
+
+  The underlying /ripgrep/ binary has the file type filter concept
+  built in. You have a high level of control over which files to
+  search and which to ignore. This is partly what makes it so fast,
+  ignoring uninteresting files.
+
+  In addition to the base parameters there are a lot of options that
+  control how a search is done. These are typically selected from the
+  [[#the_menu][rg-menu]] interface.
+
+*** Case sensitivity
+    Considering case when searching is an important feature of any
+    search tool. This package gives you a lot of control over how to
+    handle case sensitive and case insensitive search. It can be
+    forced to *on* or *off* and set to *smart case*. The latter is
+    similar to the /ripgrep/ =--smart-case= flag but is not using the
+    flag directly. One thing to note about this is that the case
+    insensitive setting controls the behavior when starting a new
+    search. In the results buffer the setting is fixed to *on* or
+    *off* but can be toggled easily with a key binding. See
+    [[opt:rg-ignore-case][rg-ignore-case]] customization for the details of the configuration.
+
+*** Interactive search
+    :PROPERTIES:
+    :CUSTOM_ID: basic_search
+    :END:
+    Two commands implements fully interactive search, where all the
+    base parameters are selected from the mini buffer.
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'rg 'rg-global-map)
+    #+END_SRC
+    This command prompts for /query/, /file type/ and /directory/ and
+    tries to suggest reasonable default values.
+    The /query/ string is interpreted as a regular expression. Default
+    for /query/ is the thing at point and for /directory/ it is the current
+    directory.
+    If the type of the currently visited file is recognized, the
+    corresponding [[#file_type_aliases][file type alias]] is suggested as the /file type/
+    parameter.
+
+    Invoking this command with the /universal argument/ will trigger
+    confirmation and potential modification of the [[#full_command_line_search][full command line]]
+    that will invoke the /ripgrep/ binary.
+    :END:
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'rg-literal 'rg-global-map)
+    #+END_SRC
+    This command works in the same way as [[cmd:rg][rg]] but interprets the /query/
+    string literally and not as a regular expression.
+
+    Invoking this command with the /universal argument/ will trigger
+    confirmation and potential modification of the [[#full_command_line_search][full command line]]
+    that will invoke the /ripgrep/ binary.
+    :END:
+*** Project search
+    :PROPERTIES:
+    :CUSTOM_ID: project_search
+    :END:
+    A common scenario is to search through a whole project while
+    visiting a file in the project. This essentially means identifying
+    the project root and use that as the top /directory/ when invoking
+    the /ripgrep/ binary. /rg/ supports several ways of identifying a
+    project. Emacs' major project packages are supported including
+    [[https://www.projectile.mx/en/latest/][projectile]], [[https://github.com/technomancy/find-file-in-project][find-file-in-project]] and builtin [[https://github.com/emacs-mirror/emacs/blob/master/lisp/progmodes/project.el][project.el]]. If
+    none of these are used, the fallback is Emacs' =vc-backend=.
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'rg-project 'rg-global-map)
+    #+END_SRC
+    Search in the current project. The /directory/ is selected via one
+    of Emacs' project packages while /query string/ and /file type/
+    are prompted for. The /query string/ is interpreted as a regular
+    expression.
+    :END:
+*** Do what I mean
+    :PROPERTIES:
+    :CUSTOM_ID: do_what_i_mean
+    :END:
+    The *DWIM* family of search commands tries to be smart by figure
+    out the search parameters from the context without
+    prompting. Thanks to /ripgrep's/ speed, this allows for new ways of
+    searching by invoking a dwim command and then /refine/ the
+    search from the results buffer.
+
+    These commands use the word (with the definition of word depending
+    on context) under cursor as the /query/ string. The /file type/
+    parameter is taken from the type of the currently visited file. If
+    the current file type can not be identified all file types known
+    to /ripgrep/ are used. The fallback can be customized with
+    [[opt:rg-default-alias-fallback]]. The /directory/ parameter varies
+    between these commands.
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'rg-dwim-project-dir 'rg-global-map)
+    #+END_SRC
+    Do a *DWIM* search in the current [[#project_search][project]].
+    :END:
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'rg-dwim-current-dir 'rg-global-map)
+    #+END_SRC
+    Do a *DWIM* search in the current directory.
+    :END:
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'rg-dwim-current-file 'rg-global-map)
+    #+END_SRC
+    Do a *DWIM* search in the current file. The /current file/ in this
+    context is actually a file /pattern/ exactly matching the current
+    file name in a search starting from current directory. Most of the
+    time this means a single file but if there are multiple files with
+    the same name in a sub directory, those will be searched as well.
+    :END:
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'rg-dwim 'rg-global-map)
+    #+END_SRC
+    This command combines all the *DWIM* commands to one. The default
+    search is in the [[cmd:rg-dwim-project-dir][project dir]]. With one /universal argument/ [[cmd:rg-dwim-current-dir][current
+    directory]] is used and with double /universal arguments/ a [[cmd:rg-dwim-current-file][file
+    search]] is done.
+    :END:
+*** File type aliases
+    :PROPERTIES:
+    :CUSTOM_ID: file_type_aliases
+    :END:
+    File type aliases are used in /ripgrep/ to filter out the files
+    to search in. The /ripgrep/ binary comes with a default set
+    of aliases that can be extended or overridden from this package by
+    customizing [[opt:rg-custom-type-aliases]].
+
+    An alias is a mapping between a name and a list of [[https://en.wikipedia.org/wiki/Glob_%2528programming%2529][glob patterns]]
+    matching the files of interest. Selecting an alias when searching
+    is done with completing read of the defined aliases. It is also
+    possible to enter a custom glob pattern if there is no suitable
+    alias defined for the file type.
+
+    /rg/ defines some internal aliases:
+
+    | Name         | Meaning                                                           |
+    |--------------+-------------------------------------------------------------------|
+    | *all*        | all defined types including [[opt:rg-custom-type-aliases][rg-custom-type-aliases]]                |
+    | *everything* | all files. No filtering on type is done.                          |
+    | *custom*     | used internally in this package for mapping custom glob patterns. |
+    |--------------+-------------------------------------------------------------------|
+
+    :WARNING:
+    Do not use any of the internal aliases in [[opt:rg-custom-type-aliases][rg-custom-type-aliases]].
+    That would interfere with the package internal usage.
+    :END:
+
+*** The menu
+    :PROPERTIES:
+    :CUSTOM_ID: the_menu
+    :END:
+    The global [[opt:rg-keymap-prefix][prefix key]] may be bound to a transient
+    prefix command, which in normal words mean that the key binding
+    will popup a menu. This package is using the same [[https://magit.vc/manual/transient][popup menu
+    backend]] as the [[https://magit.vc/manual/magit][magit]] package. If you are familiar with magit this
+    should feels like home.
+
+    The menu is mostly interesting when you want to give specific
+    command line flags to the /ripgrep/ binary. When you just want to do
+    a quick search based on the defaults the menu basically acts as a
+    normal keymap.
+
+    Pressing the =rg-menu= [[opt:rg-keymap-prefix][prefix key]] will popup the menu where command
+    line flags can be selected before triggering the wanted search
+    function. The menu can be customized via the transient API as
+    usual. This package contains some shortcuts to directly add a new
+    command to the menu when defining the command via the
+    [[func:rg-define-search]] macro.
+
+    #+BEGIN_SRC elisp
+      (rg-define-search rg-word
+        :format literal
+        :flags ("--word-regexp")
+        :menu ("f" "w" "Word"))
+    #+END_SRC
+
+    The =:menu= keyword in the above invocation will trigger insertion
+    of a new menu item bound to key =w= with description *Word*. The
+    new menu item will appear after the command currently bound to =f=
+    in the menu.
+
+    The menu can be triggered from the [[#results_buffer][results buffer]] with the =m= key.
+    The commands in the menu differs, depending on from where it's
+    triggered but the available options are the same. The menu does
+    not show all options by default. The visible options can be
+    controlled by the transient suffix levels documented [[https://magit.vc/manual/transient/Enabling-and-Disabling-Suffixes.html#Enabling-and-Disabling-Suffixes][here]].
+
+* Results buffer
+  :PROPERTIES:
+  :CUSTOM_ID: results_buffer
+  :END:
+  The results of a search is shown in the results buffer. This buffer
+  displays search parameters, the full command line and the output of
+  the /ripgrep/ binary. It supports basic navigation between search
+  results editing of the file contents directly from the search
+  buffer and also modification of the current search. The results
+  buffer is a modified /compilation/ buffer and some key bindings and
+  functionality is inherited from the parent and from /grep mode/.
+
+*** Navigation
+    Navigation works mostly as in grep/compilation buffers.
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'compilation-next-error 'rg-mode-map (kbd "M-n"))
+    #+END_SRC
+    Move to next line with a match.
+    :END:
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'compilation-previous-error 'rg-mode-map (kbd "M-p"))
+    #+END_SRC
+    Move to previous line with a match.
+    :END:
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'next-error-no-select 'rg-mode-map)
+    #+END_SRC
+    Move to next line with a match, show that file in other buffer and highlight the
+    match.
+    :END:
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'previous-error-no-select 'rg-mode-map)
+    #+END_SRC
+    Move to previous line with a match, show that file in other buffer and highlight the
+    match.
+    :END:
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'rg-next-file 'rg-mode-map)
+    #+END_SRC
+    Move to next file header if the results is grouped under a file
+    header (See [[opt:rg-group-result]]).
+    :END:
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'rg-prev-file 'rg-mode-map)
+    #+END_SRC
+    Move to previous file header if the results is grouped under a file
+    header (See [[opt:rg-group-result]]).
+    :END:
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'compilation-next-file 'rg-mode-map)
+    #+END_SRC
+    Move first match in previous file.
+    :END:
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'compilation-previous-file 'rg-mode-map)
+    #+END_SRC
+    Move last match in previous file.
+    :END:
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'compile-goto-error 'rg-mode-map)
+    #+END_SRC
+    Visit match in file.
+    :END:
+
+*** Refine search
+    From the results buffer it's easy to change the search
+    parameters. Some bindings toggle a flag while others allow you to
+    interactively change the [[#searching][base
+    parameters]].
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'rg-rerun-change-dir 'rg-mode-map)
+    #+END_SRC
+    Interactively change search /directory/.
+    :END:
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'rg-rerun-change-files 'rg-mode-map)
+    #+END_SRC
+    Interactively change searched /file types/.
+    :END:
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'rg-rerun-change-literal 'rg-mode-map)
+    #+END_SRC
+    Interactively change /search string/ interpret the string literally.
+    :END:
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'rg-rerun-change-regexp 'rg-mode-map)
+    #+END_SRC
+    Interactively change /search string/ interpret the string as a regular
+    expression.
+    :END:
+
+    :TIP:
+    [[cmd:rg-rerun-change-regexp]] and [[cmd:rg-rerun-change-literal]] are
+    used for switching between regular expression and literal
+    search. So for quick switching between search modes with the same
+    search string,  just pres the respective key and then =RET=.
+    :END:
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'rg-recompile 'rg-mode-map)
+    #+END_SRC
+    Rerun the current search without changing any parameters.
+    :END:
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'rg-rerun-toggle-case 'rg-mode-map)
+    #+END_SRC
+    Toggle case sensitivity of search. The state of the flag is shown
+    in the *[case]* header field.
+    :END:
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'rg-rerun-toggle-ignore 'rg-mode-map)
+    #+END_SRC
+    Toggle if ignore files are respected. The state of the flag is shown
+    in the *[ign]* header field.
+    :END:
+
+    :TIP:
+    It is possible to create and bind your own toggle flags with the
+    macro [[func:rg-define-toggle]].
+    :END:
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'rg-menu 'rg-mode-map)
+    #+END_SRC
+    Fire up [[#the_menu][the menu]] for full access to options and flags.
+    :END:
+
+
+*** Full command line search
+    :PROPERTIES:
+    :CUSTOM_ID: full_command_line_search
+    :END:
+    Some search commands (See [[cmd:rg]] or [[cmd:rg-literal]]) allow you to
+    edit the final command line before invoking the search by giving a
+    /universal argument/. This can be used to invoke features of the
+    /ripgrep/ binary that is not supported in this package's
+    interface. This could be specific flags, searching in multiple
+    directories etc.
+
+    :NOTE:
+    Using full command line search will disable refinement of the
+    search from the result buffer.
+    :END:
+
+*** History navigation
+    :PROPERTIES:
+    :CUSTOM_ID: history_navigation
+    :END:
+    Each search result is stored in the search history, which is a per
+    results buffer property. History can be navigated back and
+    forward, the forward history is cleared when a new search is done.
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'rg-back-history 'rg-mode-map)
+    #+END_SRC
+    Navigate back in history.
+    :END:
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'rg-forward-history 'rg-mode-map)
+    #+END_SRC
+    Navigate forward in history.
+    :END:
+
+    :TIP:
+    The key bindings here are slightly inconvenient so invoking this
+    via [[#the_menu][the menu]] by pressing =m b= and =m f= is more ergonomic.
+    :END:
+
+*** Edit and apply (wgrep)
+    :PROPERTIES:
+    :CUSTOM_ID: edit_and_apply
+    :END:
+    The results buffer supports inline editing via the [[https://github.com/mhayashi1120/Emacs-wgrep][wgrep]]
+    package. This is setup automatically when /rg/ is loaded.
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'wgrep-change-to-wgrep-mode 'rg-mode-map)
+    #+END_SRC
+    Make the search results editable by enabling =wgrep= mode.
+    When done press =C-c C-c= to commit your changes to the underlying
+    files or =C-c C-k= to drop the changes.
+    :END:
+
+* Search management
+  :PROPERTIES:
+  :CUSTOM_ID: search_management
+  :END:
+  The result buffer is named {{{elisp_code((format "\*%s\*"
+  rg-buffer-name))}}} and /rg/ reuse the same result buffer for new
+  searches. If you want to store a search while continuing doing new searches
+  there are two ways of doing that.
+
+  :COMMAND:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-command-info #'rg-save-search 'rg-mode-map)
+  #+END_SRC
+  Save the search buffer by renaming it to a unique new name.
+  This is available both outside and inside a result buffer. Outside
+  of the result buffer it's bound to
+  {{{elisp_code((rg-key-for-command #'rg-save-search 'rg-global-map))}}}.
+
+  If you want to keep all search buffers until manually killed you can
+  use this snippet in your init file.
+  #+BEGIN_SRC elisp
+    (defadvice rg-run (before rg-run-before activate)
+      (rg-save-search))
+  #+END_SRC
+  :END:
+
+  :COMMAND:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-command-info #'rg-save-search-as-name 'rg-mode-map)
+  #+END_SRC
+  Save the search buffer and interactively give it a specific name.
+  This is available both outside and inside a result buffer. Outside
+  of the result buffer it's bound to
+  {{{elisp_code((rg-key-for-command #'rg-save-search-as-name 'rg-global-map))}}}.
+  :END:
+
+  The default buffer name can be customized with [[opt:rg-buffer-name]]. This
+  setting considers dir local variables and it's even possible to use
+  a function to get a really dynamic setup.
+
+  Having a lot of search buffers floating around can easily get
+  messy. To help keeping this under control there is a search
+  manager. The manager is simply a modified =ibuffer= that lists all
+  the results buffers, shows some data about the searches and make it
+  possible to kill of some unused etc.
+
+  :COMMAND:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-command-info #'rg-list-searches 'rg-mode-map)
+  #+END_SRC
+  Open the search manager.
+  This is available both in result buffer and globally bound to
+  {{{elisp_code((rg-key-for-command #'rg-list-searches 'rg-global-map))}}}.
+  :END:
+
+  :COMMAND:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-command-info #'rg-kill-saved-searches 'rg-global-map)
+  #+END_SRC
+  Kill all saved searches except for the one that matches [[opt:rg-buffer-name]].
+  This is available both in result buffer and globally bound to
+  {{{elisp_code((rg-key-for-command #'rg-kill-saved-searches 'rg-global-map))}}}.
+  :END:
+
+  :WARNING:
+  If you have a dynamic [[opt:rg-buffer-name]] setup, only one buffer that
+  matches your current criteria (dir locals or project for instance)
+  will be kept. So be careful when killing saved searches to avoid
+  losing important search results.
+  :END:

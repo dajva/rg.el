@@ -1,0 +1,85 @@
+#+MACRO: elisp src_elisp[:results value raw :exports results]{$1}
+#+MACRO: elisp_code src_elisp[:results value :exports results]{$1}
+
+#+NAME: utils
+#+BEGIN_SRC elisp :results output drawer :exports none
+  (require 'cl-lib)
+  (require 'cus-edit)
+  (require 'edmacro)
+  (require 'help)
+  (require 'package)
+  (require 'rg)
+
+  (defvar rg-package-version nil)
+  (defvar rg-package-deps nil)
+  (rg-enable-menu)
+
+  (defun rg-package-info ()
+    (let ((file-name "../rg.el"))
+      (with-temp-buffer
+        (insert-file-contents file-name)
+        (condition-case nil
+            (package-buffer-info)
+          (error "Invalid package")))))
+
+  (defun rg-extract-package-info ()
+    (let ((desc (rg-package-info)))
+      (setf rg-package-version (package-version-join (package-desc-version desc)))
+      (dolist (req (package-desc-reqs desc))
+        (push (cons (car req) (package-version-join (cadr req))) rg-package-deps))))
+
+  (defun rg-package-deps ()
+    (when (not rg-package-deps)
+      (rg-extract-package-info))
+    rg-package-deps)
+
+  (defun rg-package-version ()
+    (when (not rg-package-version)
+      (rg-extract-package-info))
+    rg-package-version)
+
+  (defun rg-emacs-min-version ()
+    (cdr (assq 'emacs (rg-package-deps))))
+
+  (defun rg-custom-info (sym &optional default)
+    (let* ((type (custom-variable-type sym))
+           (value (or default
+                      (if (and (consp type) (eq (car type) 'key-sequence))
+                          (edmacro-format-keys (symbol-value sym))
+                        (symbol-value sym)))))
+      (format "%s\n:default: %S" sym value)))
+
+  (defun rg-face-info (face)
+    (cl-assert (facep face))
+    (format "%s\n:default: %s" face (face-attribute face :inherit)))
+
+  (defun rg-key-for-command (sym map &optional wanted-key)
+    (cl-assert (commandp sym))
+    (when-let ((keys (where-is-internal sym (symbol-value map))))
+      (let* ((key (edmacro-format-keys (or
+                                        (and wanted-key
+                                             (cl-find wanted-key keys :test 'equal))
+                                        (car keys))))
+             (prefix (when (and key
+                                (eq map 'rg-global-map))
+                       (edmacro-format-keys rg-keymap-prefix))))
+        (if prefix
+            (format "%s %s" prefix key)
+          (format "%s" key)))))
+
+  (defun rg-command-info (sym map &optional wanted-key)
+    (if-let ((key-sequence (rg-key-for-command sym map wanted-key)))
+        (format "%s\n:kbd: %s" sym key-sequence)
+      (format "%s\n" sym)))
+
+  (defun rg-function-info (sym)
+    (cl-assert (fboundp sym))
+    (let ((args (mapconcat #'symbol-name (help-function-arglist sym) " ")))
+      (format "(%s %s)\n" sym args)))
+#+END_SRC
+
+call_utils()
+
+#+BEGIN_EXPORT rst
+.. default-domain:: el
+#+END_EXPORT

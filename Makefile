@@ -5,12 +5,42 @@ SOURCES = $(shell cask files)
 OBJECTS = $(SOURCES:.el=.elc)
 STYLE_CHECK= -L test -L . -l test/style-check.el
 
+SPHINX-BUILD = sphinx-build
+DOC_DIR = docs
+ORG_DOCS= $(wildcard $(DOC_DIR)/*.org)
+RST_OUT_DIR = $(DOC_DIR)/rst
+RST_DOCS = $(addprefix $(RST_OUT_DIR)/,$(patsubst %.org,%.rst,$(notdir $(ORG_DOCS))))
+
 all: deps test
 
 test: ert-test style-check build-test package-test
 
 build-test: clean build
 	cask clean-elc
+
+$(RST_DOCS): | $(RST_OUT_DIR)
+
+$(RST_OUT_DIR):
+	mkdir $(RST_OUT_DIR)
+
+$(RST_OUT_DIR)/%.rst: docs/%.org
+	RST_OUT_DIR=$(abspath $(RST_OUT_DIR)) cask emacs --batch -Q -L . -l docs/org-bootstrap.el $< --funcall rg-export-to-rst
+
+rst: $(RST_DOCS)
+
+html: rst
+	$(SPHINX-BUILD) -b html $(RST_OUT_DIR) $(RST_OUT_DIR)/_build/html
+
+info: rst
+	$(SPHINX-BUILD) -b texinfo $(RST_OUT_DIR) $(RST_OUT_DIR)/_build/info
+	make -C $(RST_OUT_DIR)/_build/info
+	cp $(RST_OUT_DIR)/_build/info/rgel.info .
+
+docs: html
+
+clean-docs:
+	rm $(RST_OUT_DIR)/*.rst
+	make -C $(RST_OUT_DIR) clean
 
 clean:
 	cask clean-elc
@@ -45,4 +75,4 @@ ert-test:
 deps:
 	cask install
 
-.PHONY: all test build-test clean package-test style-check package-lint unit-test integration-test ert-test deps
+.PHONY: all test build-test clean clean-docs package-test style-check package-lint unit-test integration-test ert-test deps docs

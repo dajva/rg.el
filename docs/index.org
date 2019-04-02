@@ -1,0 +1,54 @@
+#+TITLE: Rg Manual
+#+AUTHOR: David Landell
+#+EMAIL: david.landell@sunnyhill.email
+#+DATE: 2019
+#+LANGUAGE: en
+#+OPTIONS: broken-links:auto, toc:nil, email:nil, num:nil, ^:nil, author:nil, date:nil
+
+/rg.el/ is an Emacs search package based on the [[https://github.com/BurntSushi/ripgrep][ripgrep]] command line
+tool. It allows you to interactively create searches, doing automatic
+searches based on the editing context, refining and modifying search
+results and much more. It is also highly configurable to be able to
+fit different users' needs.
+
+Throughout this manual this emacs package will be referred to as /rg/
+while the command line utility will be referred to as /ripgrep/.
+
+If you are used to built-in Emacs =rgrep= command, transitioning to
+/rg/ should be simple. /rg/ provides a lot of extra features
+but the basics are similar.
+
+The big benefit of using /ripgrep/ instead of /grep/ as a backend is
+speed. Especially when searching large source code repositories
+where /ripgrep/ really shines. Please read [[http://blog.burntsushi.net/ripgrep/][this blog post]] for some
+speed comparisons with other tools.
+
+#+BEGIN_EXPORT rst
+.. toctree::
+   :maxdepth: 2
+
+   usage
+   configuration
+   contribute
+#+END_EXPORT
+
+* License
+  :PROPERTIES:
+  :CUSTOM_ID: license
+  :END:
+  /rg/ is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License
+  as published by the Free Software Foundation; either version 3
+  of the License, or (at your option) any later version.
+
+  /rg/ is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  [[file:gpl.org::#gpl][GNU General Public License]] for more details.
+
+#+BEGIN_EXPORT rst
+.. toctree::
+   :maxdepth: 2
+
+   gpl
+#+END_EXPORT
