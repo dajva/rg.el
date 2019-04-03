@@ -733,8 +733,8 @@ and ungrouped otherwise."
   (should-not (rg-file-message-exist-in-result nil))
   (should (rg-file-message-exist-in-result t)))
 
-(ert-deftest rg-integration/recompile ()
-  "Make sure that `recompile' preserves search parameters."
+(ert-deftest rg-integration/rg-recompile ()
+  "Make sure that `rg-recompile' preserves search parameters."
   :tags '(need-rg)
   (let ((parent-dir (concat (expand-file-name default-directory) "test/")))
     (rg-run "hello" "elisp" (concat parent-dir "data"))
@@ -752,7 +752,7 @@ and ungrouped otherwise."
                        (rg-search-files rg-cur-search)
                        (rg-search-dir rg-cur-search))))
         (should (equal '("--text") (rg-search-toggle-flags rg-cur-search)))
-        (recompile)
+        (rg-recompile)
         (should (rg-wait-for-search-result))
         (should (equal
                  (list "Hello" "all" parent-dir)

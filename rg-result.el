@@ -205,7 +205,7 @@ Becomes buffer local in `rg-mode' buffers.")
     (define-key map "c" 'rg-rerun-toggle-case)
     (define-key map "d" 'rg-rerun-change-dir)
     (define-key map "f" 'rg-rerun-change-files)
-    (define-key map "g" 'recompile)
+    (define-key map "g" 'rg-recompile)
     (define-key map "i" 'rg-rerun-toggle-ignore)
     (define-key map "l" 'rg-list-searches)
     (define-key map "r" 'rg-rerun-change-regexp)
@@ -449,6 +449,12 @@ Commands:
                    rg-search-history)
   (rg-maybe-show-header))
 
+(defun rg-recompile ()
+  "Rerun the current search."
+  (interactive)
+  (recompile)
+  (rg-maybe-show-header))
+
 (defun rg-rerun (&optional no-history)
   "Run `recompile' with `compilation-arguments' taken from `rg-cur-search'.
 If NO-HISTORY is non nil skip adding the search to the search history."
@@ -469,8 +475,7 @@ If NO-HISTORY is non nil skip adding the search to the search history."
     (unless no-history
       (rg-history-push (rg-search-copy rg-cur-search)
                        rg-search-history))
-    (recompile)
-    (rg-maybe-show-header)))
+    (rg-recompile)))
 
 (defun rg-navigate-file-message (pos limit direction)
   "Return position of next 'rg-file-message text property.
