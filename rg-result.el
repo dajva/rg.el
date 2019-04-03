@@ -327,6 +327,8 @@ This function is called from `compilation-filter-hook'."
       (goto-char compilation-filter-start)
       (forward-line 0)
       (setq beg (point))
+      (when (zerop rg-hit-count)
+        (newline))
       ;; Only operate on whole lines so we don't get caught with part of an
       ;; escape sequence in one chunk and the rest in another.
       (when (< (point) end)
@@ -350,7 +352,7 @@ This function is called from `compilation-filter-hook'."
           (replace-match (propertize (match-string 1)
                                      'face nil 'font-lock-face 'rg-match-face)
                          t t)
-          (setq rg-hit-count (+ rg-hit-count 1)))
+          (cl-incf rg-hit-count))
 
         ;; Align and format line and column numbers.
         (when rg-align-position-numbers
