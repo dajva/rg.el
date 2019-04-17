@@ -101,6 +101,7 @@
 (require 'rg-ibuffer)
 (require 'rg-menu)
 (require 'rg-result)
+(require 'rg-info-hack)
 (require 's)
 (require 'vc)
 
