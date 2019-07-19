@@ -216,9 +216,9 @@ Raises an error if it can not be found."
   (concat (rg-executable)
           " --color always --colors match:fg:red -n"))
 
-(defun rg-default-buffer-name-function (&rest _mode_name)
-  "Return search results buffer name."
-  "*rg*")
+(defun rg-default-buffer-name-function (mode_name)
+  "Return search results buffer name for MODE_NAME."
+  (format "*%s*" mode_name))
 
 (defun rg-build-type-add-args ()
   "Build a list of --type-add: 'foo:*.foo' flags for each type in `rg-custom-type-aliases'."
