@@ -220,6 +220,7 @@ Raises an error if it can not be found."
 (defun rg-buffer-name (&optional mode_name)
   "Return search results buffer name.
 MODE_NAME is needed to pass this function to `compilation-start'."
+  (ignore mode_name)
   (format "*%s*" (if (functionp rg-buffer-name)
                     (funcall rg-buffer-name)
                   rg-buffer-name)))
