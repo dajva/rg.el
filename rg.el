@@ -160,9 +160,10 @@ from `rg-get-type-aliases'."
   :type 'string
   :group 'rg)
 
-(defcustom rg-buffer-name-function 'rg-default-buffer-name-function
-  "Function to determine search results buffer name."
-  :type 'function
+(defcustom rg-buffer-name "rg"
+  "Search results buffer name.
+Can be string or function."
+  :type '(choice string function)
   :group 'rg)
 
 (defvar rg-command-line-flags-function 'identity
@@ -216,9 +217,12 @@ Raises an error if it can not be found."
   (concat (rg-executable)
           " --color always --colors match:fg:red -n"))
 
-(defun rg-default-buffer-name-function (mode_name)
-  "Return search results buffer name for MODE_NAME."
-  (format "*%s*" mode_name))
+(defun rg-buffer-name (&optional mode_name)
+  "Return search results buffer name.
+MODE_NAME is needed to pass this function to `compilation-start'."
+  (format "*%s*" (if (functionp rg-buffer-name)
+                    (funcall rg-buffer-name)
+                  rg-buffer-name)))
 
 (defun rg-build-type-add-args ()
   "Build a list of --type-add: 'foo:*.foo' flags for each type in `rg-custom-type-aliases'."
@@ -407,7 +411,7 @@ executing.  FLAGS is additional command line flags to use in the search."
         (setf (rg-search-full-command search) command))
       ;; Setting process-setup-function makes exit-message-function work
       ;; even when async processes aren't supported.
-      (with-current-buffer (compilation-start command 'rg-mode rg-buffer-name-function)
+      (with-current-buffer (compilation-start command 'rg-mode #'rg-buffer-name)
         (rg-mode-init search)))
     (if (eq next-error-last-buffer (current-buffer))
         (setq default-directory dir))))
@@ -428,7 +432,7 @@ detailed info."
 
 (defun rg-get-rename-target ()
   "Return the buffer that will be target for renaming."
-  (let* ((buffer-name (funcall rg-buffer-name-function))
+  (let* ((buffer-name (rg-buffer-name))
          (buffer (if (eq major-mode 'rg-mode)
                      (current-buffer)
                    (get-buffer buffer-name))))
@@ -488,7 +492,7 @@ from a saved buffer in which case the saved buffer will be reused."
       (rename-uniquely)
       ;; If the new buffer name became '*rg*', just rename again to make
       ;; sure the result is saved.
-      (when (equal (buffer-name) (funcall rg-buffer-name-function))
+      (when (equal (buffer-name) (rg-buffer-name))
         (rename-uniquely)))))
 
 (defun rg-kill-saved-searches ()
@@ -498,7 +502,7 @@ from a saved buffer in which case the saved buffer will be reused."
     (dolist (buf (buffer-list))
       (when (with-current-buffer buf
               (and (eq major-mode 'rg-mode)
-                   (not (equal (buffer-name) (funcall rg-buffer-name-function)))))
+                   (not (equal (buffer-name) (rg-buffer-name)))))
         (kill-buffer buf)))))
 
 ;;;###autoload
