@@ -217,13 +217,17 @@ Raises an error if it can not be found."
   (concat (rg-executable)
           " --color always --colors match:fg:red -n"))
 
+(defun rg--buffer-name ()
+  "Wrapper for variable `rg-buffer-name'. Return string or call function."
+  (if (functionp rg-buffer-name)
+      (funcall rg-buffer-name)
+    rg-buffer-name))
+
 (defun rg-buffer-name (&optional mode_name)
   "Return search results buffer name.
 MODE_NAME is needed to pass this function to `compilation-start'."
   (ignore mode_name)
-  (format "*%s*" (if (functionp rg-buffer-name)
-                    (funcall rg-buffer-name)
-                  rg-buffer-name)))
+  (format "*%s*" (rg--buffer-name)))
 
 (defun rg-build-type-add-args ()
   "Build a list of --type-add: 'foo:*.foo' flags for each type in `rg-custom-type-aliases'."
@@ -479,7 +483,7 @@ which case the saved buffer will be reused."
   (interactive "sSave search as name: ")
   (let ((buffer (rg-get-rename-target)))
     (with-current-buffer buffer
-      (rename-buffer (concat "*rg " newname "*")))))
+      (rename-buffer (format "*%s %s*" (rg--buffer-name) newname)))))
 
 (defun rg-save-search ()
   "Save the search result in current *rg* result buffer.
