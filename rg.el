@@ -218,7 +218,7 @@ Raises an error if it can not be found."
           " --color always --colors match:fg:red -n"))
 
 (defun rg--buffer-name ()
-  "Wrapper for variable `rg-buffer-name'. Return string or call function."
+  "Wrapper for variable `rg-buffer-name'.  Return string or call function."
   (if (functionp rg-buffer-name)
       (funcall rg-buffer-name)
     rg-buffer-name))
