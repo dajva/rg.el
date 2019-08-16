@@ -223,10 +223,9 @@ Raises an error if it can not be found."
       (funcall rg-buffer-name)
     rg-buffer-name))
 
-(defun rg-buffer-name (&optional mode_name)
+(defun rg-buffer-name (&optional _mode_name)
   "Return search results buffer name.
 MODE_NAME is needed to pass this function to `compilation-start'."
-  (ignore mode_name)
   (format "*%s*" (rg--buffer-name)))
 
 (defun rg-build-type-add-args ()
