@@ -226,7 +226,9 @@ Raises an error if it can not be found."
 (defun rg-buffer-name (&optional _mode_name)
   "Return search results buffer name.
 _MODE_NAME is needed to pass this function to `compilation-start'."
-  (format "*%s*" (rg--buffer-name)))
+  (if rg-recompile
+      (buffer-name)
+    (format "*%s*" (rg--buffer-name))))
 
 (defun rg-build-type-add-args ()
   "Build a list of --type-add: 'foo:*.foo' flags for each type in `rg-custom-type-aliases'."

@@ -178,6 +178,9 @@ Becomes buffer local in `rg-mode' buffers.")
 (defvar-local rg-hit-count 0
   "Stores number of hits in a search.")
 
+(defvar-local rg-recompile nil
+  "Is `recompile' in progress or `compile-start'.")
+
 (defconst rg-mode-font-lock-keywords
   '(;; Command output lines.
     (": \\(.+\\): \\(?:Permission denied\\|No such \\(?:file or directory\\|device or address\\)\\)$"
@@ -453,7 +456,8 @@ Commands:
 (defun rg-recompile ()
   "Rerun the current search."
   (interactive)
-  (recompile)
+  (let ((rg-recompile t))
+    (recompile))
   (hack-dir-local-variables-non-file-buffer)
   (rg-maybe-show-header))
 
