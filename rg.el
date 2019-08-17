@@ -477,9 +477,9 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
          (rg-rerun-toggle-flag ,flagvalue)))))
 
 (defun rg-save-search-as-name (newname)
-  "Save the search result in current *rg* result buffer.
-The result buffer will be renamed to *rg NEWNAME*.  New searches will use the
-standard *rg* buffer unless the search is done from a saved buffer in
+  "Save the search result in current result buffer.
+NEWNAME will be added to the result buffer name.  New searches will use the
+standard buffer unless the search is done from a saved buffer in
 which case the saved buffer will be reused."
   (interactive "sSave search as name: ")
   (let ((buffer (rg-get-rename-target)))
@@ -487,22 +487,22 @@ which case the saved buffer will be reused."
       (rename-buffer (format "*%s %s*" (rg--buffer-name) newname)))))
 
 (defun rg-save-search ()
-  "Save the search result in current *rg* result buffer.
+  "Save the search result in current result buffer.
 The result buffer will be renamed by the `rename-uniquify' function.
 To choose a custom name, use `rg-save-search-as-name' instead.  New
-searches will use the standard *rg* buffer unless the search is done
-from a saved buffer in which case the saved buffer will be reused."
+searches will use the standard buffer unless the search is done from
+a saved buffer in which case the saved buffer will be reused."
   (interactive)
   (let ((buffer (rg-get-rename-target)))
     (with-current-buffer buffer
       (rename-uniquely)
-      ;; If the new buffer name became '*rg*', just rename again to make
-      ;; sure the result is saved.
+      ;; If the new buffer name became default result buffer name, just rename
+      ;; again to make sure the result is saved.
       (when (equal (buffer-name) (rg-buffer-name))
         (rename-uniquely)))))
 
 (defun rg-kill-saved-searches ()
-  "Kill all saved rg buffers.  The default *rg* buffer will be kept."
+  "Kill all saved rg buffers.  The default result buffer will be kept."
   (interactive)
   (when (y-or-n-p "Confirm kill all saved rg searches? ")
     (dolist (buf (buffer-list))
