@@ -765,7 +765,7 @@ and ungrouped otherwise."
   "Verify exit messages."
   :tags '(need-rg)
   (rg-run "foo" "*.baz" (concat default-directory "test/data"))
-  (with-current-buffer "*rg*"
+  (with-current-buffer (rg-buffer-name)
     (rg-wait-for-search-result)
     (s-matches-p "no matches found" (buffer-substring-no-properties (point-min) (point-max))))
   (rg-run "hello" "*.baz" (concat default-directory "test/data"))

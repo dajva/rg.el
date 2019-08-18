@@ -75,7 +75,7 @@ search after moving in history."
                    "bar" "all" (concat default-directory "test/data"))
   (rg-run-and-wait #'rg-run
                    "baz" "all" (concat default-directory "test/data"))
-  (with-current-buffer "*rg*"
+  (with-current-buffer (rg-buffer-name)
      (rg-run-and-wait #'rg-back-history)
      (should (equal (rg-search-pattern rg-cur-search) "bar"))
      (rg-run-and-wait #'rg-back-history)

@@ -49,7 +49,7 @@
 (defun rg-run-and-wait (fn &rest args)
   "Run FN  with ARGS and then wait for search to be done."
   (apply fn args)
-  (with-current-buffer "*rg*"
+  (with-current-buffer (rg-buffer-name)
     (rg-wait-for-search-result)))
 
 (defun rg-wait-for-search-result ()
@@ -76,10 +76,10 @@ repository."
 (defmacro rg-with-current-result (&rest body)
   "Evaluate BODY in current result buffer when search has finished."
   (declare (indent 0) (debug t))
-  `(with-current-buffer "*rg*"
+  `(with-current-buffer (rg-buffer-name)
      (rg-wait-for-search-result)
      (let ((result (progn ,@body)))
-       (kill-buffer "*rg*")
+       (kill-buffer)
        result)))
 
 (defmacro rg-with-temp-global-keymap (&rest body)
