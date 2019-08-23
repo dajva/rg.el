@@ -223,10 +223,10 @@ Raises an error if it can not be found."
       (funcall rg-buffer-name)
     rg-buffer-name))
 
-(defun rg-buffer-name (&optional mode_name)
+(defun rg-buffer-name (&optional name-of-mode)
   "Return search results buffer name.
-MODE_NAME is needed to pass this function to `compilation-start'."
-  (ignore mode_name)
+NAME-OF-MODE is needed to pass this function to `compilation-start'."
+  (ignore name-of-mode)
   (if rg-recompile
       (buffer-name)
     (format "*%s*" (rg--buffer-name))))
