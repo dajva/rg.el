@@ -201,8 +201,10 @@ buffer. This is enabled by default but can be disabled by setting this
 variable to `nil`.
 
 ### `rg-buffer-name`
-Controls the name of the results buffer. It may be string or function. One usefull case of using it is to have separate result buffers per project.
-One can set this variable in `dir-locals` file or set it to function. E.g. this function will set results buffer name based on `project-current`:
+Controls the name of the results buffer. It may be string or function.
+One usefull case of using it is to have separate result buffers per project.
+One can set this variable in `dir-locals` file or set it to function.
+E.g. this function will set results buffer name based on `project-current`:
 
 ``` emacs-lisp
 (defun my/rg-buffer-name ()
