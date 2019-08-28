@@ -75,6 +75,27 @@
     (should (s-matches? (rg-regexp-anywhere-but-last "--foo --bar")
                         (rg-build-command "" "" nil nil)))))
 
+(ert-deftest rg-unit-test/rg-buffer-name-string ()
+  "Test that function `rg-buffer-name' will return correct buffer
+name if varible `rg-buffer-name' is string."
+  (let ((rg-buffer-name "rg results"))
+    (should (string= "*rg results*" (rg-buffer-name)))))
+
+(ert-deftest rg-unit-test/rg-buffer-name-function ()
+  "Test that function `rg-buffer-name' will return correct buffer
+name if varible `rg-buffer-name' is function."
+  (let ((rg-buffer-name (lambda () "" "rg results")))
+    (should (string= "*rg results*" (rg-buffer-name)))))
+
+(ert-deftest rg-unit-test/save-search-as-name ()
+  "Verify exit messages."
+  :tags '(need-rg)
+  (let ((rg-buffer-name "rg results"))
+    (rg-run "foo" "*.baz" (concat default-directory "test/data"))
+    (with-current-buffer (rg-buffer-name)
+      (rg-save-search-as-name "bar")
+      (should (string= "*rg results bar*" (buffer-name))))))
+
 (ert-deftest rg-unit-test/toggle-command-flag ()
   "Test `rg-list-toggle'."
   (let ((testflag "--foo")
@@ -765,7 +786,7 @@ and ungrouped otherwise."
   "Verify exit messages."
   :tags '(need-rg)
   (rg-run "foo" "*.baz" (concat default-directory "test/data"))
-  (with-current-buffer "*rg*"
+  (with-current-buffer (rg-buffer-name)
     (rg-wait-for-search-result)
     (s-matches-p "no matches found" (buffer-substring-no-properties (point-min) (point-max))))
   (rg-run "hello" "*.baz" (concat default-directory "test/data"))

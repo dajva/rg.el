@@ -106,7 +106,7 @@ It is also possible to set the prefix when invoking `rg-enable-default-bindings`
 | `<prefix> S` | `rg-save-search-as-name` |
 | `<prefix> t` | `rg-literal` |
 
-### The \*rg\* buffer
+### The results buffer
 The `rg` results buffer has bindings for modification of the last
 search for quick reruns with refined parameters.
 
@@ -199,6 +199,20 @@ for the bindings to be enabled.
 Controls if the search info header is shown in the result
 buffer. This is enabled by default but can be disabled by setting this
 variable to `nil`.
+
+### `rg-buffer-name`
+Controls the name of the results buffer. It may be string or function.
+One usefull case of using it is to have separate result buffers per project.
+One can set this variable in `dir-locals` file or set it to function.
+E.g. this function will set results buffer name based on `project-current`:
+
+``` emacs-lisp
+(defun my/rg-buffer-name ()
+  (let ((p (project-current)))
+    (if p
+        (format "rg %s" (abbreviate-file-name (cdr p)))
+      "rg"))))
+```
 
 ### Position numbers alignment
 When operating `rg.el` in grouped output mode (`rg-group-result` is

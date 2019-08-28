@@ -178,6 +178,9 @@ Becomes buffer local in `rg-mode' buffers.")
 (defvar-local rg-hit-count 0
   "Stores number of hits in a search.")
 
+(defvar-local rg-recompile nil
+  "Is `recompile' in progress or `compile-start'.")
+
 (defconst rg-mode-font-lock-keywords
   '(;; Command output lines.
     (": \\(.+\\): \\(?:Permission denied\\|No such \\(?:file or directory\\|device or address\\)\\)$"
@@ -441,9 +444,10 @@ Commands:
                            (rg-search-full-command rg-cur-search))))
 
 (defun rg-mode-init (search)
-  "Initiate rg-mode with SEARCH in current buffer."
+  "Initiate `rg-mode' with SEARCH in current buffer."
   (unless (eq major-mode 'rg-mode)
     (error "Function rg-mode-init called in non rg mode buffer"))
+  (hack-dir-local-variables-non-file-buffer)
   (setq rg-cur-search search)
   (rg-history-push (rg-search-copy rg-cur-search)
                    rg-search-history)
@@ -452,7 +456,9 @@ Commands:
 (defun rg-recompile ()
   "Rerun the current search."
   (interactive)
-  (recompile)
+  (let ((rg-recompile t))
+    (recompile))
+  (hack-dir-local-variables-non-file-buffer)
   (rg-maybe-show-header))
 
 (defun rg-rerun (&optional no-history)
