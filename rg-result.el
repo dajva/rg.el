@@ -204,7 +204,8 @@ Becomes buffer local in `rg-mode' buffers.")
      (1 (rg-hidden-command-line-properties)))))
 
 (defvar rg-mode-map
-  (let ((map (copy-keymap grep-mode-map)))
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map grep-mode-map)
     (define-key map "c" 'rg-rerun-toggle-case)
     (define-key map "d" 'rg-rerun-change-dir)
     (define-key map "f" 'rg-rerun-change-files)
