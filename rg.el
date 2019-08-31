@@ -447,6 +447,8 @@ detailed info."
         (error "Current buffer is not an rg-mode buffer and no buffer with name '%s'" buffer-name))))
 
 (defalias 'kill-rg 'kill-compilation)
+(defalias 'rg-kill-current 'kill-compilation "Kill the ongoing ripgrep search.")
+(make-obsolete 'kill-rg 'rg-kill-current "1.7.1")
 
 ;;;###autoload
 (defmacro rg-define-toggle (flag &optional key default)
