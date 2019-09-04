@@ -216,11 +216,12 @@ Becomes buffer local in `rg-mode' buffers.")
     (define-key map "s" 'rg-save-search)
     (define-key map "S" 'rg-save-search-as-name)
     (define-key map "t" 'rg-rerun-change-literal)
-    (define-key map "w" 'wgrep-change-to-wgrep-mode)
+    (define-key map "w" 'rg-deprecated-key-change-to-wgrep)
+    (define-key map "e" 'wgrep-change-to-wgrep-mode)
     (define-key map "\C-n" 'rg-next-file)
     (define-key map "\C-p" 'rg-prev-file)
-    (define-key map "\C-f" 'rg-forward-history)
-    (define-key map "\C-b" 'rg-back-history)
+    (define-key map "\C-c>" 'rg-forward-history)
+    (define-key map "\C-c<" 'rg-back-history)
     map)
   "The keymap for `rg-mode'.")
 
@@ -616,6 +617,12 @@ previous file with grouped matches."
         (setq rg-cur-search (rg-search-copy next))
         (rg-rerun 'no-history))
     (message "No more history elements for forward.")))
+
+(defun rg-deprecated-key-change-to-wgrep ()
+  "Call `wgrep-change-to-wgrep-mode' with a key binding deprecation warning."
+  (interactive)
+  (wgrep-change-to-wgrep-mode)
+  (message "'w' is a deprecated binding for changing to wgrep, use 'e' instead."))
 
 (provide 'rg-result)
 

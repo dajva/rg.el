@@ -535,6 +535,14 @@ If prefix is not supplied `rg-keymap-prefix' is used."
     (message "Global key bindings for `rg' enabled with prefix: %s"
              (edmacro-format-keys prefix))))
 
+;;;###autoload
+(defun rg-use-old-defaults ()
+  "Restore default settings pre version 2.0.0."
+  (define-key rg-mode-map "\C-f" 'rg-forward-history)
+  (define-key rg-mode-map "\C-c>" nil)
+  (define-key rg-mode-map "\C-b" 'rg-back-history)
+  (define-key rg-mode-map "\C-c<" nil))
+
 (eval-and-compile
   ;; Copied macroexp-parse-body from macroexp.el since this is only
   ;; available in emacs > 25.

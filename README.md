@@ -35,6 +35,15 @@ load path and add this to `init.el`
 `rg` and friends are autoloaded symbols which means it's also possible
 to defer loading if you have autoloading setup.
 
+### Use old defaults
+`rg.el` 2.0.0 will use new default settings to improve look and feel,
+more consistent key bindings etc. If you want to use the old defaults
+add this to your `init.el`:
+
+``` el
+(rg-use-old-defaults)
+```
+
 ### wgrep
 
 This package use [wgrep](https://github.com/mhayashi1120/Emacs-wgrep)
@@ -122,9 +131,9 @@ search for quick reruns with refined parameters.
 | `s` | Save search result to unique name |
 | `S` | Save search result, prompt for name |
 | `t` | Edit search string as literal |
-| `w` | Switch to wgrep mode |
-| `C-f` | Navigate forward in search history |
-| `C-b` | Navigate backward in search history |
+| `e` | Switch to wgrep mode |
+| `C-c >` | Navigate forward in search history |
+| `C-c <` | Navigate backward in search history |
 
 ### History navigation
 Search history is stored per result buffer. It's possible to navigate back
