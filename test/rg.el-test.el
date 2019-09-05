@@ -29,6 +29,9 @@
 
 ;; Unit tests
 
+(when (> emacs-major-version 26)
+  (defalias 'ert--print-backtrace 'backtrace-to-string))
+
 (ert-deftest rg-unit-test/case-expand-template ()
   "Test that `rg-apply-case-flag' handles case settings correctly."
   (let (rg-toggle-command-line-flags)
@@ -86,6 +89,16 @@ name if varible `rg-buffer-name' is string."
 name if varible `rg-buffer-name' is function."
   (let ((rg-buffer-name (lambda () "" "rg results")))
     (should (string= "*rg results*" (rg-buffer-name)))))
+
+(ert-deftest rg-unit-test/rg-buffer-name-dirlocals ()
+  "Test that `rg-buffer-name' is set from dir-locals.el."
+  :tags '(need-rg)
+  (custom-set-variables
+   '(safe-local-variable-values
+     '((rg-buffer-name . "from dir locals"))))
+  (find-file (concat default-directory "test/data/foo.baz"))
+  (rg-run "foo" "*.baz" (concat default-directory "dirlocals"))
+  (should (get-buffer "*from dir locals*")))
 
 (ert-deftest rg-unit-test/save-search-as-name ()
   "Verify exit messages."

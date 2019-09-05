@@ -416,10 +416,13 @@ executing.  FLAGS is additional command line flags to use in the search."
         ;; If user changed command we can't know the parts of the
         ;; search and needs to disable result buffer modifications.
         (setf (rg-search-full-command search) command))
-      ;; Setting process-setup-function makes exit-message-function work
-      ;; even when async processes aren't supported.
-      (with-current-buffer (compilation-start command 'rg-mode #'rg-buffer-name)
-        (rg-mode-init search)))
+      ;; Temp buffer used to hack dir-locals variables based on search directory
+      (with-temp-buffer
+        (hack-dir-local-variables-non-file-buffer)
+        ;; Setting process-setup-function makes exit-message-function work
+        ;; even when async processes aren't supported.
+        (with-current-buffer (compilation-start command 'rg-mode #'rg-buffer-name)
+          (rg-mode-init search))))
     (if (eq next-error-last-buffer (current-buffer))
         (setq default-directory dir))))
 
