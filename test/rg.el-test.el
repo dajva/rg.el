@@ -89,6 +89,10 @@ name if varible `rg-buffer-name' is function."
 
 (ert-deftest rg-unit-test/rg-buffer-name-dirlocals ()
   "Test that `rg-buffer-name' is set from dir-locals.el."
+  ;; This test covers two cases:
+  ;; - that dir-locals from search dir is applied at all
+  ;; - that dir-locals from search dir is applied if search is
+  ;;   started from file buffers
   :tags '(need-rg)
   (let ((safe-local-variable-values '((rg-buffer-name . "from dir locals"))))
     (find-file (concat default-directory "test/data/foo.baz"))
