@@ -29,9 +29,6 @@
 
 ;; Unit tests
 
-(when (> emacs-major-version 26)
-  (defalias 'ert--print-backtrace 'backtrace-to-string))
-
 (ert-deftest rg-unit-test/case-expand-template ()
   "Test that `rg-apply-case-flag' handles case settings correctly."
   (let (rg-toggle-command-line-flags)
