@@ -90,12 +90,10 @@ name if varible `rg-buffer-name' is function."
 (ert-deftest rg-unit-test/rg-buffer-name-dirlocals ()
   "Test that `rg-buffer-name' is set from dir-locals.el."
   :tags '(need-rg)
-  (custom-set-variables
-   '(safe-local-variable-values
-     '((rg-buffer-name . "from dir locals"))))
-  (find-file (concat default-directory "test/data/foo.baz"))
-  (rg-run "foo" "*.baz" (concat default-directory "dirlocals"))
-  (should (get-buffer "*from dir locals*")))
+  (let ((safe-local-variable-values '((rg-buffer-name . "from dir locals"))))
+    (find-file (concat default-directory "test/data/foo.baz"))
+    (rg-run "foo" "*.baz" (concat default-directory "dirlocals"))
+    (should (get-buffer "*from dir locals*"))))
 
 (ert-deftest rg-unit-test/save-search-as-name ()
   "Verify exit messages."
