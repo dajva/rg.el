@@ -8,7 +8,7 @@
 ;;         Roland McGrath <roland@gnu.org>
 ;; Version: 1.8.0
 ;; URL: https://github.com/dajva/rg.el
-;; Package-Requires: ((cl-lib "0.5") (emacs "25.1") (s "1.10.0") (wgrep "2.1.10"))
+;; Package-Requires: ((cl-lib "0.5") (emacs "25.1") (s "1.10.0") (transient "0.1.0") (wgrep "2.1.10"))
 ;; Keywords: matching, tools
 
 ;; This file is not part of GNU Emacs.
@@ -99,6 +99,7 @@
 (require 'edmacro)
 (require 'grep)
 (require 'rg-ibuffer)
+(require 'rg-menu)
 (require 'rg-result)
 (require 's)
 (require 'vc)
@@ -146,6 +147,11 @@ NIL means case sensitive search will be forced."
                  (const :tag "Smart" smart)
                  (const :tag "Force" force)
                  (const :tag "Off" nil))
+  :group 'rg)
+
+(defcustom rg-use-transient-menu nil
+  "Use transient menu instead of a the global keymap."
+  :type 'boolean
   :group 'rg)
 
 (defcustom rg-keymap-prefix "\C-cs"
@@ -525,15 +531,16 @@ a saved buffer in which case the saved buffer will be reused."
         (kill-buffer buf)))))
 
 ;;;###autoload
-(defun rg-enable-default-bindings(&optional prefix)
+(defun rg-enable-default-bindings (&optional prefix)
   "Enable the global `rg' default key bindings under PREFIX key.
 If prefix is not supplied `rg-keymap-prefix' is used."
   (interactive)
-  (setq prefix (or prefix rg-keymap-prefix))
-  (when prefix
-    (global-set-key prefix rg-global-map)
-    (message "Global key bindings for `rg' enabled with prefix: %s"
-             (edmacro-format-keys prefix))))
+  (when-let ((prefix (or prefix rg-keymap-prefix)))
+    (if rg-use-transient-menu
+        (rg-enable-menu prefix)
+      (global-set-key prefix rg-global-map)
+      (message "Global key bindings for `rg' enabled with prefix: %s"
+               (edmacro-format-keys prefix)))))
 
 ;;;###autoload
 (defun rg-use-old-defaults ()
@@ -565,12 +572,20 @@ the :query option is missing, set it to ASK"
       (setq args (plist-put args :dir 'ask)))
     args))
 
-(defmacro rg-ensure-quoted (arg)
-  "Ensure that ARG is quoted."
-  (if (and (consp arg)
-           (eq (car arg) 'quote))
-      arg
-    `(quote ,arg)))
+(eval-and-compile
+  (defun rg-ensure-quoted (arg)
+    "Ensure that ARG is quoted."
+    (if (and (consp arg)
+             (eq (car arg) 'quote))
+        arg
+      `(quote ,arg)))
+
+  (defun rg-ensure-unquoted (arg)
+    "Ensure that ARG is quoted."
+    (if (and (consp arg)
+             (eq (car arg) 'quote))
+        (cadr arg)
+      arg)))
 
 (eval-and-compile
   (defun rg-search-parse-local-bindings (search-cfg)
@@ -619,10 +634,10 @@ the :query option is missing, set it to ASK"
       (when (eq flags-opt 'ask)
         (setq flags-opt 'flags))
 
+      (setq flags-opt (rg-ensure-quoted flags-opt))
       (setq binding-list
             (append binding-list
-                    `((flags (funcall rg-command-line-flags-function
-                                      (rg-ensure-quoted ,flags-opt))))))
+                    `((flags (funcall rg-command-line-flags-function ,flags-opt)))))
       binding-list)))
 
 (eval-and-compile
@@ -655,6 +670,20 @@ the :query option is missing, set it to ASK"
               (append iargs '((flags . (split-string
                                         (read-string "Command line flags: ")))))))
       iargs)))
+
+(eval-and-compile
+  (defun rg-search-parse-menu-arg (search-cfg name)
+    "Parse :menu option in SEARCH-CFG.
+Returns forms for binding function with NAME into rg-menu."
+    (when-let ((menu-opt (rg-ensure-unquoted
+                          (plist-get search-cfg :menu))))
+      (unless (and (consp menu-opt)
+                   (= (length menu-opt) 3))
+        (user-error "'%S' should be a list of length 3" menu-opt))
+      `((rg-menu-wrap-transient-search ,name)
+        (rg-menu-transient-insert
+         ,@menu-opt
+         ',(intern (concat (symbol-name name) "--transient")))))))
 
 (defconst rg-elisp-font-lock-keywords
   '(("(\\(rg-define-search\\)\\_>[ \t']*\\(\\(?:\\sw\\|\\s_\\)+\\)?"
@@ -695,6 +724,13 @@ specified default if left out.
             Default is `never'.
 :flags      `ask' or a list of command line flags that will be used when
             invoking the search.
+:menu       Bind the command into `rg-menu'.  Must be a list with three
+            items in it.  The first item is the description of the
+            group in witch the new command will appear.  If the group
+            does not exist a new will be created.  The second item is
+            the key binding for this new command (ether a key vector
+            or a key description string) and the third item is the
+            description of the command that will appear in the menu.
 
 Example:
 \(rg-define-search search-home-dir-in-elisp
@@ -702,19 +738,23 @@ Example:
   :query ask
   :format literal
   :files \"elisp\"
-  :dir (getenv \"HOME\"\)\)"
+  :dir (getenv \"HOME\"\)\)
+  :menu (\"Custom\" \"H\" \"Home dir\")"
   (declare (indent defun))
   (let* ((body (macroexp-parse-body args))
          (decls (car body))
          (search-cfg (rg-set-search-defaults (cdr body)))
          (local-bindings (rg-search-parse-local-bindings search-cfg))
-         (iargs (rg-search-parse-interactive-args search-cfg)))
-    `(defun ,name ,(mapcar 'car iargs)
+         (iargs (rg-search-parse-interactive-args search-cfg))
+         (menu-forms (rg-search-parse-menu-arg search-cfg name)))
+    `(progn
+       (defun ,name ,(mapcar 'car iargs)
        ,@decls
        (interactive
         (list ,@(mapcar 'cdr iargs)))
        (let ,local-bindings
-         (rg-run query files dir literal confirm flags)))))
+         (rg-run query files dir literal confirm flags)))
+       ,@menu-forms)))
 
 ;;;###autoload (autoload 'rg-project "rg.el" "" t)
 (rg-define-search rg-project

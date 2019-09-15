@@ -44,6 +44,15 @@ add this to your `init.el`:
 (rg-use-old-defaults)
 ```
 
+### rg-menu
+
+If you prefer to use a [magit](https://github.com/magit/magit) like
+interface as a complement to regular key maps, replace
+`(rg-enable-default-bindings)` with `(rg-enable-menu)`. The menus are
+built with [transient](https://github.com/magit/transient), which
+means that the menus can be modified in the same way as in magit.
+
+
 ### wgrep
 
 This package use [wgrep](https://github.com/mhayashi1120/Emacs-wgrep)
@@ -104,6 +113,12 @@ It is also possible to set the prefix when invoking `rg-enable-default-bindings`
 (rg-enable-default-bindings "\M-s")
 ```
 
+Alternatively for the menu interface.
+
+```el
+(rg-enable-menu "\M-s")
+```
+
 | Key | Binding |
 |-----|--------|
 | `<prefix> d` | `rg-dwim` |
@@ -127,6 +142,7 @@ search for quick reruns with refined parameters.
 | `g` | Rerun search |
 | `i` | Toggle `--no-ignore` flag |
 | `l` | List search buffers in a separate buffer |
+| `m` | Popup the menu (if enabled) |
 | `r` | Edit search string as regexp |
 | `s` | Save search result to unique name |
 | `S` | Save search result, prompt for name |
@@ -297,7 +313,8 @@ Example:
   :query ask
   :format literal
   :files "elisp"
-  :dir (getenv "HOME"))
+  :dir (getenv "HOME")
+  :menu ("Custom" "H" "Search Home"))
 ```
 
 ## Contribute

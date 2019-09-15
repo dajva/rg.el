@@ -350,31 +350,32 @@ matching alias."
 
 (ert-deftest rg-unit-test/global-keymap ()
   "Test global keymap."
-  ;; Default prefix
-  (rg-with-temp-global-keymap
-    (rg-enable-default-bindings)
-    (should (eq rg-global-map (lookup-key (current-global-map) "\C-cs"))))
-  ;; Function supplied prefix
-  (rg-with-temp-global-keymap
-    (rg-enable-default-bindings "\M-s")
-    (should (eq rg-global-map (lookup-key (current-global-map) "\M-s"))))
-  ;; Customized prefix
-  (let ((rg-keymap-prefix "\M-s"))
+  (let ((rg-use-transient-menu nil))
     ;; Default prefix
     (rg-with-temp-global-keymap
-      (rg-enable-default-bindings)
-      (should (eq rg-global-map (lookup-key (current-global-map) "\M-s"))))
+     (rg-enable-default-bindings)
+     (should (eq rg-global-map (lookup-key (current-global-map) "\C-cs"))))
     ;; Function supplied prefix
     (rg-with-temp-global-keymap
-      (rg-enable-default-bindings "\C-ct")
-      (should (eq rg-global-map (lookup-key (current-global-map) "\C-ct")))))
-  ;; Make sure rg-global-map comes into play
-  (rg-with-temp-global-keymap
-    (rg-enable-default-bindings)
-    (should (eq 'rg (lookup-key (current-global-map) "\C-csr")))
-    ;; Modify global map
-    (define-key rg-global-map "0" 'foo)
-    (should (eq 'foo (lookup-key (current-global-map) "\C-cs0")))))
+     (rg-enable-default-bindings "\M-s")
+     (should (eq rg-global-map (lookup-key (current-global-map) "\M-s"))))
+    ;; Customized prefix
+    (let ((rg-keymap-prefix "\M-s"))
+      ;; Default prefix
+      (rg-with-temp-global-keymap
+       (rg-enable-default-bindings)
+       (should (eq rg-global-map (lookup-key (current-global-map) "\M-s"))))
+      ;; Function supplied prefix
+      (rg-with-temp-global-keymap
+       (rg-enable-default-bindings "\C-ct")
+       (should (eq rg-global-map (lookup-key (current-global-map) "\C-ct")))))
+    ;; Make sure rg-global-map comes into play
+    (rg-with-temp-global-keymap
+     (rg-enable-default-bindings)
+     (should (eq 'rg (lookup-key (current-global-map) "\C-csr")))
+     ;; Modify global map
+     (define-key rg-global-map "0" 'foo)
+     (should (eq 'foo (lookup-key (current-global-map) "\C-cs0"))))))
 
 (ert-deftest rg-unit/literal-search ()
   "Test `rg-literal'."
