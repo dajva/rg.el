@@ -154,9 +154,9 @@ NIL means case sensitive search will be forced."
   :type 'boolean
   :group 'rg)
 
-(defcustom rg-keymap-prefix "\C-cs"
+(defcustom rg-keymap-prefix (kbd "C-c s")
   "Prefix for global `rg' keymap."
-  :type 'string
+  :type 'key-sequence
   :group 'rg)
 
 (defcustom rg-default-alias-fallback "all"
