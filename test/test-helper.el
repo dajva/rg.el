@@ -78,6 +78,7 @@ repository."
   "Evaluate BODY in current result buffer when search has finished."
   (declare (indent 0) (debug t))
   `(with-current-buffer (rg-buffer-name)
+     (font-lock-ensure)
      (rg-wait-for-search-result)
      (let ((result (progn ,@body)))
        (kill-buffer)
