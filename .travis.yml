@@ -4,10 +4,6 @@ env:
   - EMACS_CI=emacs-25-3
   - EMACS_CI=emacs-26-1
   - EMACS_CI=emacs-26-3
-  - EMACS_CI=emacs-snapshot
-matrix:
-  allow_failures:
-    - env: EMACS_CI=emacs-snapshot
 before_install:
   # nix-emacs-ci
   - bash <(curl https://raw.githubusercontent.com/purcell/nix-emacs-ci/master/travis-install)
@@ -32,7 +28,7 @@ jobs:
   include:
     - stage: documentation
       env:
-        - secure: XR6HbwwEjD3Uk4Go/Kjti4roFl5rRhG9lcL6bMx8FUaEaRZP8XVnnN5/JWVPEdqGqx1RE3mrkfDRJSqVd5Up+gR26NtX1hFoAv4Px7eYuBh2q1leCucnEcJO7wvoMa2oX6ip/wwkhRkqbjUAgMsBF4uSZM1ZRnIuj+tQ/pafsnWhwwmGrq+AuLnDDCKA44PvtzfNti/twIg8nM2WlUWO2SbbWp7C0fGnFmbolwjYLCH8zXD/fdaJu+/SBLxwmJPTnZiDUdBZlX9YpEo5ahcYJQOfsTAg0Udb7u94w6+JclDFxFXJUwUn1M73bC2oUiYssP6PmswF/yp3Ytpt2xxxZ3KzGf6mbS7txVN0h4dGqcZEDjuYkeD0vwy1NEHerRWuaLufC0Z6omz9oP6RZnTlphLQd0jmapXG7ZJRyBgqXKdqILhuCM9GESiiMPtaerFz1U7zJuKHJO74lNYsM2XcJbyP3CjmTFCZMe5IT4YjWO1hxj9kXpsrKdeY0S65lGMck04nFmhaQEg9OgcfaYmPNt/X1sS1Vl4nqKS/bXNlmIAPo7ZCCacysZQl6ea3Fvyxg5GB4OnSoXSTwQ+mKrHEUKY8CVmVDBoLdmD9IPlfa+UBDIaDCNYtrmYxRR4Qs4mkBGs5KuD7KMToQGxxI1EfYhuFuZ6hXSESaCEK2/LJQro=
+        - secure: iJ0dZerp1IGZMXHYNV9ciL/Uk09xeK91toBfEjj8dAWhs590WYVJ3CsSeYyTSowT9cTQeKxUilTg8KgmObPAoAz/Kwume409fb5sjPQgzBgaqE1JY/CSZopmWKbAv0xCauYxQFl+eKm8nS+uUBazOfAdcmUQzD61/KIKJYy7Ae1RTfv7udHXC8KExhwgscDqiXgvAv5M3WLVwG6DEEk03NA+tyff2AS+Lww7zAwn0ZF1hcWjtVEMhyHn08LrngLNCw4MoP4PN9FXGNhPfnMSVfpkkw7RrQUUVgL+x6+l1An+Nyuv4R9fGir1hRUq4DaLm5W3dzzPdKKtapDydG3HZDC9by4yTi5mzxqO+O75x71Y8dNR/A5wg2dDx7+7Hyn8/ARbBvVHGtxyE/8MvlMakJhRJ9EXBKmjnq6O3qQk2BmbgSSkAGDxWvOTDgo2TlZ1Irn6secnVNZiHalqWmxKcUjFjXDJu3+2WHCrJoUxSsvW/fmKQNn3KV+jxjlukRoV5C3ONpa5QmmrAsdQJIj2rImhhtVN5SZUR5Nbv56y5/uoZvp5vicZ+dJRK3aZ5DvUQe7a3/XP6L/gDRPBL9uG3GjleRm13F7osQzmxjXAjfNrDEF9k/Lb9bmpCephqqFtx9R/cypBjRtdDyjhFvVyNhQOLgM4E7Ezv2Nv7jby97Y=
         - EMACS_CI=emacs-25-3
       script:
         - make rst
