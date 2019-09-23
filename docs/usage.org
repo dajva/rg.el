@@ -259,7 +259,7 @@
       (rg-define-search rg-word
         :format literal
         :flags ("--word-regexp")
-        :menu ("f" "w" "Word"))
+        :menu ("Custom" "w" "Word"))
     #+END_SRC
 
     The =:menu= keyword in the above invocation will trigger insertion

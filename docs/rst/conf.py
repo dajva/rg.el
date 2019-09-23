@@ -150,8 +150,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'rgel', u'rg.el Documentation',
-     author, 'rgel', 'Search like a King from Emacs.',
+    (master_doc, 'rgel', u'RG User Manual',
+     author, 'RG', 'Search like a King with ripgrep in Emacs.',
      'Emacs'),
 ]
 
