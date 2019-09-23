@@ -152,7 +152,7 @@ man_pages = [
 texinfo_documents = [
     (master_doc, 'rgel', u'rg.el Documentation',
      author, 'rgel', 'Search like a King from Emacs.',
-     'Miscellaneous'),
+     'Emacs'),
 ]
 
 texinfo_elements = {'preamble': """
