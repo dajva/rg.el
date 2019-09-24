@@ -101,13 +101,13 @@
   ;; Add to existing sub group
   (rg-menu-transient-insert "Search" "n" "new search" 'new--transient)
   (should (eq (plist-get
-               (third (transient-get-suffix 'rg-menu '(2 0 1))) :command)
+               (cl-third (transient-get-suffix 'rg-menu '(2 0 1))) :command)
               'new--transient))
 
   ;; Create a new sub group and add to that
   (rg-menu-transient-insert "Custom" "c" "custom search" 'custom--transient)
   (should (eq (plist-get
-               (third (transient-get-suffix 'rg-menu '(2 2 0))) :command)
+               (cl-third (transient-get-suffix 'rg-menu '(2 2 0))) :command)
               'custom--transient)))
 
 (ert-deftest rg-unit/menu-define-search ()
@@ -126,7 +126,7 @@
     :menu ("Macro" "m" "macro search"))
 
   (let ((subgroup (seq-elt (transient-get-suffix 'rg-menu '(2 2)) 2))
-        (entry (third (transient-get-suffix 'rg-menu '(2 2 0)))))
+        (entry (cl-third (transient-get-suffix 'rg-menu '(2 2 0)))))
     (should (equal (plist-get subgroup :description)
                    "Macro"))
     (should (eq (plist-get entry :command)

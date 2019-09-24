@@ -29,11 +29,9 @@
 
 (require 'edmacro)
 (require 'rg-result)
-(require 's)
 (require 'seq)
 (require 'transient)
-(eval-when-compile
-  (require 'cl))
+(require 'cl-lib)
 
 ;; Forward declarations
 (declare-function rg "rg.el")
@@ -184,7 +182,7 @@ Returns the transient location coordinates for the group or NIL if not found."
     (let ((loc (list 2 0)))
       (ignore-errors
         (while (not (rg-menu-group-at-location-p desc loc))
-          (incf (second loc)))
+          (cl-incf (cl-second loc)))
         loc)))
 
   (defun rg-menu-transient-insert (group key description command)
