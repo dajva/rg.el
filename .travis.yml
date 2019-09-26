@@ -11,7 +11,6 @@ before_install:
   # cask
   - curl -fsSkL https://raw.github.com/cask/cask/master/go | python
   - export PATH=$HOME/.cask/bin:$PATH
-  - tools/import-elpa-gpg-key.sh
 
   # rust
   - curl https://sh.rustup.rs -sSf | sh -s -- -y
