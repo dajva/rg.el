@@ -295,33 +295,57 @@ Set up `compilation-exit-message-function' and run `grep-setup-hook'."
   (let ((space-count (- length (length text))))
     (concat (s-repeat space-count " ") text)))
 
-(defun rg-align-position-numbers-in-region (beg end)
+(defun rg-perform-position-numbers-alignment (line-number &optional column-number context-marker )
+  "Return aligned LINE-NUMBER, COLUMN-NUMBER and CONTEXT-MARKER."
+  (let* ((line-col-separator (or rg-align-line-column-separator ":"))
+         (pos-content-separator (or rg-align-position-content-separator ":"))
+         (line-number-width
+          (if (and rg-show-columns context-marker)
+              ;; Context lines should be aligned to column numbers
+              (+ rg-align-line-number-field-length
+                 (1+ rg-align-column-number-field-length))
+            rg-align-line-number-field-length))
+         (column-number (when column-number
+                          (if rg-show-columns
+                              column-number
+                            (propertize column-number 'invisible t)))))
+    (cl-assert (if column-number (not context-marker) context-marker))
+    (concat (rg-prepend-space line-number line-number-width)
+            (when column-number
+              (concat (if rg-show-columns
+                          line-col-separator
+                        pos-content-separator)
+                      (rg-prepend-space
+                       (if rg-show-columns
+                           column-number
+                         (propertize column-number 'invisible t))
+                       rg-align-column-number-field-length)))
+            (cond
+             (context-marker context-marker) ;; Keep context separators
+             (rg-show-columns pos-content-separator)
+             (t "")))))
+
+(defun rg-format-line-and-column-numbers (beg end)
   "Align numbers in region defined by BEG and END."
   (goto-char beg)
-  (let ((line-col-separator (or rg-align-line-column-separator ":"))
-        (pos-content-separator (or rg-align-position-content-separator ":")))
-    (while (re-search-forward
-            "^\033\\[[0]*m\033\\[32m\\([0-9]*?\\)\033\\[[0]*m\\(:\\|-\\)\\(?:\033\\[[0]*m\\([0-9]*?\\)\033\\[[0]*m:\\)?"
-            end 1)
-      (replace-match (concat
-                      (rg-prepend-space
-                       (match-string 1)
-                       (+ rg-align-line-number-field-length
-                          (if (and rg-show-columns
-                                   (equal (match-string 2) "-"))
-                              ;; Context lines
-                              (1+ rg-align-column-number-field-length)
-                            0)))
-                      (when-let (column-match (match-string 3))
-                        (concat line-col-separator
-                                (rg-prepend-space
-                                 column-match
-                                 rg-align-column-number-field-length)))
-                      (if (equal (match-string 2) "-")
-                          ;; Keep context separators
-                          "-"
-                        pos-content-separator))
-                     t t))))
+  (while (re-search-forward
+          "^\033\\[[0]*m\033\\[32m\\([0-9]*?\\)\033\\[[0]*m\\(:\\|-\\)\\(?:\033\\[[0]*m\\([0-9]*?\\)\033\\[[0]*m:\\)?"
+          end 1)
+    (let* ((line-match (match-string 1))
+           (col-separator-match (match-string 2))
+           (context-marker (when (equal col-separator-match "-")
+                             col-separator-match))
+           (column-match (match-string 3)))
+    (cond
+     (rg-align-position-numbers
+      (replace-match
+       (rg-perform-position-numbers-alignment
+        line-match column-match context-marker)
+       t t))
+     ((and column-match (not rg-show-columns))
+      (replace-match
+       (propertize col-separator-match 'invisible t) t t nil 2)
+      (replace-match (propertize column-match 'invisible t) t t nil 3))))))
 
 (defun rg-filter ()
   "Handle match highlighting escape sequences inserted by the rg process.
@@ -359,9 +383,7 @@ This function is called from `compilation-filter-hook'."
                          t t)
           (cl-incf rg-hit-count))
 
-        ;; Align and format line and column numbers.
-        (when rg-align-position-numbers
-          (rg-align-position-numbers-in-region beg end))
+        (rg-format-line-and-column-numbers beg end)
 
         ;; Delete all remaining escape sequences
         (goto-char beg)
@@ -378,9 +400,11 @@ This function is called from `compilation-filter-hook'."
 (defun rg-file-line-column-pattern-group ()
   "A regexp pattern to match line number and column number with grouped output."
   (concat "^ *\\([1-9][0-9]*\\)"
-          (regexp-quote (or rg-align-line-column-separator ":"))
+          (regexp-quote (or (and rg-align-position-numbers
+                                 rg-align-line-column-separator) ":"))
           " *\\([1-9][0-9]*\\)"
-          (regexp-quote (or rg-align-position-content-separator ":"))))
+          (regexp-quote (or (and rg-align-position-numbers
+                                 rg-align-position-content-separator) ":"))))
 
 (defconst rg-file-line-pattern-nogroup
   "^\\(.+?\\):\\([1-9][0-9]*\\):"
@@ -389,7 +413,8 @@ This function is called from `compilation-filter-hook'."
 (defun rg-file-line-pattern-group ()
   "A regexp pattern to match line number with grouped output."
   (concat "^ *\\([1-9][0-9]*\\)"
-          (regexp-quote (or rg-align-position-content-separator ":"))))
+          (regexp-quote (or (and rg-align-position-numbers
+                                 rg-align-position-content-separator) ":"))))
 
 (defun rg-match-grouped-filename ()
   "Match filename backwards when a line/column match is found in grouped output mode."

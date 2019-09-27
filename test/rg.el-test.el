@@ -624,12 +624,14 @@ method. "
   :tags '(need-rg)
   (let ((rg-align-position-numbers t))
     (rg-test-with-first-error "hello"
-     (should (looking-at " \\{0,3\\}[0-9]\\{1,4\\}:"))
+     (should (looking-at (format
+                          " \\{0,3\\}[0-9]\\{1,4\\}%s"
+                          rg-align-position-content-separator)))
      (should (equal (length (match-string 0))
                     (1+ rg-align-line-number-field-length))))
     (let ((rg-align-position-content-separator "#"))
       (rg-test-with-first-error "hello"
-       (should (looking-at (concat " \\{0,4\\}[0-9]\\{1,5\\}"
+       (should (looking-at (format " \\{0,4\\}[0-9]\\{1,5\\}%s"
                                    rg-align-position-content-separator)))))))
 
 (ert-deftest rg-integration/positions-align-line-column ()
@@ -638,7 +640,9 @@ method. "
   (let ((rg-show-columns t)
         (rg-align-position-numbers t))
     (rg-test-with-first-error "hello"
-     (should (looking-at " \\{0,3\\}[0-9]\\{1,4\\}: \\{0,2\\}[0-9]\\{1,3\\}:"))
+     (should (looking-at (format " \\{0,3\\}[0-9]\\{1,4\\}%s \\{0,2\\}[0-9]\\{1,3\\}%s"
+                                 rg-align-line-column-separator
+                                 rg-align-position-content-separator)))
      (should (equal (length (match-string 0))
                     (+ rg-align-line-number-field-length
                        rg-align-column-number-field-length
@@ -646,9 +650,8 @@ method. "
     (let ((rg-align-position-content-separator ";")
           (rg-align-line-column-separator "&"))
       (rg-test-with-first-error "hello"
-       (should (looking-at (concat " \\{0,3\\}[0-9]\\{1,4\\}"
+       (should (looking-at (format " \\{0,3\\}[0-9]\\{1,4\\}%s \\{0,2\\}[0-9]\\{1,3\\}%s"
                                    rg-align-line-column-separator
-                                   " \\{0,2\\}[0-9]\\{1,3\\}"
                                    rg-align-position-content-separator)))
        (should (equal (length (match-string 0))
                       (+ rg-align-line-number-field-length
@@ -660,7 +663,8 @@ method. "
   :tags '(need-rg)
   (let ((rg-align-position-numbers t)
         (ctx-line-rx " \\{0,4\\}[1-9]-")
-        (match-line-rx " \\{0,3\\}[0-9]\\{1,4\\}:")
+        (match-line-rx (format " \\{0,3\\}[0-9]\\{1,4\\}%s"
+                               rg-align-position-content-separator))
         ctx-match line-match)
     (rg-test-with-first-error
       (rg-run "amid" "elisp"
@@ -684,7 +688,9 @@ method. "
   (let ((rg-show-columns t)
         (rg-align-position-numbers t)
         (contex-line-rx " \\{0,9\\}[1-9]-")
-        (match-line-rx " \\{0,3\\}[0-9]\\{1,4\\}: \\{0,2\\}[0-9]\\{1,3\\}:")
+        (match-line-rx (format " \\{0,3\\}[0-9]\\{1,4\\}%s \\{0,2\\}[0-9]\\{1,3\\}%s"
+                               rg-align-line-column-separator
+                               rg-align-position-content-separator))
         ctx-match line-match)
     (rg-test-with-first-error
       (rg-run "amid" "elisp"
