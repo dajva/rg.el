@@ -44,7 +44,7 @@
 ;; speed.  Especially when searching large source code repositories
 ;; where ripgrep really shines.
 
-;; See info node `(rgel)Top' for documentation or online at https://rgel.readthedocs.io."
+;; See info node `(rgel)Top' for documentation or online at https://rgel.readthedocs.io.
 
 
 ;;; Code:
@@ -712,11 +712,11 @@ Example:
          (menu-forms (rg-search-parse-menu-arg search-cfg name)))
     `(progn
        (defun ,name ,(mapcar 'car iargs)
-       ,@decls
-       (interactive
-        (list ,@(mapcar 'cdr iargs)))
-       (let ,local-bindings
-         (rg-run query files dir literal confirm flags)))
+         ,@decls
+         (interactive
+          (list ,@(mapcar 'cdr iargs)))
+         (let ,local-bindings
+           (rg-run query files dir literal confirm flags)))
        ,@menu-forms)))
 
 ;;;###autoload (autoload 'rg-project "rg.el" "" t)

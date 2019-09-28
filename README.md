@@ -22,16 +22,27 @@ This package is available on
 [MELPA](http://melpa.org/#/rg). Install with `M-x package-install`
 <kbd>RET</kbd> `rg` from within Emacs.
 
-If you want to install manually just put `rg.el` somewhere in your
-load path and add this to `init.el`
+If you want to install manually just put `rg.el` and the rest of the
+elisp files somewhere in your load path and add require the package:
 
 ``` el
 (require 'rg)
-(rg-enable-default-bindings)
 ```
 
 `rg` and friends are autoloaded symbols which means it's also possible
 to defer loading if you have autoloading setup.
+
+### Setup key bindings
+This will setup the default key bindings in a non lazy way. If you
+care about startup performance see the next example.
+
+``` el
+(rg-enable-default-bindings)
+```
+
+See
+[documentation](https://rgel.readthedocs.io) for how to handle lazy loading.
+
 
 ### Use old defaults
 `rg.el` 2.0.0 will use new default settings to improve look and feel,
