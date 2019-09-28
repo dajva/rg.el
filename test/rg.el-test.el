@@ -474,7 +474,8 @@ Test `:flags' directive."
 (ert-deftest rg-integration-test/search-alias-builtin ()
   "Test that rg builtin aliases works."
   :tags '(need-rg)
-  (let ((rg-ignore-case 'force))
+  (let ((rg-group-result nil)
+        (rg-ignore-case 'force))
     (rg-run "hello" "elisp" (concat default-directory "test/data"))
     (rg-with-current-result
       (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
@@ -486,7 +487,8 @@ Test `:flags' directive."
 (ert-deftest rg-integration-test/search-alias-custom ()
   "Test that aliases defined in `rg-custom-type-aliases' work if explicitly selected."
   :tags '(need-rg)
-  (let ((rg-ignore-case 'force)
+  (let ((rg-group-result nil)
+        (rg-ignore-case 'force)
         (rg-custom-type-aliases '(("test" . "*.baz"))))
     (rg-run "hello" "test" (concat default-directory "test/data"))
     (rg-with-current-result
@@ -500,7 +502,8 @@ Test `:flags' directive."
   "Test that aliases defined in `rg-custom-type-ailiases' work if
   implicitly selected via '--type all'."
   :tags '(need-rg)
-  (let ((rg-ignore-case 'force)
+  (let ((rg-group-result nil)
+        (rg-ignore-case 'force)
         (rg-custom-type-aliases '(("test" . "*.baz"))))
     (rg-run "hello" "all" (concat default-directory "test/data"))
     (rg-with-current-result
@@ -513,7 +516,8 @@ Test `:flags' directive."
 (ert-deftest rg-integration-test/search-alias-custom-lambda ()
   "Test that aliases defined via lambdas in `rg-custom-type-aliases' work."
   :tags '(need-rg)
-  (let ((rg-ignore-case 'force)
+  (let ((rg-group-result nil)
+        (rg-ignore-case 'force)
         (rg-custom-type-aliases '((lambda () '("test" . "*.baz")))))
     (rg-run "hello" "test" (concat default-directory "test/data"))
     (rg-with-current-result
@@ -526,7 +530,8 @@ Test `:flags' directive."
 (ert-deftest rg-integration-test/search-no-alias()
   "Test that custom file pattern that is not an alias works."
   :tags '(need-rg)
-  (let ((rg-ignore-case 'force))
+  (let ((rg-group-result nil)
+        (rg-ignore-case 'force))
     (rg-run "hello" "*.baz" (concat default-directory "test/data"))
     (rg-with-current-result
       (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
@@ -546,7 +551,8 @@ Test `:flags' directive."
 (ert-deftest rg-integration-test/search-uppercase-regexp ()
   "Test that uppercase search triggers case sensitive search."
   :tags '(need-rg)
-  (let ((rg-ignore-case 'smart))
+  (let ((rg-group-result nil)
+        (rg-ignore-case 'smart))
     (rg-run "Hello" "all" (concat default-directory "test/data"))
     (rg-with-current-result
       (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
@@ -556,7 +562,8 @@ Test `:flags' directive."
 (ert-deftest rg-integration-test/search-case-sensitive-regexp ()
   "Test explicit case sensitive search."
   :tags '(need-rg)
-  (let ((rg-ignore-case 'nil))
+  (let ((rg-group-result nil)
+        (rg-ignore-case 'nil))
     (rg-run "hello" "all" (concat default-directory "test/data")))
   (rg-with-current-result
     (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
@@ -609,13 +616,15 @@ method. "
 (ert-deftest rg-integration/positions-line-only ()
   "Test line position format without alignment."
   :tags '(need-rg)
-  (rg-test-with-first-error "hello"
-   (should (looking-at "[0-9]:"))))
+  (let ((rg-align-position-numbers nil))
+    (rg-test-with-first-error "hello"
+     (should (looking-at "[0-9]:")))))
 
 (ert-deftest rg-integration/positions-line-column ()
   "Test line and column position format without alignment."
   :tags '(need-rg)
-  (let ((rg-show-columns t))
+  (let ((rg-align-position-numbers nil)
+        (rg-show-columns t))
     (rg-test-with-first-error "hello"
      (should (looking-at "[0-9]+:[0-9]+:")))))
 

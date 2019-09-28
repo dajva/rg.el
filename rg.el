@@ -506,7 +506,12 @@ If prefix is not supplied `rg-keymap-prefix' is used."
   (define-key rg-mode-map "\C-f" 'rg-forward-history)
   (define-key rg-mode-map "\C-c>" nil)
   (define-key rg-mode-map "\C-b" 'rg-back-history)
-  (define-key rg-mode-map "\C-c<" nil))
+  (define-key rg-mode-map "\C-c<" nil)
+  (setf rg-group-result nil)
+  (setf rg-align-position-numbers nil)
+  (setf rg-align-line-column-separator nil)
+  (setf rg-align-position-content-separator nil))
+
 
 (eval-and-compile
   (defun rg-set-search-defaults (args)

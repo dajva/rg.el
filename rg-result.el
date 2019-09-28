@@ -46,11 +46,12 @@
   :type 'boolean
   :group 'rg)
 
-(defcustom rg-group-result nil
+(defcustom rg-group-result t
   "Group matches in the same file together.
 If nil, the file name is repeated at the beginning of every match line."
   :type 'boolean
-  :group 'rg)
+  :group 'rg
+  :package-version '(rg . "2.0.0"))
 
 (defcustom rg-show-header t
   "Show header in results buffer if non nil."
@@ -62,10 +63,11 @@ If nil, the file name is repeated at the beginning of every match line."
   :type 'boolean
   :group 'rg)
 
-(defcustom rg-align-position-numbers nil
+(defcustom rg-align-position-numbers t
   "If non nil, alignment of line and colum numbers is turned on."
   :type 'boolean
-  :group 'rg)
+  :group 'rg
+  :package-version '(rg . "2.0.0"))
 
 (defcustom rg-align-line-number-field-length 4
   "Field length of aligned line numbers."
@@ -77,17 +79,19 @@ If nil, the file name is repeated at the beginning of every match line."
   :type 'integer
   :group 'rg)
 
-(defcustom rg-align-line-column-separator nil
+(defcustom rg-align-line-column-separator " "
   "Separator used between line and column numbers.
 Depends on `rg-show-columns'.  Default is ':'."
   :type 'string
-  :group 'rg)
+  :group 'rg
+  :package-version '(rg . "2.0.0"))
 
-(defcustom rg-align-position-content-separator nil
+(defcustom rg-align-position-content-separator " "
   "Separator used between position numbers and the matching file content.
 Default is ':'."
   :type 'string
-  :group 'rg)
+  :group 'rg
+  :package-version '(rg . "2.0.0"))
 
 (defvar rg-filter-hook nil
   "Hook for new content in the rg buffer.
@@ -131,7 +135,7 @@ new content and filtered through the `rg-filter' function.")
   :group 'rg-face)
 
 (defface rg-file-tag-face
-  '((t :inherit font-lock-function-name-face))
+  '((t :inherit rg-info-face))
   "Face for file tag in grouped layout."
   :group 'rg-face)
 
