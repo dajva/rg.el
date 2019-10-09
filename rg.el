@@ -176,7 +176,12 @@ Raises an error if it can not be found."
 (defun rg-command ()
   "Command string for invoking rg."
   (concat (rg-executable)
-          " --color always --colors match:fg:red -n"))
+          " --color always"
+          " --colors match:fg:red"
+          " --colors path:fg:magenta"
+          " --colors line:fg:green"
+          " --colors column:none"
+          " -n"))
 
 (defun rg--buffer-name ()
   "Wrapper for variable `rg-buffer-name'.  Return string or call function."
