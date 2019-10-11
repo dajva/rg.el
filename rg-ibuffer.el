@@ -36,10 +36,9 @@
 
 (defun rg-ibuffer-search-updated()
   "This function is executed when search list buffer is updated."
-  (let ((list-buffer (get-buffer rg-search-list-buffer-name)))
-    (when list-buffer
-      (with-current-buffer list-buffer
-        (ibuffer-update nil t)))))
+  (when-let ((list-buffer (get-buffer rg-search-list-buffer-name)))
+    (with-current-buffer list-buffer
+      (ibuffer-update nil t))))
 
 (defun rg-ibuffer-buffer-killed ()
   "Function run when the search list buffer is killed."
@@ -49,7 +48,9 @@
 (define-ibuffer-column rg-search-term
   (:name "Search" :props ('face 'rg-match-face))
   (ignore mark)
-  (or (rg-search-pattern rg-cur-search) "N/A"))
+  (if rg-cur-search
+      (rg-search-pattern rg-cur-search)
+    "N/A"))
 
 (define-ibuffer-column rg-hit-count
   (:name "Hits")
@@ -59,12 +60,16 @@
 (define-ibuffer-column rg-search-dir
   (:name "Directory" :props ('face 'rg-filename-face))
   (ignore mark)
-  (or (rg-search-dir rg-cur-search) "N/A"))
+  (if rg-cur-search
+      (rg-search-dir rg-cur-search)
+    "N/A"))
 
 (define-ibuffer-column rg-file-types
   (:name "Type")
   (ignore mark)
-  (or (rg-search-files rg-cur-search) "N/A"))
+  (if rg-cur-search
+      (rg-search-files rg-cur-search)
+    "N/A"))
 
 ;;;###autoload
 (defun rg-list-searches ()
