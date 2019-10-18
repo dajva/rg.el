@@ -36,9 +36,10 @@
 
 (defun rg-ibuffer-search-updated()
   "This function is executed when search list buffer is updated."
-  (when-let ((list-buffer (get-buffer rg-search-list-buffer-name)))
-    (with-current-buffer list-buffer
-      (ibuffer-update nil t))))
+  (let ((list-buffer (get-buffer rg-search-list-buffer-name)))
+    (when list-buffer
+      (with-current-buffer list-buffer
+        (ibuffer-update nil t)))))
 
 (defun rg-ibuffer-buffer-killed ()
   "Function run when the search list buffer is killed."
