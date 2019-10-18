@@ -17,7 +17,6 @@
  (depends-on "ert-runner")
  (depends-on "flycheck")
  (depends-on "package-lint")
- (depends-on "find-file-in-project")
  (depends-on "s")
  (depends-on "seq")
  (depends-on "undercover")

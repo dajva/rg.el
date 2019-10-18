@@ -574,9 +574,9 @@ method. "
   ;;   (fmakunbound 'projectile-project-root))
 
   ;; ffip
-  (rg-check-git-project-root)
-  (with-eval-after-load 'find-file-in-project
-    (fmakunbound 'ffip-project-root))
+  ;; (rg-check-git-project-root)
+  ;; (with-eval-after-load 'find-file-in-project
+  ;;   (fmakunbound 'ffip-project-root))
 
   ;; project.el
   (rg-check-git-project-root)
