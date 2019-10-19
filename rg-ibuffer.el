@@ -37,12 +37,12 @@
 (defun rg-ibuffer-search-updated()
   "This function is executed when search list buffer is updated."
   (when-let ((list-buffer (get-buffer rg-search-list-buffer-name)))
-    (with-current-buffer list-buffer
-      (ibuffer-update nil t))))
+    (ignore-errors
+      (with-current-buffer list-buffer
+        (ibuffer-update nil t)))))
 
 (defun rg-ibuffer-buffer-killed ()
   "Function run when the search list buffer is killed."
-  (remove-hook 'buffer-list-update-hook #'rg-ibuffer-search-updated)
   (remove-hook 'rg-filter-hook #'rg-ibuffer-search-updated))
 
 (define-ibuffer-column rg-search-term
@@ -85,8 +85,8 @@
                      (process 10 10)
                      (rg-search-dir 20 -1 nil :elide) " ")))
     (add-hook 'rg-filter-hook #'rg-ibuffer-search-updated)
-    (add-hook 'buffer-list-update-hook #'rg-ibuffer-search-updated)
     (with-current-buffer rg-search-list-buffer-name
+      (ibuffer-auto-mode)
       (set (make-local-variable 'ibuffer-use-header-line) nil)
       (ibuffer-clear-filter-groups)
       (add-hook 'kill-buffer-hook #'rg-ibuffer-buffer-killed nil t))))
