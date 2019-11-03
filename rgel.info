@@ -719,7 +719,7 @@ Customization is done via the Emacs customization system.  The group
      bindings.  Note that ‘rg-enable-default-bindings’ needs to be
      invoked for the bindings to be enabled.
 
- -- ELisp Variable: rg-use-transient-menu [nil]
+ -- ELisp Variable: rg-use-transient-menu [t]
 
      Controls whether ‘rg-menu’ will be used by default or not.  It’s
      also possible to enable the menu explicitly with
@@ -2130,145 +2130,145 @@ Ref: configuration option-rg-keymap-prefix24626
 Ref: 1e24626
 Ref: configuration option-rg-use-transient-menu24858
 Ref: 4e24858
-Ref: configuration option-rg-show-header25066
-Ref: 4f25066
-Ref: configuration option-rg-buffer-name25274
-Ref: 4325274
-Node: Position numbers alignment26037
-Ref: configuration id226111
-Ref: 5026111
-Ref: configuration position-numbers-alignment26111
-Ref: 5126111
-Ref: configuration option-rg-align-position-numbers26718
-Ref: 5226718
-Ref: configuration option-rg-align-line-number-field-length26875
-Ref: 5326875
-Ref: configuration option-rg-align-column-number-field-length26985
-Ref: 5426985
-Ref: configuration option-rg-align-line-column-separator27099
-Ref: 5527099
-Ref: configuration option-rg-align-position-content-separator27278
-Ref: 5627278
-Node: Faces27479
-Ref: configuration faces27586
-Ref: 5727586
-Node: Results buffer<2>27789
-Ref: configuration results-buffer27866
-Ref: 5827866
-Ref: configuration option-rg-match-face27909
-Ref: 5927909
-Ref: configuration option-rg-error-face28000
-Ref: 5a28000
-Ref: configuration option-rg-context-face28116
-Ref: 5b28116
-Ref: configuration option-rg-info-face28271
-Ref: 5c28271
-Ref: configuration option-rg-warning-face28433
-Ref: 5d28433
-Ref: configuration option-rg-filename-face28555
-Ref: 5e28555
-Ref: configuration option-rg-file-tag-face28662
-Ref: 5f28662
-Ref: configuration option-rg-line-number-face28782
-Ref: 6028782
-Ref: configuration option-rg-column-number-face28882
-Ref: 6128882
-Ref: configuration option-rg-match-position-face28988
-Ref: 6228988
-Node: Header line29207
-Ref: configuration header-line29284
-Ref: 6329284
-Ref: configuration header-line-config29284
-Ref: 6429284
-Ref: configuration option-rg-toggle-on-face29321
-Ref: 6529321
-Ref: configuration option-rg-toggle-off-face29432
-Ref: 6629432
-Ref: configuration option-rg-literal-face29542
-Ref: 6729542
-Ref: configuration option-rg-regexp-face29666
-Ref: 6829666
-Node: Configuration functions29795
-Ref: configuration configuration-functions29909
-Ref: 6929909
-Ref: configuration id329909
-Ref: 6a29909
-Ref: configuration function-rg-enable-default-bindings29966
-Ref: 6b29966
-Ref: configuration function-rg-enable-menu30312
-Ref: 6c30312
-Ref: configuration function-rg-use-old-defaults30560
-Ref: 6d30560
-Node: Configuration macros30853
-Ref: configuration configuration-macros30982
-Ref: 6e30982
-Ref: configuration id430982
-Ref: 6f30982
-Ref: configuration function-rg-define-toggle31033
-Ref: 3531033
-Ref: configuration function-rg-define-search31942
-Ref: 1f31942
-Node: Customizing the menu34539
-Ref: configuration customizing-the-menu34636
-Ref: 7034636
-Ref: configuration id534636
-Ref: 7134636
-Node: Contribute34859
-Ref: contribute doc34945
-Ref: 7234945
-Ref: contribute contribute34945
-Ref: 7334945
-Node: Pull requests35240
-Ref: contribute id135312
-Ref: 7435312
-Ref: contribute pull-requests35312
-Ref: 7535312
-Node: Tests36118
-Ref: contribute id236212
-Ref: 7636212
-Ref: contribute tests36212
-Ref: 7736212
-Node: Setup36531
-Ref: contribute setup36592
-Ref: 7836592
-Ref: contribute tests-setup36592
-Ref: 7936592
-Node: Running36768
-Ref: contribute running36829
-Ref: 7a36829
-Ref: contribute tests-running36829
-Ref: 7b36829
-Node: Documentation37110
-Ref: contribute documentation37182
-Ref: 7c37182
-Ref: contribute id337182
-Ref: 7d37182
-Node: Setup<2>37982
-Ref: contribute documentation-setup38055
-Ref: 7e38055
-Ref: contribute id438055
-Ref: 7f38055
-Node: Building38210
-Ref: contribute building38306
-Ref: 8038306
-Ref: contribute documentation-building38306
-Ref: 8138306
-Node: Create a patch38611
-Ref: contribute create-a-patch38690
-Ref: 8238690
-Node: License38941
-Ref: index id139019
-Ref: 8339019
-Ref: index license39019
-Ref: 8439019
-Node: GNU General Public License39551
-Ref: gpl doc39619
-Ref: 8639619
-Ref: gpl gnu-general-public-license39619
-Ref: 8739619
-Ref: gpl gpl39682
-Ref: 8539682
-Node: Index77595
+Ref: configuration option-rg-show-header25064
+Ref: 4f25064
+Ref: configuration option-rg-buffer-name25272
+Ref: 4325272
+Node: Position numbers alignment26035
+Ref: configuration id226109
+Ref: 5026109
+Ref: configuration position-numbers-alignment26109
+Ref: 5126109
+Ref: configuration option-rg-align-position-numbers26716
+Ref: 5226716
+Ref: configuration option-rg-align-line-number-field-length26873
+Ref: 5326873
+Ref: configuration option-rg-align-column-number-field-length26983
+Ref: 5426983
+Ref: configuration option-rg-align-line-column-separator27097
+Ref: 5527097
+Ref: configuration option-rg-align-position-content-separator27276
+Ref: 5627276
+Node: Faces27477
+Ref: configuration faces27584
+Ref: 5727584
+Node: Results buffer<2>27787
+Ref: configuration results-buffer27864
+Ref: 5827864
+Ref: configuration option-rg-match-face27907
+Ref: 5927907
+Ref: configuration option-rg-error-face27998
+Ref: 5a27998
+Ref: configuration option-rg-context-face28114
+Ref: 5b28114
+Ref: configuration option-rg-info-face28269
+Ref: 5c28269
+Ref: configuration option-rg-warning-face28431
+Ref: 5d28431
+Ref: configuration option-rg-filename-face28553
+Ref: 5e28553
+Ref: configuration option-rg-file-tag-face28660
+Ref: 5f28660
+Ref: configuration option-rg-line-number-face28780
+Ref: 6028780
+Ref: configuration option-rg-column-number-face28880
+Ref: 6128880
+Ref: configuration option-rg-match-position-face28986
+Ref: 6228986
+Node: Header line29205
+Ref: configuration header-line29282
+Ref: 6329282
+Ref: configuration header-line-config29282
+Ref: 6429282
+Ref: configuration option-rg-toggle-on-face29319
+Ref: 6529319
+Ref: configuration option-rg-toggle-off-face29430
+Ref: 6629430
+Ref: configuration option-rg-literal-face29540
+Ref: 6729540
+Ref: configuration option-rg-regexp-face29664
+Ref: 6829664
+Node: Configuration functions29793
+Ref: configuration configuration-functions29907
+Ref: 6929907
+Ref: configuration id329907
+Ref: 6a29907
+Ref: configuration function-rg-enable-default-bindings29964
+Ref: 6b29964
+Ref: configuration function-rg-enable-menu30310
+Ref: 6c30310
+Ref: configuration function-rg-use-old-defaults30558
+Ref: 6d30558
+Node: Configuration macros30851
+Ref: configuration configuration-macros30980
+Ref: 6e30980
+Ref: configuration id430980
+Ref: 6f30980
+Ref: configuration function-rg-define-toggle31031
+Ref: 3531031
+Ref: configuration function-rg-define-search31940
+Ref: 1f31940
+Node: Customizing the menu34537
+Ref: configuration customizing-the-menu34634
+Ref: 7034634
+Ref: configuration id534634
+Ref: 7134634
+Node: Contribute34857
+Ref: contribute doc34943
+Ref: 7234943
+Ref: contribute contribute34943
+Ref: 7334943
+Node: Pull requests35238
+Ref: contribute id135310
+Ref: 7435310
+Ref: contribute pull-requests35310
+Ref: 7535310
+Node: Tests36116
+Ref: contribute id236210
+Ref: 7636210
+Ref: contribute tests36210
+Ref: 7736210
+Node: Setup36529
+Ref: contribute setup36590
+Ref: 7836590
+Ref: contribute tests-setup36590
+Ref: 7936590
+Node: Running36766
+Ref: contribute running36827
+Ref: 7a36827
+Ref: contribute tests-running36827
+Ref: 7b36827
+Node: Documentation37108
+Ref: contribute documentation37180
+Ref: 7c37180
+Ref: contribute id337180
+Ref: 7d37180
+Node: Setup<2>37980
+Ref: contribute documentation-setup38053
+Ref: 7e38053
+Ref: contribute id438053
+Ref: 7f38053
+Node: Building38208
+Ref: contribute building38304
+Ref: 8038304
+Ref: contribute documentation-building38304
+Ref: 8138304
+Node: Create a patch38609
+Ref: contribute create-a-patch38688
+Ref: 8238688
+Node: License38939
+Ref: index id139017
+Ref: 8339017
+Ref: index license39017
+Ref: 8439017
+Node: GNU General Public License39549
+Ref: gpl doc39617
+Ref: 8639617
+Ref: gpl gnu-general-public-license39617
+Ref: 8739617
+Ref: gpl gpl39680
+Ref: 8539680
+Node: Index77593
 
 End Tag Table
 
