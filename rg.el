@@ -104,11 +104,6 @@ NIL means case sensitive search will be forced."
                  (const :tag "Off" nil))
   :group 'rg)
 
-(defcustom rg-use-transient-menu nil
-  "Use transient menu instead of a the global keymap."
-  :type 'boolean
-  :group 'rg)
-
 (defcustom rg-keymap-prefix (kbd "C-c s")
   "Prefix for global `rg' keymap."
   :type 'key-sequence

@@ -38,9 +38,16 @@
 (declare-function rg-build-command "rg.el")
 (declare-function rg-get-type-aliases "rg.el")
 (declare-function rg-read-pattern "rg.el")
+(declare-function rg-menu "rg-menu.el")
 
 
 ;; Customizations/public vars
+(defcustom rg-use-transient-menu t
+  "Use transient menu instead of a the global keymap."
+  :type 'boolean
+  :group 'rg
+  :package-version '(rg . "2.0.0"))
+
 (defcustom rg-show-columns nil
   "If t, show the columns of the matches in the output buffer."
   :type 'boolean
@@ -226,6 +233,8 @@ Becomes buffer local in `rg-mode' buffers.")
     (define-key map "\C-p" 'rg-prev-file)
     (define-key map "\C-c>" 'rg-forward-history)
     (define-key map "\C-c<" 'rg-back-history)
+    (when rg-use-transient-menu
+      (define-key map "m" #'rg-menu))
     map)
   "The keymap for `rg-mode'.")
 

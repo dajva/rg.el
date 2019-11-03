@@ -212,7 +212,10 @@ If prefix is not supplied `rg-keymap-prefix' is used."
   (setq prefix (or prefix rg-keymap-prefix))
   (when prefix
     (global-set-key prefix #'rg-menu)
-    (define-key rg-mode-map "m" #'rg-menu)
+    ;; If it's already bound it might have been rebound so keep that
+    ;; instead of overriding.
+    (unless (where-is-internal #'rg-menu (list rg-mode-map) t)
+      (define-key rg-mode-map "m" #'rg-menu))
     (message "Transient menu for `rg' enabled with key binding: %s"
              (edmacro-format-keys prefix))))
 
