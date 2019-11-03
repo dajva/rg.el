@@ -505,7 +505,8 @@ If prefix is not supplied `rg-keymap-prefix' is used."
   (setf rg-group-result nil)
   (setf rg-align-position-numbers nil)
   (setf rg-align-line-column-separator nil)
-  (setf rg-align-position-content-separator nil))
+  (setf rg-align-position-content-separator nil)
+  (setf rg-use-transient-menu nil))
 
 
 (eval-and-compile
