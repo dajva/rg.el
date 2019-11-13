@@ -67,8 +67,7 @@
   :group 'external)
 
 (defcustom rg-custom-type-aliases
-  '(("gn" .    "*.gn *.gni")
-    ("gyp" .    "*.gyp *.gypi"))
+  '(("gyp" .    "*.gyp *.gypi"))
   "A list of file type aliases that are added to the 'rg' built in aliases.
 Each list element may be a (string . string) cons containing the name of the
 type alias and the file patterns, or a lambda returning a similar cons cell.
