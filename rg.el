@@ -121,6 +121,12 @@ Can be string or function."
   :type '(choice string function)
   :group 'rg)
 
+(defcustom rg-ignore-ripgreprc t
+  "Ingore the ripgrep config file.
+Disabling this setting can break functionality of this package."
+  :type 'boolean
+  :group 'rg)
+
 (defvar rg-command-line-flags-function 'identity
   "Function to modify command line flags of a search.
 The argument of the function is an optional list of search specific
@@ -138,6 +144,15 @@ line flags to use.")
 (defvar rg-history nil "History for full rg commands.")
 (defvar rg-files-history nil "History for files args.")
 (defvar rg-pattern-history nil "History for search patterns.")
+
+(defvar rg-required-command-line-flags
+  '("--color always"
+    "--colors match:fg:red"
+    "--colors path:fg:magenta"
+    "--colors line:fg:green"
+    "--colors column:none"
+    "-n"
+    "--column"))
 
 (defconst rg-internal-type-aliases
   '(("all" . "all defined type aliases") ; rg --type all
@@ -166,16 +181,6 @@ Raises an error if it can not be found."
   (unless rg-executable
     (error "No 'rg' executable found"))
   (shell-quote-argument rg-executable))
-
-(defun rg-command ()
-  "Command string for invoking rg."
-  (concat (rg-executable)
-          " --color always"
-          " --colors match:fg:red"
-          " --colors path:fg:magenta"
-          " --colors line:fg:green"
-          " --colors column:none"
-          " -n --column"))
 
 (defun rg--buffer-name ()
   "Wrapper for variable `rg-buffer-name'.  Return string or call function."
@@ -214,6 +219,7 @@ LITERAL determines if search will be literal or regexp based and FLAGS
 are command line flags to use for the search."
   (let ((command-line
          (append
+          rg-required-command-line-flags
           (rg-build-type-add-args)
           (if (functionp rg-command-line-flags)
               (funcall rg-command-line-flags)
@@ -222,6 +228,8 @@ are command line flags to use for the search."
 
           (list
            (if rg-group-result "--heading" "--no-heading"))
+          (when rg-ignore-ripgreprc
+            (list "--no-config"))
           (when (rg-is-custom-file-pattern files)
             (list (concat "--type-add " (shell-quote-argument (concat "custom:" files)))))
           (when literal
@@ -233,7 +241,7 @@ are command line flags to use for the search."
             (list ".")))))
 
     (grep-expand-template
-     (mapconcat 'identity (cons (rg-command) (delete-dups command-line)) " ")
+     (mapconcat 'identity (cons (rg-executable) (delete-dups command-line)) " ")
      pattern
      (if (rg-is-custom-file-pattern files) "custom" files))))
 

@@ -177,6 +177,19 @@
   #+END_SRC
   :END:
 
+  :OPTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-custom-info 'rg-ignore-ripgreprc)
+  #+END_SRC
+
+  Controls if the [[https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md#configuration-file][ripgreprc]] file should be ignored or not. If =nil=,
+  the config file will be used, otherwise it will be ignored. The
+  default is to ignore this file in order to avoid that conflicting
+  settings have impact on this package's behavior. Setting this to =nil=
+  may affect core functionality of this package so make sure you know
+  what you are doing.
+  :END:
+
 *** Position numbers alignment
     :PROPERTIES:
     :CUSTOM_ID: position-numbers-alignment
