@@ -312,6 +312,9 @@ Set up `compilation-exit-message-function' and run `grep-setup-hook'."
   "Return aligned LINE-NUMBER, COLUMN-NUMBER and CONTEXT-MARKER."
   (let* ((line-col-separator (or rg-align-line-column-separator ":"))
          (pos-content-separator (or rg-align-position-content-separator ":"))
+         (pos-content-separator (if rg-show-columns
+                                    pos-content-separator
+                                  (propertize pos-content-separator 'invisible t)))
          (line-number-width
           (if (and rg-show-columns context-marker)
               ;; Context lines should be aligned to column numbers
@@ -324,19 +327,14 @@ Set up `compilation-exit-message-function' and run `grep-setup-hook'."
                             (propertize column-number 'invisible t)))))
     (cl-assert (if column-number (not context-marker) context-marker))
     (concat (rg-prepend-space line-number line-number-width)
-            (when column-number
-              (concat (if rg-show-columns
-                          line-col-separator
+            (if column-number
+                (concat (if rg-show-columns
+                            line-col-separator
+                          pos-content-separator)
+                        (rg-prepend-space column-number
+                                          rg-align-column-number-field-length)
                         pos-content-separator)
-                      (rg-prepend-space
-                       (if rg-show-columns
-                           column-number
-                         (propertize column-number 'invisible t))
-                       rg-align-column-number-field-length)))
-            (cond
-             (context-marker context-marker) ;; Keep context separators
-             (rg-show-columns pos-content-separator)
-             (t "")))))
+              context-marker))))
 
 (defun rg-format-line-and-column-numbers (beg end)
   "Align numbers in region defined by BEG and END."
