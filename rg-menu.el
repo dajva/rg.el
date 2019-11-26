@@ -65,7 +65,7 @@
   (defun rg-menu-create-rerun-body (func)
     "Call FUNC from rerun menu with flags extracted with ARGFUNC.
 If INTERACTIVE is non nil, call func interactively, otherwise call it
-a regularily."
+regularly."
     `((setf (rg-search-flags rg-cur-search) (transient-get-value))
       (if (commandp #',func)
            (call-interactively #',func)
@@ -83,7 +83,7 @@ a regularily."
 
 (defmacro rg-menu-wrap-transient-search (func)
   "Wrap FUNC with a command that apply transient arguments to the search.
-FUNC is an intial search function and not a rerun function."
+FUNC is an initial search function and not a rerun function."
   (rg-menu-assemble-transient-wrapper
    func
    (rg-menu-create-search-body func)))

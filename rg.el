@@ -663,7 +663,7 @@ specified default if left out.
 :query      Method for retrieving the search string.  Allowed values
             are `point' which means extract thing at point and `ask'
             which means prompt the user for a string.  Any form that
-            evaulates to a string is allowed.
+            evaluates to a string is allowed.
             Default is `ask'.
 :format     Specifies if :query is interpreted literally (`literal')
             or as a regexp (`regexp').
@@ -674,7 +674,7 @@ specified default if left out.
             Default is `ask'.
 :dir        Root search directory.  Allowed values are `ask' for user
             prompt, `current' for current dir and `project' for project
-            root.  Any form that evaulates to a directory string is
+            root.  Any form that evaluates to a directory string is
             also allowed.
             Default is `ask'.
 :confirm    `never', `always', or `prefix' are allowed values.  Specifies

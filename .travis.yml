@@ -32,7 +32,7 @@ jobs:
       script:
         - make rst
       deploy:
-        # Branch changes are commited to master branch
+        # Branch changes are committed to master branch
         - provider: pages
           github_token: $GITHUB_API_KEY
           skip_cleanup: true
@@ -43,7 +43,7 @@ jobs:
           verbose: true
           on:
             branch: master
-        # Tagged changes are commited to release branch
+        # Tagged changes are committed to release branch
         - provider: pages
           github_token: $GITHUB_API_KEY
           skip_cleanup: true
