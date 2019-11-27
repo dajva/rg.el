@@ -114,7 +114,7 @@ SEARCH can either be a search string or a form invocating `rg-run'."
          ,@body))))
 
 (defmacro rg-test-with-command-start (search &rest body)
-  "Run search and put point to begining of rg command when running BODY."
+  "Run search and put point to beginning of rg command when running BODY."
   (declare (indent 0) (debug t))
   (let ((command-start (cl-gensym)))
     `(rg-test-with-fontified-buffer ,search

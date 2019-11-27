@@ -77,13 +77,13 @@
 
 (ert-deftest rg-unit-test/rg-buffer-name-string ()
   "Test that function `rg-buffer-name' will return correct buffer
-name if varible `rg-buffer-name' is string."
+name if variable `rg-buffer-name' is string."
   (let ((rg-buffer-name "rg results"))
     (should (string= "*rg results*" (rg-buffer-name)))))
 
 (ert-deftest rg-unit-test/rg-buffer-name-function ()
   "Test that function `rg-buffer-name' will return correct buffer
-name if varible `rg-buffer-name' is function."
+name if variable `rg-buffer-name' is function."
   (let ((rg-buffer-name (lambda () "" "rg results")))
     (should (string= "*rg results*" (rg-buffer-name)))))
 

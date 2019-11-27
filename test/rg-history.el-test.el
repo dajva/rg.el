@@ -48,7 +48,7 @@
     (should (equal (rg-history-forward instance) nil))))
 
 (ert-deftest rg-unit/history-new-search ()
-  "Testing the history data structure behavoir when inserting new
+  "Testing the history data structure behavior when inserting new
 search after moving in history."
   (let ((instance (rg-history-create)))
     (should (equal (rg-history-back instance) nil))

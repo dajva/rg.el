@@ -71,7 +71,7 @@ If nil, the file name is repeated at the beginning of every match line."
   :group 'rg)
 
 (defcustom rg-align-position-numbers t
-  "If non nil, alignment of line and colum numbers is turned on."
+  "If non nil, alignment of line and column numbers is turned on."
   :type 'boolean
   :group 'rg
   :package-version '(rg . "2.0.0"))

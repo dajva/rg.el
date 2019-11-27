@@ -480,7 +480,7 @@ the *note base parameters: 7.
      Tip: *note rg-rerun-change-regexp: 31. and *note
      rg-rerun-change-literal: 30. are used for switching between regular
      expression and literal search.  So for quick switching between
-     search modes with the same search string, just pres the respective
+     search modes with the same search string, just press the respective
      key and then ‘RET’.
 
  -- ELisp Command: g (rg-recompile)
