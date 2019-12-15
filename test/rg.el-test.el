@@ -468,6 +468,13 @@ Test `:flags' directive."
     (should (equal (cadr (assq 'dir dir)) 'read-directory-name))
     (should (equal (caar (cddr (assq 'flags flags))) 'read-string))))
 
+(ert-deftest rg-uni/builtin-aliases-empty-strings ()
+  "Test that empty strings in builtin aliases are filtered out."
+  (cl-letf (((symbol-function #'rg-invoke-rg-type-list)
+             (lambda () "\n\n foo: *.foo,*.fo\n\n bar: *.bar,*.ba\n")))
+    (equal (rg-list-builtin-type-aliases)
+           '(("foo" . "*.foo *.fo") ("bar" . "*.bar *.ba")))))
+
 
 ;; Integration tests
 

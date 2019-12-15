@@ -245,12 +245,13 @@ are command line flags to use for the search."
      pattern
      (if (rg-is-custom-file-pattern files) "custom" files))))
 
+(defun rg-invoke-rg-type-list ()
+  "Invokes rg --type-list and return the result."
+  (shell-command-to-string (concat (rg-executable) " --type-list")))
+
 (defun rg-list-builtin-type-aliases ()
   "Invokes rg --type-list and puts the result in an alist."
-  (let ((type-list (nbutlast (split-string
-                              (shell-command-to-string
-                               (concat (rg-executable) " --type-list"))
-                              "\n") 1)))
+  (let ((type-list (delete "" (split-string (rg-invoke-rg-type-list) "\n"))))
     (mapcar
      (lambda (type-alias)
        (setq type-alias (split-string type-alias ":" t))
