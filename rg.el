@@ -340,7 +340,9 @@ If LITERAL is non nil prompt for literal string.  DEFAULT is the default pattern
    (when (and (require 'project nil t)
               (fboundp 'project-current)
               (fboundp 'project-roots))
-     (car (project-roots (project-current))))
+     (let ((project (project-current)))
+       (when project
+         (car (project-roots project)))))
    (condition-case nil
        (let* ((file (or file default-directory))
               (backend (vc-responsible-backend file)))
