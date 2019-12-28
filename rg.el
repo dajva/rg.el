@@ -345,8 +345,13 @@ If LITERAL is non nil prompt for literal string.  DEFAULT is the default pattern
        (let* ((file (or file default-directory))
               (backend (vc-responsible-backend file)))
          (vc-call-backend backend 'root file))
-     (error (progn
-              (file-name-directory file))))))
+     (error (if file
+                (or (file-name-directory file)
+                    ;; in case FILE is a relative path with no
+                    ;; directory component
+                    default-directory)
+              ;; in case we're not visiting any file
+              default-directory)))))
 
 (defun rg-run (pattern files dir &optional literal confirm flags)
   "Execute rg command with supplied PATTERN, FILES and DIR.
