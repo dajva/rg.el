@@ -341,17 +341,10 @@ If LITERAL is non nil prompt for literal string.  DEFAULT is the default pattern
      (let ((project (project-current)))
        (when project
          (car (project-roots project)))))
-   (condition-case nil
-       (let* ((file (or file default-directory))
-              (backend (vc-responsible-backend file)))
-         (vc-call-backend backend 'root file))
-     (error (if file
-                (or (file-name-directory file)
-                    ;; in case FILE is a relative path with no
-                    ;; directory component
-                    default-directory)
-              ;; in case we're not visiting any file
-              default-directory)))))
+   (let ((file (expand-file-name (or file default-directory))))
+     (condition-case nil
+         (vc-call-backend (vc-responsible-backend file) 'root file)
+       (error (file-name-directory file))))))
 
 (defun rg-run (pattern files dir &optional literal confirm flags)
   "Execute rg command with supplied PATTERN, FILES and DIR.
