@@ -22,6 +22,9 @@ This package is available on
 [MELPA](http://melpa.org/#/rg). Install with `M-x package-install`
 <kbd>RET</kbd> `rg` from within Emacs.
 
+It is also available in GNU Guix as [emacs-rg](https://guix.gnu.org/packages/emacs-rg-1.8.1/).
+Install with `guix package -i emacs-rg`.
+
 If you want to install manually just put `rg.el` and the rest of the
 elisp files somewhere in your load path and add require the package:
 
