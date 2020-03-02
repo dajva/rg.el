@@ -554,6 +554,15 @@ the :query option is missing, set it to ASK"
         (cadr arg)
       arg)))
 
+(eval-when-compile
+  ;; parse :format arg, default (non-nil) means to use regexp, otherwise
+  ;; do a literal search
+  (defsubst rg-parse-format-literal (format-opt)
+    (pcase format-opt
+      ('regexp nil)                     ; default to regexp search
+      ('literal t)
+      (_ format-opt))))                 ; otherwise evaluate form
+
 (eval-and-compile
   (defun rg-search-parse-local-bindings (search-cfg)
     "Parse local bindings for search functions from SEARCH-CFG."
@@ -563,7 +572,7 @@ the :query option is missing, set it to ASK"
            (alias-opt (plist-get search-cfg :files))
            (dir-opt (plist-get search-cfg :dir))
            (flags-opt (plist-get search-cfg :flags))
-           (binding-list `((literal ,(eq format-opt 'literal)))))
+           (binding-list `((literal ,(rg-parse-format-literal format-opt)))))
 
       ;; confirm binding
       (cond ((eq confirm-opt 'never)
@@ -612,7 +621,7 @@ the :query option is missing, set it to ASK"
     "Parse interactive args from SEARCH-CFG for search functions."
     (let* ((query-opt (plist-get search-cfg :query))
            (format-opt (plist-get search-cfg :format))
-           (literal (eq format-opt 'literal))
+           (literal (rg-parse-format-literal format-opt))
            (dir-opt (plist-get search-cfg :dir))
            (files-opt (plist-get search-cfg :files))
            (flags-opt (plist-get search-cfg :flags))
@@ -674,7 +683,9 @@ specified default if left out.
             evaluates to a string is allowed.
             Default is `ask'.
 :format     Specifies if :query is interpreted literally (`literal')
-            or as a regexp (`regexp').
+            or as a regexp (`regexp').  If it is a form, eg.
+            (not `current-prefix-arg'), and is non-nil the :query is
+            interpreted literally, otherwise as a regexp.
             Default is `regexp'.
 :files      Form that evaluates to a file alias or custom file glob.
             `current' means extract alias from current buffer file name,
