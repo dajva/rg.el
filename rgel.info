@@ -156,6 +156,20 @@ wgrep
 This package use wgrep (https://github.com/mhayashi1120/Emacs-wgrep) for
 editing capabilities in the rg results buffer.  No setup is needed.
 
+Interaction with the _ripgrep_ configuration file
+.................................................
+
+The _ripgrep_ binary allows using a configuration file
+(https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md#configuration-file)
+to set default values for command line flags.  This package requires
+specific command line flags to function correctly and using a _ripgrep_
+configuration may conflict with these requirements.  Therefor the
+configuration file is ignored by default.  This can be changed by the
+*note rg-ignore-ripgreprc: 6. setting.
+
+     Note: Using the _ripgrep_ configuration file may break
+     functionality of this package if you are not careful.
+
 
 File: rgel.info,  Node: Searching,  Next: Results buffer,  Prev: Installation,  Up: Usage
 
@@ -175,7 +189,7 @@ uninteresting files.
 
 In addition to the base parameters there are a lot of options that
 control how a search is done.  These are typically selected from the
-*note rg-menu: 8. interface.
+*note rg-menu: 9. interface.
 
 * Menu:
 
@@ -200,7 +214,7 @@ sensitive and case insensitive search.  It can be forced to *on* or
 note about this is that the case insensitive setting controls the
 behavior when starting a new search.  In the results buffer the setting
 is fixed to *on* or *off* but can be toggled easily with a key binding.
-See *note rg-ignore-case: a. customization for the details of the
+See *note rg-ignore-case: b. customization for the details of the
 configuration.
 
 
@@ -219,21 +233,21 @@ parameters are selected from the mini buffer.
      interpreted as a regular expression.  Default for _query_ is the
      thing at point and for _directory_ it is the current directory.  If
      the type of the currently visited file is recognized, the
-     corresponding *note file type alias: e. is suggested as the _file
+     corresponding *note file type alias: f. is suggested as the _file
      type_ parameter.
 
      Invoking this command with the _universal argument_ will trigger
      confirmation and potential modification of the *note full command
-     line: f. that will invoke the _ripgrep_ binary.
+     line: 10. that will invoke the _ripgrep_ binary.
 
  -- ELisp Command: C-c s t (rg-literal)
 
-     This command works in the same way as *note rg: d. but interprets
+     This command works in the same way as *note rg: e. but interprets
      the _query_ string literally and not as a regular expression.
 
      Invoking this command with the _universal argument_ will trigger
      confirmation and potential modification of the *note full command
-     line: f. that will invoke the _ripgrep_ binary.
+     line: 10. that will invoke the _ripgrep_ binary.
 
 
 File: rgel.info,  Node: Project search,  Next: Do what I mean,  Prev: Interactive search,  Up: Searching
@@ -275,12 +289,12 @@ context) under cursor as the _query_ string.  The _file type_ parameter
 is taken from the type of the currently visited file.  If the current
 file type can not be identified all file types known to _ripgrep_ are
 used.  The fallback can be customized with *note
-rg-default-alias-fallback: 16.  The _directory_ parameter varies between
+rg-default-alias-fallback: 17.  The _directory_ parameter varies between
 these commands.
 
  -- ELisp Command: M-x rg-dwim-project-dir
 
-     Do a *DWIM* search in the current *note project: 12.
+     Do a *DWIM* search in the current *note project: 13.
 
  -- ELisp Command: M-x rg-dwim-current-dir
 
@@ -297,9 +311,9 @@ these commands.
  -- ELisp Command: C-c s d (rg-dwim)
 
      This command combines all the *DWIM* commands to one.  The default
-     search is in the *note project dir: 17.  With one _universal
-     argument_ *note current directory: 18. is used and with double
-     _universal arguments_ a *note file search: 19. is done.
+     search is in the *note project dir: 18.  With one _universal
+     argument_ *note current directory: 19. is used and with double
+     _universal arguments_ a *note file search: 1a. is done.
 
 
 File: rgel.info,  Node: File type aliases,  Next: The menu,  Prev: Do what I mean,  Up: Searching
@@ -310,7 +324,7 @@ File: rgel.info,  Node: File type aliases,  Next: The menu,  Prev: Do what I mea
 File type aliases are used in _ripgrep_ to filter out the files to
 search in.  The _ripgrep_ binary comes with a default set of aliases
 that can be extended or overridden from this package by customizing
-*note rg-custom-type-aliases: 1c.
+*note rg-custom-type-aliases: 1d.
 
 An alias is a mapping between a name and a list of glob patterns
 (https://en.wikipedia.org/wiki/Glob_%28programming%29) matching the
@@ -325,7 +339,7 @@ Name                 Meaning
                      
 --------------------------------------------------------------------------------------------------------------
                      
-*all*                all defined types including *note rg-custom-type-aliases: 1c.
+*all*                all defined types including *note rg-custom-type-aliases: 1d.
                      
                      
 *everything*         all files.  No filtering on type is done.
@@ -335,7 +349,7 @@ Name                 Meaning
                      
 
      Warning: Do not use any of the internal aliases in *note
-     rg-custom-type-aliases: 1c.  That would interfere with the package
+     rg-custom-type-aliases: 1d.  That would interfere with the package
      internal usage.
 
 
@@ -344,7 +358,7 @@ File: rgel.info,  Node: The menu,  Prev: File type aliases,  Up: Searching
 1.2.6 The menu
 --------------
 
-The global *note prefix key: 1e. may be bound to a transient prefix
+The global *note prefix key: 1f. may be bound to a transient prefix
 command, which in normal words mean that the key binding will popup a
 menu.  This package is using the same popup menu backend
 (https://magit.vc/manual/transient) as the magit
@@ -355,11 +369,11 @@ The menu is mostly interesting when you want to give specific command
 line flags to the _ripgrep_ binary.  When you just want to do a quick
 search based on the defaults the menu basically acts as a normal keymap.
 
-Pressing the ‘rg-menu’ *note prefix key: 1e. will popup the menu where
+Pressing the ‘rg-menu’ *note prefix key: 1f. will popup the menu where
 command line flags can be selected before triggering the wanted search
 function.  The menu can be customized via the transient API as usual.
 This package contains some shortcuts to directly add a new command to
-the menu when defining the command via the *note rg-define-search: 1f.
+the menu when defining the command via the *note rg-define-search: 20.
 macro.
 
      (rg-define-search rg-word
@@ -372,7 +386,7 @@ new menu item bound to key ‘w’ with description *Word*.  The new menu
 item will be put under the *Custom* group.  This group is not available
 in the original menu so it will be created.
 
-The menu can be triggered from the *note results buffer: 20. with the
+The menu can be triggered from the *note results buffer: 21. with the
 ‘m’ key.  The commands in the menu differs, depending on from where it’s
 triggered but the available options are the same.  The menu does not
 show all options by default.  The visible options can be controlled by
@@ -430,12 +444,12 @@ Navigation works mostly as in grep/compilation buffers.
  -- ELisp Command: C-n (rg-next-file)
 
      Move to next file header if the results is grouped under a file
-     header (See *note rg-group-result: 28.).
+     header (See *note rg-group-result: 29.).
 
  -- ELisp Command: C-p (rg-prev-file)
 
      Move to previous file header if the results is grouped under a file
-     header (See *note rg-group-result: 28.).
+     header (See *note rg-group-result: 29.).
 
  -- ELisp Command: } (compilation-next-file)
 
@@ -457,7 +471,7 @@ File: rgel.info,  Node: Refine search,  Next: Full command line search,  Prev: N
 
 From the results buffer it’s easy to change the search parameters.  Some
 bindings toggle a flag while others allow you to interactively change
-the *note base parameters: 7.
+the *note base parameters: 8.
 
  -- ELisp Command: d (rg-rerun-change-dir)
 
@@ -477,8 +491,8 @@ the *note base parameters: 7.
      Interactively change _search string_ interpret the string as a
      regular expression.
 
-     Tip: *note rg-rerun-change-regexp: 31. and *note
-     rg-rerun-change-literal: 30. are used for switching between regular
+     Tip: *note rg-rerun-change-regexp: 32. and *note
+     rg-rerun-change-literal: 31. are used for switching between regular
      expression and literal search.  So for quick switching between
      search modes with the same search string, just press the respective
      key and then ‘RET’.
@@ -498,11 +512,11 @@ the *note base parameters: 7.
      shown in the *[ign]* header field.
 
      Tip: It is possible to create and bind your own toggle flags with
-     the macro *note rg-define-toggle: 35.
+     the macro *note rg-define-toggle: 36.
 
  -- ELisp Command: m (rg-menu)
 
-     Fire up *note the menu: 8. for full access to options and flags.
+     Fire up *note the menu: 9. for full access to options and flags.
 
 
 File: rgel.info,  Node: Full command line search,  Next: History navigation,  Prev: Refine search,  Up: Results buffer
@@ -510,7 +524,7 @@ File: rgel.info,  Node: Full command line search,  Next: History navigation,  Pr
 1.3.3 Full command line search
 ------------------------------
 
-Some search commands (See *note rg: d. or *note rg-literal: 10.) allow
+Some search commands (See *note rg: e. or *note rg-literal: 11.) allow
 you to edit the final command line before invoking the search by giving
 a _universal argument_.  This can be used to invoke features of the
 _ripgrep_ binary that is not supported in this package’s interface.
@@ -538,7 +552,7 @@ forward history is cleared when a new search is done.
      Navigate forward in history.
 
      Tip: The key bindings here are slightly inconvenient so invoking
-     this via *note the menu: 8. by pressing ‘m b’ and ‘m f’ is more
+     this via *note the menu: 9. by pressing ‘m b’ and ‘m f’ is more
      ergonomic.
 
 
@@ -585,7 +599,7 @@ new searches there are two ways of doing that.
      This is available both outside and inside a result buffer.  Outside
      of the result buffer it’s bound to ‘C-c s S’.
 
-The default buffer name can be customized with *note rg-buffer-name: 43.
+The default buffer name can be customized with *note rg-buffer-name: 44.
 This setting considers dir local variables and it’s even possible to use
 a function to get a really dynamic setup.
 
@@ -603,10 +617,10 @@ etc.
  -- ELisp Command: C-c s k (rg-kill-saved-searches)
 
      Kill all saved searches except for the one that matches *note
-     rg-buffer-name: 43.  This is available both in result buffer and
+     rg-buffer-name: 44.  This is available both in result buffer and
      globally bound to ‘C-c s k’.
 
-     Warning: If you have a dynamic *note rg-buffer-name: 43. setup,
+     Warning: If you have a dynamic *note rg-buffer-name: 44. setup,
      only one buffer that matches your current criteria (dir locals or
      project for instance) will be kept.  So be careful when killing
      saved searches to avoid losing important search results.
@@ -758,8 +772,8 @@ Customization is done via the Emacs customization system.  The group
      used, otherwise it will be ignored.  The default is to ignore this
      file in order to avoid that conflicting settings have impact on
      this package’s behavior.  Setting this to ‘nil’ may affect core
-     functionality of this package so make sure you know what you are
-     doing.
+     functionality of this package.  Especially changing colors can
+     affect parsing of the output and result in a broken results buffer.
 
 * Menu:
 
@@ -771,7 +785,7 @@ File: rgel.info,  Node: Position numbers alignment,  Up: Customization
 2.1.1 Position numbers alignment
 --------------------------------
 
-When operating _rg_ in grouped output mode (*note rg-group-result: 28.
+When operating _rg_ in grouped output mode (*note rg-group-result: 29.
 is non nil), it’s possible to control how the line and column numbers
 are displayed in the result buffer.
 
@@ -908,15 +922,15 @@ File: rgel.info,  Node: Configuration functions,  Next: Configuration macros,  P
  -- ELisp Function: (rg-enable-default-bindings &optional, prefix)
 
      Enable the default keyboard bindings for the package with prefix
-     key.  If *note rg-use-transient-menu: 4e. is on this will enable
+     key.  If *note rg-use-transient-menu: 4f. is on this will enable
      the menu instead of activating the global bindings.  If ‘prefix’ is
-     not provided *note rg-keymap-prefix: 1e. will be used.
+     not provided *note rg-keymap-prefix: 1f. will be used.
 
  -- ELisp Function: (rg-enable-menu &optional, prefix)
 
-     Enable the *note rg-menu: 8. with prefix key.  This bypass *note
-     rg-use-transient-menu: 4e. setting.  If ‘prefix’ is not provided
-     *note rg-keymap-prefix: 1e. will be used.
+     Enable the *note rg-menu: 9. with prefix key.  This bypass *note
+     rg-use-transient-menu: 4f. setting.  If ‘prefix’ is not provided
+     *note rg-keymap-prefix: 1f. will be used.
 
  -- ELisp Function: (rg-use-old-defaults)
 
@@ -999,7 +1013,7 @@ File: rgel.info,  Node: Configuration macros,  Next: Customizing the menu,  Prev
           description string) and the third item is the description of
           the command that will appear in the menu.
 
-     Example:
+     Examples:
 
           (rg-define-search search-everything-at-home
             "Search files including hidden in home directory"
@@ -1009,6 +1023,13 @@ File: rgel.info,  Node: Configuration macros,  Next: Customizing the menu,  Prev
             :flags ("--hidden")
             :dir (getenv "HOME")
             :menu ("Search" "h" "Home"))
+
+          (rg-define-search rg-emacs
+            "Search the emacs lisp source code."
+            :dir "/usr/share/emacs/25.2/lisp/"
+            :flags '("-z")
+            :files "*.{el,el.gz}"
+            :menu ("Custom" "L" "lisp"))
 
 
 File: rgel.info,  Node: Customizing the menu,  Prev: Configuration macros,  Up: Configuration
@@ -1989,303 +2010,303 @@ Ref: usage id11754
 Ref: 41754
 Ref: usage installation1754
 Ref: 51754
-Node: Searching4203
-Ref: usage id24296
-Ref: 64296
-Ref: usage searching4296
-Ref: 74296
-Node: Case sensitivity5195
-Ref: usage case-sensitivity5282
-Ref: 95282
-Node: Interactive search5975
-Ref: usage basic-search6085
-Ref: b6085
-Ref: usage interactive-search6085
-Ref: c6085
-Ref: usage command-rg6252
-Ref: d6252
-Ref: usage command-rg-literal6923
-Ref: 106923
-Node: Project search7298
-Ref: usage id37406
-Ref: 117406
-Ref: usage project-search7406
-Ref: 127406
-Ref: usage command-rg-project8077
-Ref: 138077
-Node: Do what I mean8351
-Ref: usage do-what-i-mean8458
-Ref: 148458
-Ref: usage id48458
-Ref: 158458
-Ref: usage command-rg-dwim-project-dir9201
-Ref: 179201
-Ref: usage command-rg-dwim-current-dir9304
-Ref: 189304
-Ref: usage command-rg-dwim-current-file9399
-Ref: 199399
-Ref: usage command-rg-dwim9805
-Ref: 1a9805
-Node: File type aliases10111
-Ref: usage file-type-aliases10212
-Ref: e10212
-Ref: usage id510212
-Ref: 1b10212
-Node: The menu11571
-Ref: usage id611649
-Ref: 1d11649
-Ref: usage the-menu11649
-Ref: 811649
-Node: Results buffer13436
-Ref: usage id713534
-Ref: 2113534
-Ref: usage results-buffer13534
-Ref: 2013534
-Node: Navigation14181
-Ref: usage navigation14262
-Ref: 2214262
-Ref: usage command-compilation-next-error14354
-Ref: 2314354
-Ref: usage command-compilation-previous-error14441
-Ref: 2414441
-Ref: usage command-next-error-no-select14536
-Ref: 2514536
-Ref: usage command-previous-error-no-select14680
-Ref: 2614680
-Ref: usage command-rg-next-file14832
-Ref: 2714832
-Ref: usage command-rg-prev-file14987
-Ref: 2914987
-Ref: usage command-compilation-next-file15146
-Ref: 2a15146
-Ref: usage command-compilation-previous-file15233
-Ref: 2b15233
-Ref: usage command-compile-goto-error15323
-Ref: 2c15323
-Node: Refine search15395
-Ref: usage refine-search15509
-Ref: 2d15509
-Ref: usage command-rg-rerun-change-dir15726
-Ref: 2e15726
-Ref: usage command-rg-rerun-change-files15817
-Ref: 2f15817
-Ref: usage command-rg-rerun-change-literal15913
-Ref: 3015913
-Ref: usage command-rg-rerun-change-regexp16041
-Ref: 3116041
-Ref: usage command-rg-recompile16480
-Ref: 3216480
-Ref: usage command-rg-rerun-toggle-case16581
-Ref: 3316581
-Ref: usage command-rg-rerun-toggle-ignore16734
-Ref: 3416734
-Ref: usage command-rg-menu17006
-Ref: 3617006
-Node: Full command line search17109
-Ref: usage full-command-line-search17231
-Ref: f17231
-Ref: usage id817231
-Ref: 3717231
-Node: History navigation17755
-Ref: usage history-navigation17884
-Ref: 3817884
-Ref: usage id917884
-Ref: 3917884
-Ref: usage command-rg-back-history18130
-Ref: 3a18130
-Ref: usage command-rg-forward-history18206
-Ref: 3b18206
-Node: Edit and apply wgrep18452
-Ref: usage edit-and-apply18548
-Ref: 3c18548
-Ref: usage edit-and-apply-wgrep18548
-Ref: 3d18548
-Ref: usage command-wgrep-change-to-wgrep-mode18770
-Ref: 3e18770
-Node: Search management19016
-Ref: usage id1119096
-Ref: 3f19096
-Ref: usage search-management19096
-Ref: 4019096
-Ref: usage command-rg-save-search19337
-Ref: 4119337
-Ref: usage command-rg-save-search-as-name19780
-Ref: 4219780
-Ref: usage command-rg-list-searches20521
-Ref: 4420521
-Ref: usage command-rg-kill-saved-searches20676
-Ref: 4520676
-Node: Configuration21177
-Ref: configuration doc21261
-Ref: 4621261
-Ref: configuration configuration21261
-Ref: 4721261
-Node: Customization21410
-Ref: configuration customization21485
-Ref: 4821485
-Ref: configuration id121485
-Ref: 4921485
-Ref: configuration option-rg-executable21676
-Ref: 4a21676
-Ref: configuration option-rg-custom-type-aliases22096
-Ref: 1c22096
-Ref: configuration option-rg-default-alias-fallback22793
-Ref: 1622793
-Ref: configuration option-rg-command-line-flags23037
-Ref: 4b23037
-Ref: configuration option-rg-group-result23260
-Ref: 2823260
-Ref: configuration option-rg-show-columns23602
-Ref: 4c23602
-Ref: configuration option-rg-ignore-case23709
-Ref: a23709
-Ref: configuration option-rg-hide-command24349
-Ref: 4d24349
-Ref: configuration option-rg-keymap-prefix24603
-Ref: 1e24603
-Ref: configuration option-rg-use-transient-menu24835
-Ref: 4e24835
-Ref: configuration option-rg-show-header25041
-Ref: 4f25041
-Ref: configuration option-rg-buffer-name25249
-Ref: 4325249
-Ref: configuration option-rg-ignore-ripgreprc25971
-Ref: 5025971
-Node: Position numbers alignment26547
-Ref: configuration id226621
-Ref: 5126621
-Ref: configuration position-numbers-alignment26621
-Ref: 5226621
-Ref: configuration option-rg-align-position-numbers27228
-Ref: 5327228
-Ref: configuration option-rg-align-line-number-field-length27385
-Ref: 5427385
-Ref: configuration option-rg-align-column-number-field-length27495
-Ref: 5527495
-Ref: configuration option-rg-align-line-column-separator27609
-Ref: 5627609
-Ref: configuration option-rg-align-position-content-separator27788
-Ref: 5727788
-Node: Faces27989
-Ref: configuration faces28096
-Ref: 5828096
-Node: Results buffer<2>28299
-Ref: configuration results-buffer28376
-Ref: 5928376
-Ref: configuration option-rg-match-face28419
-Ref: 5a28419
-Ref: configuration option-rg-error-face28510
-Ref: 5b28510
-Ref: configuration option-rg-context-face28626
-Ref: 5c28626
-Ref: configuration option-rg-info-face28781
-Ref: 5d28781
-Ref: configuration option-rg-warning-face28943
-Ref: 5e28943
-Ref: configuration option-rg-filename-face29065
-Ref: 5f29065
-Ref: configuration option-rg-file-tag-face29172
-Ref: 6029172
-Ref: configuration option-rg-line-number-face29292
-Ref: 6129292
-Ref: configuration option-rg-column-number-face29392
-Ref: 6229392
-Ref: configuration option-rg-match-position-face29498
-Ref: 6329498
-Node: Header line29717
-Ref: configuration header-line29794
-Ref: 6429794
-Ref: configuration header-line-config29794
-Ref: 6529794
-Ref: configuration option-rg-toggle-on-face29831
-Ref: 6629831
-Ref: configuration option-rg-toggle-off-face29942
-Ref: 6729942
-Ref: configuration option-rg-literal-face30052
-Ref: 6830052
-Ref: configuration option-rg-regexp-face30176
-Ref: 6930176
-Node: Configuration functions30305
-Ref: configuration configuration-functions30419
-Ref: 6a30419
-Ref: configuration id330419
-Ref: 6b30419
-Ref: configuration function-rg-enable-default-bindings30476
-Ref: 6c30476
-Ref: configuration function-rg-enable-menu30822
-Ref: 6d30822
-Ref: configuration function-rg-use-old-defaults31070
-Ref: 6e31070
-Node: Configuration macros31363
-Ref: configuration configuration-macros31492
-Ref: 6f31492
-Ref: configuration id431492
-Ref: 7031492
-Ref: configuration function-rg-define-toggle31543
-Ref: 3531543
-Ref: configuration function-rg-define-search32452
-Ref: 1f32452
-Node: Customizing the menu35214
-Ref: configuration customizing-the-menu35311
-Ref: 7135311
-Ref: configuration id535311
-Ref: 7235311
-Node: Contribute35534
-Ref: contribute doc35620
-Ref: 7335620
-Ref: contribute contribute35620
-Ref: 7435620
-Node: Pull requests35915
-Ref: contribute id135987
-Ref: 7535987
-Ref: contribute pull-requests35987
-Ref: 7635987
-Node: Tests36793
-Ref: contribute id236887
-Ref: 7736887
-Ref: contribute tests36887
-Ref: 7836887
-Node: Setup37206
-Ref: contribute setup37267
-Ref: 7937267
-Ref: contribute tests-setup37267
-Ref: 7a37267
-Node: Running37443
-Ref: contribute running37504
-Ref: 7b37504
-Ref: contribute tests-running37504
-Ref: 7c37504
-Node: Documentation37785
-Ref: contribute documentation37857
-Ref: 7d37857
-Ref: contribute id337857
-Ref: 7e37857
-Node: Setup<2>38657
-Ref: contribute documentation-setup38730
-Ref: 7f38730
-Ref: contribute id438730
-Ref: 8038730
-Node: Building38885
-Ref: contribute building38981
-Ref: 8138981
-Ref: contribute documentation-building38981
-Ref: 8238981
-Node: Create a patch39286
-Ref: contribute create-a-patch39365
-Ref: 8339365
-Node: License39616
-Ref: index id139694
-Ref: 8439694
-Ref: index license39694
-Ref: 8539694
-Node: GNU General Public License40226
-Ref: gpl doc40294
-Ref: 8740294
-Ref: gpl gnu-general-public-license40294
-Ref: 8840294
-Ref: gpl gpl40357
-Ref: 8640357
-Node: Index78270
+Node: Searching4876
+Ref: usage id24969
+Ref: 74969
+Ref: usage searching4969
+Ref: 84969
+Node: Case sensitivity5868
+Ref: usage case-sensitivity5955
+Ref: a5955
+Node: Interactive search6648
+Ref: usage basic-search6758
+Ref: c6758
+Ref: usage interactive-search6758
+Ref: d6758
+Ref: usage command-rg6925
+Ref: e6925
+Ref: usage command-rg-literal7597
+Ref: 117597
+Node: Project search7973
+Ref: usage id38081
+Ref: 128081
+Ref: usage project-search8081
+Ref: 138081
+Ref: usage command-rg-project8752
+Ref: 148752
+Node: Do what I mean9026
+Ref: usage do-what-i-mean9133
+Ref: 159133
+Ref: usage id49133
+Ref: 169133
+Ref: usage command-rg-dwim-project-dir9876
+Ref: 189876
+Ref: usage command-rg-dwim-current-dir9979
+Ref: 199979
+Ref: usage command-rg-dwim-current-file10074
+Ref: 1a10074
+Ref: usage command-rg-dwim10480
+Ref: 1b10480
+Node: File type aliases10786
+Ref: usage file-type-aliases10887
+Ref: f10887
+Ref: usage id510887
+Ref: 1c10887
+Node: The menu12246
+Ref: usage id612324
+Ref: 1e12324
+Ref: usage the-menu12324
+Ref: 912324
+Node: Results buffer14111
+Ref: usage id714209
+Ref: 2214209
+Ref: usage results-buffer14209
+Ref: 2114209
+Node: Navigation14856
+Ref: usage navigation14937
+Ref: 2314937
+Ref: usage command-compilation-next-error15029
+Ref: 2415029
+Ref: usage command-compilation-previous-error15116
+Ref: 2515116
+Ref: usage command-next-error-no-select15211
+Ref: 2615211
+Ref: usage command-previous-error-no-select15355
+Ref: 2715355
+Ref: usage command-rg-next-file15507
+Ref: 2815507
+Ref: usage command-rg-prev-file15662
+Ref: 2a15662
+Ref: usage command-compilation-next-file15821
+Ref: 2b15821
+Ref: usage command-compilation-previous-file15908
+Ref: 2c15908
+Ref: usage command-compile-goto-error15998
+Ref: 2d15998
+Node: Refine search16070
+Ref: usage refine-search16184
+Ref: 2e16184
+Ref: usage command-rg-rerun-change-dir16401
+Ref: 2f16401
+Ref: usage command-rg-rerun-change-files16492
+Ref: 3016492
+Ref: usage command-rg-rerun-change-literal16588
+Ref: 3116588
+Ref: usage command-rg-rerun-change-regexp16716
+Ref: 3216716
+Ref: usage command-rg-recompile17155
+Ref: 3317155
+Ref: usage command-rg-rerun-toggle-case17256
+Ref: 3417256
+Ref: usage command-rg-rerun-toggle-ignore17409
+Ref: 3517409
+Ref: usage command-rg-menu17681
+Ref: 3717681
+Node: Full command line search17784
+Ref: usage full-command-line-search17906
+Ref: 1017906
+Ref: usage id817906
+Ref: 3817906
+Node: History navigation18430
+Ref: usage history-navigation18559
+Ref: 3918559
+Ref: usage id918559
+Ref: 3a18559
+Ref: usage command-rg-back-history18805
+Ref: 3b18805
+Ref: usage command-rg-forward-history18881
+Ref: 3c18881
+Node: Edit and apply wgrep19127
+Ref: usage edit-and-apply19223
+Ref: 3d19223
+Ref: usage edit-and-apply-wgrep19223
+Ref: 3e19223
+Ref: usage command-wgrep-change-to-wgrep-mode19445
+Ref: 3f19445
+Node: Search management19691
+Ref: usage id1119771
+Ref: 4019771
+Ref: usage search-management19771
+Ref: 4119771
+Ref: usage command-rg-save-search20012
+Ref: 4220012
+Ref: usage command-rg-save-search-as-name20455
+Ref: 4320455
+Ref: usage command-rg-list-searches21196
+Ref: 4521196
+Ref: usage command-rg-kill-saved-searches21351
+Ref: 4621351
+Node: Configuration21852
+Ref: configuration doc21936
+Ref: 4721936
+Ref: configuration configuration21936
+Ref: 4821936
+Node: Customization22085
+Ref: configuration customization22160
+Ref: 4922160
+Ref: configuration id122160
+Ref: 4a22160
+Ref: configuration option-rg-executable22351
+Ref: 4b22351
+Ref: configuration option-rg-custom-type-aliases22771
+Ref: 1d22771
+Ref: configuration option-rg-default-alias-fallback23468
+Ref: 1723468
+Ref: configuration option-rg-command-line-flags23712
+Ref: 4c23712
+Ref: configuration option-rg-group-result23935
+Ref: 2923935
+Ref: configuration option-rg-show-columns24277
+Ref: 4d24277
+Ref: configuration option-rg-ignore-case24384
+Ref: b24384
+Ref: configuration option-rg-hide-command25024
+Ref: 4e25024
+Ref: configuration option-rg-keymap-prefix25278
+Ref: 1f25278
+Ref: configuration option-rg-use-transient-menu25510
+Ref: 4f25510
+Ref: configuration option-rg-show-header25716
+Ref: 5025716
+Ref: configuration option-rg-buffer-name25924
+Ref: 4425924
+Ref: configuration option-rg-ignore-ripgreprc26646
+Ref: 626646
+Node: Position numbers alignment27281
+Ref: configuration id227355
+Ref: 5127355
+Ref: configuration position-numbers-alignment27355
+Ref: 5227355
+Ref: configuration option-rg-align-position-numbers27962
+Ref: 5327962
+Ref: configuration option-rg-align-line-number-field-length28119
+Ref: 5428119
+Ref: configuration option-rg-align-column-number-field-length28229
+Ref: 5528229
+Ref: configuration option-rg-align-line-column-separator28343
+Ref: 5628343
+Ref: configuration option-rg-align-position-content-separator28522
+Ref: 5728522
+Node: Faces28723
+Ref: configuration faces28830
+Ref: 5828830
+Node: Results buffer<2>29033
+Ref: configuration results-buffer29110
+Ref: 5929110
+Ref: configuration option-rg-match-face29153
+Ref: 5a29153
+Ref: configuration option-rg-error-face29244
+Ref: 5b29244
+Ref: configuration option-rg-context-face29360
+Ref: 5c29360
+Ref: configuration option-rg-info-face29515
+Ref: 5d29515
+Ref: configuration option-rg-warning-face29677
+Ref: 5e29677
+Ref: configuration option-rg-filename-face29799
+Ref: 5f29799
+Ref: configuration option-rg-file-tag-face29906
+Ref: 6029906
+Ref: configuration option-rg-line-number-face30026
+Ref: 6130026
+Ref: configuration option-rg-column-number-face30126
+Ref: 6230126
+Ref: configuration option-rg-match-position-face30232
+Ref: 6330232
+Node: Header line30451
+Ref: configuration header-line30528
+Ref: 6430528
+Ref: configuration header-line-config30528
+Ref: 6530528
+Ref: configuration option-rg-toggle-on-face30565
+Ref: 6630565
+Ref: configuration option-rg-toggle-off-face30676
+Ref: 6730676
+Ref: configuration option-rg-literal-face30786
+Ref: 6830786
+Ref: configuration option-rg-regexp-face30910
+Ref: 6930910
+Node: Configuration functions31039
+Ref: configuration configuration-functions31153
+Ref: 6a31153
+Ref: configuration id331153
+Ref: 6b31153
+Ref: configuration function-rg-enable-default-bindings31210
+Ref: 6c31210
+Ref: configuration function-rg-enable-menu31556
+Ref: 6d31556
+Ref: configuration function-rg-use-old-defaults31804
+Ref: 6e31804
+Node: Configuration macros32097
+Ref: configuration configuration-macros32226
+Ref: 6f32226
+Ref: configuration id432226
+Ref: 7032226
+Ref: configuration function-rg-define-toggle32277
+Ref: 3632277
+Ref: configuration function-rg-define-search33186
+Ref: 2033186
+Node: Customizing the menu36185
+Ref: configuration customizing-the-menu36282
+Ref: 7136282
+Ref: configuration id536282
+Ref: 7236282
+Node: Contribute36505
+Ref: contribute doc36591
+Ref: 7336591
+Ref: contribute contribute36591
+Ref: 7436591
+Node: Pull requests36886
+Ref: contribute id136958
+Ref: 7536958
+Ref: contribute pull-requests36958
+Ref: 7636958
+Node: Tests37764
+Ref: contribute id237858
+Ref: 7737858
+Ref: contribute tests37858
+Ref: 7837858
+Node: Setup38177
+Ref: contribute setup38238
+Ref: 7938238
+Ref: contribute tests-setup38238
+Ref: 7a38238
+Node: Running38414
+Ref: contribute running38475
+Ref: 7b38475
+Ref: contribute tests-running38475
+Ref: 7c38475
+Node: Documentation38756
+Ref: contribute documentation38828
+Ref: 7d38828
+Ref: contribute id338828
+Ref: 7e38828
+Node: Setup<2>39628
+Ref: contribute documentation-setup39701
+Ref: 7f39701
+Ref: contribute id439701
+Ref: 8039701
+Node: Building39856
+Ref: contribute building39952
+Ref: 8139952
+Ref: contribute documentation-building39952
+Ref: 8239952
+Node: Create a patch40257
+Ref: contribute create-a-patch40336
+Ref: 8340336
+Node: License40587
+Ref: index id140665
+Ref: 8440665
+Ref: index license40665
+Ref: 8540665
+Node: GNU General Public License41197
+Ref: gpl doc41265
+Ref: 8741265
+Ref: gpl gnu-general-public-license41265
+Ref: 8841265
+Ref: gpl gpl41328
+Ref: 8641328
+Node: Index79241
 
 End Tag Table
 
