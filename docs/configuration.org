@@ -488,7 +488,7 @@
     or a key description string) and the third item is the
     description of the command that will appear in the menu.
 
-  Example:
+  Examples:
   #+BEGIN_SRC elisp
     (rg-define-search search-everything-at-home
       "Search files including hidden in home directory"
@@ -498,6 +498,13 @@
       :flags ("--hidden")
       :dir (getenv "HOME")
       :menu ("Search" "h" "Home"))
+
+    (rg-define-search rg-emacs
+      "Search the emacs lisp source code."
+      :dir "/usr/share/emacs/25.2/lisp/"
+      :flags '("-z")
+      :files "*.{el,el.gz}"
+      :menu ("Custom" "L" "lisp"))
   #+END_SRC
   :END:
 
