@@ -96,6 +96,22 @@
   This package use [[https://github.com/mhayashi1120/Emacs-wgrep][wgrep]] for editing capabilities in the rg results
   buffer. No setup is needed.
 
+  :RUBRIC:
+  Interaction with the /ripgrep/ configuration file
+  :END:
+  The /ripgrep/ binary allows using a [[https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md#configuration-file][configuration file]] to set
+  default values for command line flags. This package requires
+  specific command line flags to function correctly and using a
+  /ripgrep/ configuration may conflict with these requirements. Therefor
+  the configuration file is ignored by default. This can be changed
+  by the [[opt:rg-ignore-ripgreprc][rg-ignore-ripgreprc]] setting.
+
+  :NOTE:
+  Using the /ripgrep/ configuration file may break functionality of this
+  package if you are not careful.
+  :END:
+
+
 * Searching
   :PROPERTIES:
   :CUSTOM_ID: searching

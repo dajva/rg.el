@@ -186,8 +186,9 @@
   the config file will be used, otherwise it will be ignored. The
   default is to ignore this file in order to avoid that conflicting
   settings have impact on this package's behavior. Setting this to =nil=
-  may affect core functionality of this package so make sure you know
-  what you are doing.
+  may affect core functionality of this package. Especially changing
+  colors can affect parsing of the output and result in a broken
+  results buffer.
   :END:
 
 *** Position numbers alignment
