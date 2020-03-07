@@ -1,6 +1,6 @@
 This is rgel.info, produced by makeinfo version 6.5 from rgel.texi.
 
-     rg.el 2.0.0-alpha, Nov 27, 2019
+     rg.el 2.0.0-alpha, Mar 07, 2020
 
      David Landell
 
@@ -20,7 +20,7 @@ File: rgel.info,  Node: Top,  Next: Usage,  Up: (dir)
 RG User Manual
 **************
 
-     rg.el 2.0.0-alpha, Nov 27, 2019
+     rg.el 2.0.0-alpha, Mar 07, 2020
 
      David Landell
 
@@ -905,14 +905,14 @@ File: rgel.info,  Node: Configuration functions,  Next: Configuration macros,  P
 2.3 Configuration functions
 ===========================
 
- -- ELisp Function: (rg-enable-default-bindings &optional, prefix)
+ -- ELisp Function: (rg-enable-default-bindings &optional, arg1)
 
      Enable the default keyboard bindings for the package with prefix
      key.  If *note rg-use-transient-menu: 4e. is on this will enable
      the menu instead of activating the global bindings.  If ‘prefix’ is
      not provided *note rg-keymap-prefix: 1e. will be used.
 
- -- ELisp Function: (rg-enable-menu &optional, prefix)
+ -- ELisp Function: (rg-enable-menu &optional, arg1)
 
      Enable the *note rg-menu: 8. with prefix key.  This bypass *note
      rg-use-transient-menu: 4e. setting.  If ‘prefix’ is not provided
@@ -931,7 +931,7 @@ File: rgel.info,  Node: Configuration macros,  Next: Customizing the menu,  Prev
 2.4 Configuration macros
 ========================
 
- -- ELisp Function: (rg-define-toggle flag, &optional, key, default)
+ -- ELisp Function: (rg-define-toggle arg1, &optional, arg2, arg3)
 
      This is a macro that can be used to define custom _ripgrep_ flag
      toggling functions in the result buffer.  The macro takes the flag
@@ -953,7 +953,7 @@ File: rgel.info,  Node: Configuration macros,  Next: Customizing the menu,  Prev
      Creates a function named ‘rg-custom-toggle-flag-context’ that is
      off by default and bound to ‘C-c c’ in _rg_ result buffer.
 
- -- ELisp Function: (rg-define-search name, &rest, args)
+ -- ELisp Function: (rg-define-search arg1, &rest, rest)
 
      This macro can be used to define custom search functions in a
      declarative style.  Default implementations for common behavior is
@@ -970,7 +970,10 @@ File: rgel.info,  Node: Configuration macros,  Next: Customizing the menu,  Prev
           evaluates to a string is allowed.  Default is ‘ask’.
 
         - *:format* - Specifies if ‘:query’ is interpreted literally
-          (‘literal’) or as a regexp (‘regexp’).  Default is ‘regexp’.
+          (‘literal’) or as a regexp (‘regexp’).  If it is a form, eg.
+          ‘(not current-prefix-arg)’, and is non-nil the ‘:query’ is
+          interpreted literally, otherwise as a regexp.  Default is
+          ‘regexp’.
 
         - *:files* - Form that evaluates to a file alias or custom file
           glob.  ‘current’ means extract alias from current buffer file
@@ -2209,80 +2212,80 @@ Ref: configuration id330419
 Ref: 6b30419
 Ref: configuration function-rg-enable-default-bindings30476
 Ref: 6c30476
-Ref: configuration function-rg-enable-menu30822
-Ref: 6d30822
-Ref: configuration function-rg-use-old-defaults31070
-Ref: 6e31070
-Node: Configuration macros31363
-Ref: configuration configuration-macros31492
-Ref: 6f31492
-Ref: configuration id431492
-Ref: 7031492
-Ref: configuration function-rg-define-toggle31543
-Ref: 3531543
-Ref: configuration function-rg-define-search32452
-Ref: 1f32452
-Node: Customizing the menu35049
-Ref: configuration customizing-the-menu35146
-Ref: 7135146
-Ref: configuration id535146
-Ref: 7235146
-Node: Contribute35369
-Ref: contribute doc35455
-Ref: 7335455
-Ref: contribute contribute35455
-Ref: 7435455
-Node: Pull requests35750
-Ref: contribute id135822
-Ref: 7535822
-Ref: contribute pull-requests35822
-Ref: 7635822
-Node: Tests36628
-Ref: contribute id236722
-Ref: 7736722
-Ref: contribute tests36722
-Ref: 7836722
-Node: Setup37041
-Ref: contribute setup37102
-Ref: 7937102
-Ref: contribute tests-setup37102
-Ref: 7a37102
-Node: Running37278
-Ref: contribute running37339
-Ref: 7b37339
-Ref: contribute tests-running37339
-Ref: 7c37339
-Node: Documentation37620
-Ref: contribute documentation37692
-Ref: 7d37692
-Ref: contribute id337692
-Ref: 7e37692
-Node: Setup<2>38492
-Ref: contribute documentation-setup38565
-Ref: 7f38565
-Ref: contribute id438565
-Ref: 8038565
-Node: Building38720
-Ref: contribute building38816
-Ref: 8138816
-Ref: contribute documentation-building38816
-Ref: 8238816
-Node: Create a patch39121
-Ref: contribute create-a-patch39200
-Ref: 8339200
-Node: License39451
-Ref: index id139529
-Ref: 8439529
-Ref: index license39529
-Ref: 8539529
-Node: GNU General Public License40061
-Ref: gpl doc40129
-Ref: 8740129
-Ref: gpl gnu-general-public-license40129
-Ref: 8840129
-Ref: gpl gpl40192
-Ref: 8640192
-Node: Index78105
+Ref: configuration function-rg-enable-menu30820
+Ref: 6d30820
+Ref: configuration function-rg-use-old-defaults31066
+Ref: 6e31066
+Node: Configuration macros31359
+Ref: configuration configuration-macros31488
+Ref: 6f31488
+Ref: configuration id431488
+Ref: 7031488
+Ref: configuration function-rg-define-toggle31539
+Ref: 3531539
+Ref: configuration function-rg-define-search32446
+Ref: 1f32446
+Node: Customizing the menu35208
+Ref: configuration customizing-the-menu35305
+Ref: 7135305
+Ref: configuration id535305
+Ref: 7235305
+Node: Contribute35528
+Ref: contribute doc35614
+Ref: 7335614
+Ref: contribute contribute35614
+Ref: 7435614
+Node: Pull requests35909
+Ref: contribute id135981
+Ref: 7535981
+Ref: contribute pull-requests35981
+Ref: 7635981
+Node: Tests36787
+Ref: contribute id236881
+Ref: 7736881
+Ref: contribute tests36881
+Ref: 7836881
+Node: Setup37200
+Ref: contribute setup37261
+Ref: 7937261
+Ref: contribute tests-setup37261
+Ref: 7a37261
+Node: Running37437
+Ref: contribute running37498
+Ref: 7b37498
+Ref: contribute tests-running37498
+Ref: 7c37498
+Node: Documentation37779
+Ref: contribute documentation37851
+Ref: 7d37851
+Ref: contribute id337851
+Ref: 7e37851
+Node: Setup<2>38651
+Ref: contribute documentation-setup38724
+Ref: 7f38724
+Ref: contribute id438724
+Ref: 8038724
+Node: Building38879
+Ref: contribute building38975
+Ref: 8138975
+Ref: contribute documentation-building38975
+Ref: 8238975
+Node: Create a patch39280
+Ref: contribute create-a-patch39359
+Ref: 8339359
+Node: License39610
+Ref: index id139688
+Ref: 8439688
+Ref: index license39688
+Ref: 8539688
+Node: GNU General Public License40220
+Ref: gpl doc40288
+Ref: 8740288
+Ref: gpl gnu-general-public-license40288
+Ref: 8840288
+Ref: gpl gpl40351
+Ref: 8640351
+Node: Index78264
 
 End Tag Table
 
