@@ -167,7 +167,7 @@ FUNC is an rerun function invoked from an `rg-mode' buffer."
    [:if-mode rg-mode
     :description "History"
     (3 "b" "Back" rg-back-history--transient)
-    (3 "f" "Back" rg-forward-history--transient)]])
+    (3 "w" "Forward" rg-forward-history--transient)]])
 
 (eval-and-compile
   (defun rg-menu-group-at-location-p (desc loc)
