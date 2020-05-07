@@ -1,6 +1,6 @@
 This is rgel.info, produced by makeinfo version 6.5 from rgel.texi.
 
-     rg.el 2.0.0-alpha, Mar 07, 2020
+     rg.el 2.0.0-alpha, May 07, 2020
 
      David Landell
 
@@ -20,7 +20,7 @@ File: rgel.info,  Node: Top,  Next: Usage,  Up: (dir)
 RG User Manual
 **************
 
-     rg.el 2.0.0-alpha, Mar 07, 2020
+     rg.el 2.0.0-alpha, May 07, 2020
 
      David Landell
 
@@ -550,7 +550,7 @@ forward history is cleared when a new search is done.
      Navigate forward in history.
 
      Tip: The key bindings here are slightly inconvenient so invoking
-     this via *note the menu: 9. by pressing ‘m b’ and ‘m f’ is more
+     this via *note the menu: 9. by pressing ‘m b’ and ‘m w’ is more
      ergonomic.
 
 

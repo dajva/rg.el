@@ -522,7 +522,7 @@
 
     :TIP:
     The key bindings here are slightly inconvenient so invoking this
-    via [[#the_menu][the menu]] by pressing =m b= and =m f= is more ergonomic.
+    via [[#the_menu][the menu]] by pressing =m b= and =m w= is more ergonomic.
     :END:
 
 *** Edit and apply (wgrep)
