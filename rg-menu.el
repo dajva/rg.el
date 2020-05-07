@@ -201,7 +201,7 @@ A new group will be created. KEY and DESCRIPTION defines the binding
         (transient-append-suffix 'rg-menu (append group-loc '(-1))
           (list 3 key description command))
       (transient-append-suffix 'rg-menu '(-1 -1)
-        (vector group (3 key description command))))))
+        (vector group (list 3 key description command))))))
 
 ;;;###autoload
 (defun rg-enable-menu (&optional prefix)
