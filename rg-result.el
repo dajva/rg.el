@@ -229,8 +229,8 @@ Becomes buffer local in `rg-mode' buffers.")
     (define-key map "t" 'rg-rerun-change-literal)
     (define-key map "w" 'rg-deprecated-key-change-to-wgrep)
     (define-key map "e" 'wgrep-change-to-wgrep-mode)
-    (define-key map "\C-n" 'rg-next-file)
-    (define-key map "\C-p" 'rg-prev-file)
+    (define-key map "\M-N" 'rg-next-file)
+    (define-key map "\M-P" 'rg-prev-file)
     (define-key map "\C-c>" 'rg-forward-history)
     (define-key map "\C-c<" 'rg-back-history)
     (when rg-use-transient-menu
@@ -542,7 +542,8 @@ backward."
   "Move point to the a matched result group in the compilation buffer.
 STEPS decides how many groups to move past.  Negative value means
 backwards and positive means forwards."
-  (let ((pos (point))
+  (let (move-to
+        (pos (point))
         (steps-left (abs steps))
         (limit
          (if (< steps 0)
@@ -550,9 +551,11 @@ backwards and positive means forwards."
            (point-max))))
     (while  (and (> steps-left 0) (not (equal pos limit)))
       (setq pos (rg-navigate-file-message pos limit steps))
+      (unless (eq pos limit)
+        (setq move-to pos))
       (setq steps-left (- steps-left 1)))
-    (unless (equal pos limit)
-      (goto-char pos))))
+    (when move-to
+      (goto-char move-to))))
 
 (defun rg-rerun-toggle-flag (flag)
   "Toggle FLAG in `rg-cur-search`."
@@ -615,26 +618,38 @@ IF LITERAL is non nil this will trigger a literal search, otherwise a regexp sea
   (rg-rerun))
 
 (defun rg-next-file (n)
-  "Move point to next file with a match.
-Prefix arg N decides how many
-files to navigate.  When `rg-group-result' is nil this is the same as
-invoking `compilation-next-error', otherwise this will navigate to the
+  "Move point to next file's first match.
+Prefix arg N decides how many files to navigate.  When
+`rg-group-result' is nil this is the same as invoking
+`compilation-next-file', otherwise this will navigate to the
 next file with grouped matches."
   (interactive "p")
   (if rg-group-result
-      (rg-navigate-file-group n)
-    (compilation-next-error n)))
+      (when (rg-navigate-file-group n)
+        (forward-line))
+    (compilation-next-file n)))
 
 (defun rg-prev-file (n)
-  "Move point to previous file with a match.
+  "Move point to previous file's first match.
 Prefix arg N decides how many files to navigate.  When
 `rg-group-result' is nil this is the same as invoking
-`compilation-previous-error', otherwise this will navigate to the
+`compilation-previous-file', otherwise this will navigate to the
 previous file with grouped matches."
   (interactive "p")
   (if rg-group-result
-      (rg-navigate-file-group (- n))
-    (compilation-previous-error n)))
+      (let ((steps
+             ;; On match rows we move 2 steps back to get to previous
+             ;; file, otherwise 1 step.  The later is on file
+             ;; headings, space between files and at the end of search results.
+             (if (or (get-text-property (point) 'rg-file-message)
+                     (save-excursion
+                       (beginning-of-line)
+                       (looking-at "^\\(?:rg finished .*\\)*$")))
+                 n
+               (+ n 1))))
+        (when (rg-navigate-file-group (- steps))
+          (forward-line)))
+    (compilation-previous-file n)))
 
 (defun rg-back-history ()
   "Navigate back in the search history."

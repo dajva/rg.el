@@ -310,13 +310,13 @@ matching alias."
                (lambda (n)
                  (setq called 'rg-navigate-file-group
                        arg n)))
-              ((symbol-function #'compilation-next-error)
+              ((symbol-function #'compilation-next-file)
                (lambda (n)
-                 (setq called 'compilation-next-error
+                 (setq called 'compilation-next-file
                        arg n)))
-              ((symbol-function #'compilation-previous-error)
+              ((symbol-function #'compilation-previous-file)
                (lambda (n)
-                 (setq called 'compilation-previous-error
+                 (setq called 'compilation-previous-file
                        arg n))))
       (let ((rg-group-result t))
         (rg-next-file 1)
@@ -327,10 +327,10 @@ matching alias."
         (should (eq arg (- 1))))
       (let ((rg-group-result nil))
         (rg-next-file 1)
-        (should (eq called 'compilation-next-error))
+        (should (eq called 'compilation-next-file))
         (should (eq arg 1))
         (rg-prev-file 1)
-        (should (eq called 'compilation-previous-error))
+        (should (eq called 'compilation-previous-file))
         (should (eq arg 1))))))
 
 (ert-deftest rg-unit/match-grouped-filename ()
@@ -725,37 +725,71 @@ method. "
       (should (equal (length ctx-match) (length line-match))))))
 
 (ert-deftest rg-integration/navigate-file-group-in-grouped-result ()
-  "Test group navigation in grouped result."
+  "Test file navigation in grouped result."
   :tags '(need-rg)
   (let ((rg-group-result t)
-        (files '("foo.el" "bar.el"))
-        first-file
-        second-file
+        (files '("bar.el" "foo.el"))
         pos)
-    (rg-run "hello" "elisp" (concat default-directory "test/data"))
+    (rg-run "hello" "elisp" (concat default-directory "test/data") nil nil (list "--sort path"))
     (rg-with-current-result
       (goto-char (point-min))
       (rg-navigate-file-group 1)
-      ;; The order of results is non deterministic
-      ;; First match any of the files in `files'.
-      (should (looking-at
-               (concat "File: \\(" (mapconcat 'identity files "\\|") "\\)")))
-      (setq first-file (match-string 1))
-      ;; Filter out the already matched file.
-      (setq second-file
-            (car (seq-filter
-                  (lambda (elm) (not (equal first-file elm))) files)))
+      (should (looking-at (concat "File: " (car files))))
       (rg-navigate-file-group 1)
-      (should (looking-at (concat "File: " second-file)))
+      (should (looking-at (concat "File: " (cadr files))))
       (compilation-next-error 1)
       (setq pos (point))
-      (rg-navigate-file-group -3)
-      (should (eq pos (point)))
+
+      ;; Move exactly to first match
       (rg-navigate-file-group -2)
-      (should (looking-at (concat "File: " first-file))))))
+      (should (looking-at (concat "File: " (car files))))
+      (goto-char pos)
+
+      ;; Move past first match should move to first match
+      (rg-navigate-file-group -3)
+      (should (looking-at (concat "File: " (car files))))
+
+      ;; rg-navigate-file-group should indicate when it didn't move at all
+      (should-not (rg-navigate-file-group -1)))))
+
+(ert-deftest rg-integration/next-prev-file ()
+  "Test file navigation in grouped result."
+  :tags '(need-rg)
+  (let ((rg-group-result t)
+        (files '("bar.el" "foo.el"))
+        pos)
+    (rg-run "hello" "elisp" (concat default-directory "test/data") nil nil (list "--sort path"))
+    (rg-with-current-result
+      (goto-char (point-min))
+      (rg-next-file 1)
+      (forward-line -1)
+      (should (looking-at-p (concat "File: " (car files))))
+      (rg-next-file 1)
+      (forward-line -1)
+      (should (looking-at-p (concat "File: " (cadr files))))
+      ;; prev from header
+      (rg-prev-file 1)
+      (forward-line -1)
+      (should (looking-at-p (concat "File: " (car files))))
+      ;; prev from match
+      (rg-next-file 1)
+      (rg-prev-file 1)
+      (forward-line -1)
+      (should (looking-at-p (concat "File: " (car files))))
+      ;; prev from last line
+      (goto-char (- (point-max) 5))
+      (rg-prev-file 1)
+      (forward-line -1)
+      (should (looking-at-p (concat "File: " (cadr files))))
+      ;; prev from empty separator line
+      (forward-line 4)
+      (should (looking-at-p "^$"))
+      (rg-prev-file 1)
+      (forward-line -1)
+      (should (looking-at-p (concat "File: " (cadr files)))))))
 
 (ert-deftest rg-integration/navigate-file-group-in-ungrouped-result ()
-  "Test group navigation in ungrouped result."
+  "Test file navigation in ungrouped result."
   :tags '(need-rg)
   (let ((rg-group-result nil))
     (rg-run "hello" "elisp" (concat default-directory "test/data"))
