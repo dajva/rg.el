@@ -128,6 +128,24 @@ Disabling this setting can break functionality of this package."
   :type 'boolean
   :group 'rg)
 
+(defcustom rg-path-filter-functions
+  '(("open-files" rg-path-filter-get-buffer-files (dir files))
+    ("cur-file" rg-path-filter-get-current-file)
+    ("sub-dirs" rg-path-filter-get-subdir (dir)))
+  "A list of mappings from label to custom path filter functions.
+Such functions can provide programatic path filtering to allow for searching
+specific files or directories.  Each function takes the directory and
+file alias as arguments and must return a list with paths to search.
+Returning nil means the search will be aborted.  The optional third
+item of the mapping is a list of symbols indicatig that the function
+shall be called, \(reapplying the filter) when the related property of
+a search changes in the results buffer.  If this list is nil the
+filter will just be called on new searches."
+  :type '(repeat (list string function
+                       (repeat (choice (const dir)
+                                       (const files)))))
+  :group 'rg)
+
 ;;;###autoload
 (defvar rg-command-line-flags-function 'identity
   "Function to modify command line flags of a search.
@@ -146,6 +164,7 @@ line flags to use.")
 (defvar rg-history nil "History for full rg commands.")
 (defvar rg-files-history nil "History for files args.")
 (defvar rg-pattern-history nil "History for search patterns.")
+(defvar rg-subdir-history nil "History for sub directory paths.")
 
 (defvar rg-required-command-line-flags
   '("--color=always"
@@ -157,6 +176,7 @@ line flags to use.")
 
 (defconst rg-internal-type-aliases
   '(("all" . "all defined type aliases") ; rg --type=all
+    ("buffers" . "open file buffers")
     ("everything" . "*")) ; rg without '--type' arg
   "Internal type aliases for special purposes.
 These are not produced by 'rg --type-list' but we need them anyway.")
@@ -210,14 +230,82 @@ NAME-OF-MODE is needed to pass this function to `compilation-start'."
         (split-string globs) " ")))
    (rg-get-custom-type-aliases)))
 
+(defun rg-wildcards-to-regexp (wildcards)
+  "Convert space delimitered WILDCARDS to a regexp."
+  (mapconcat 'wildcard-to-regexp
+             (split-string wildcards nil t)
+             "\\|"))
+
+(defun rg-get-path-filter-func (filter)
+  "Return the function for the FILTER name."
+  (seq-elt (assoc filter rg-path-filter-functions) 1))
+
+(defun rg-get-path-filter-reapply-list (filter)
+  "Return the list with symbols that specify when to reapply the FILTER.
+See `rg-path-filter-functions' for more details."
+  (seq-elt (assoc filter rg-path-filter-functions) 2))
+
+(defun rg-filter-paths (filter dir files)
+  "Return the filtered paths fo FILTER.
+DIR and FILES will be supplied as arguments to the filter function."
+  (when-let ((filter-func (rg-get-path-filter-func filter)))
+    (or (funcall filter-func dir files)
+        (user-error "Path filter failed: '%s'" filter))))
+
+(defun rg-path-filter-get-subdir (_dir _files)
+  "Ask the user for subdirs to search.
+DIR and FILES are unused."
+  (list
+   (read-from-minibuffer
+    "Search sub directories (space delimitered): "
+    nil nil nil
+    'rg-subdir-history)))
+
+(defun rg-path-filter-get-current-file (_dir _files)
+  "Get the file path of current buffer.
+DIR and FILES are ignored."
+  (let ((file (buffer-file-name (current-buffer))))
+    (when file
+      (list (expand-file-name file)))))
+
+(defun rg-path-filter-get-buffer-files (dir type-alias)
+  "Get a list of all open file based buffers under DIR matching TYPE-ALIAS.
+Paths are relative to DIR."
+  (let ((directory-abbrev-alist
+         (cons (cons (regexp-quote (expand-file-name dir)) "./")
+               directory-abbrev-alist))
+        (type-alias-regexp (rg-wildcards-to-regexp
+                            (cond
+                             ((rg-is-custom-file-pattern type-alias) type-alias)
+                             ((equal type-alias "all") (mapconcat
+                                                        'cdr
+                                                        (rg-get-type-aliases 'skip-internal)
+                                                        " "))
+                             (t (cdr (assoc type-alias (rg-get-type-aliases))))))))
+    (or (mapcar
+         'abbreviate-file-name
+         (seq-filter
+          (lambda (file)
+            (and (string-match-p type-alias-regexp file)
+                 (string-prefix-p (expand-file-name dir) file)))
+          (mapcar
+           (lambda (buffer)
+             (expand-file-name (buffer-file-name buffer)))
+           (seq-filter
+            (lambda (file) (buffer-file-name file))
+            (buffer-list)))))
+        (user-error "No open '%s' type-alias found in directory '%s'" type-alias dir))))
+
 (defun rg-is-custom-file-pattern (files)
   "Return non nil if FILES is a custom file pattern."
   (not (assoc files (rg-get-type-aliases))))
 
-(defun rg-build-command (pattern files literal flags)
+(defun rg-build-command (pattern files literal flags &optional paths)
   "Create the command line for PATTERN and FILES.
 LITERAL determines if search will be literal or regexp based and FLAGS
-are command line flags to use for the search."
+are command line flags to use for the search.  Optional PATHS will be
+the the paths on the ripgrep command line.  If PATHS is provided, FILES
+will sometimes be ignored by the ripgrep binary."
   (let ((command-line
          (append
           rg-required-command-line-flags
@@ -240,8 +328,9 @@ are command line flags to use for the search."
           (when (not (equal files "everything"))
             (list "--type=<F>"))
           (list "-e <R>")
-          (when (eq system-type 'windows-nt)
-            (list ".")))))
+          (cond
+           (paths paths)
+           ((eq system-type 'windows-nt) (list "."))))))
 
     (grep-expand-template
      (mapconcat 'identity (cons (rg-executable) (delete-dups command-line)) " ")
@@ -294,10 +383,7 @@ excluded."
      (when filename
        (cl-find-if
         (lambda (alias)
-          (string-match (mapconcat 'wildcard-to-regexp
-                                   (split-string (cdr alias) nil t)
-                                   "\\|")
-                        filename))
+          (string-match-p (rg-wildcards-to-regexp (cdr alias)) filename))
         (rg-get-type-aliases t)))
      ;; Default when an alias for the file can't be determined
      (or
@@ -308,6 +394,15 @@ excluded."
       (progn
         (message "Warning: rg-default-alias-fallback customization does not match any alias. Using \"all\".")
         (car rg-internal-type-aliases))))))
+
+(defun rg-read-path-filter ()
+  "Read path filter for interactive rg."
+  (let ((choice (completing-read
+                "Choose filter:"
+                (cons "*no filter*" rg-path-filter-functions)
+                nil 't nil)))
+    (unless (equal choice "*no filter*")
+      choice)))
 
 (defun rg-read-files ()
   "Read files argument for interactive rg."
@@ -351,11 +446,13 @@ If LITERAL is non nil prompt for literal string.  DEFAULT is the default pattern
          (vc-call-backend (vc-responsible-backend file) 'root file)
        (error (file-name-directory file))))))
 
-(defun rg-run (pattern files dir &optional literal confirm flags)
+(defun rg-run (pattern files dir &optional literal confirm flags filter)
   "Execute rg command with supplied PATTERN, FILES and DIR.
 If LITERAL is nil interpret PATTERN as regexp, otherwise as a literal.
 CONFIRM allows the user to confirm and modify the command before
-executing.  FLAGS is additional command line flags to use in the search."
+executing.  FLAGS is additional command line flags to use in the search.
+FILTER is the path filter function in `rg-path-filter-functions' to use in
+the search.  nil means use no filter."
   (unless (and (stringp pattern) (> (length pattern) 0))
     (signal 'user-error '("Empty string: No search done")))
   (wgrep-rg-warn-ag-setup)
@@ -363,9 +460,11 @@ executing.  FLAGS is additional command line flags to use in the search."
     (setq dir default-directory))
   (rg-apply-case-flag pattern)
   (let* ((flags (append rg-initial-toggle-flags flags))
+         (paths (when filter
+                  (rg-filter-paths filter dir files)))
          (command (rg-build-command
                    pattern files literal
-                   flags))
+                   flags paths))
          confirmed)
     (setq dir (file-name-as-directory (expand-file-name dir)))
     (if confirm
@@ -377,6 +476,8 @@ executing.  FLAGS is additional command line flags to use in the search."
           (search (rg-search-create
                    :pattern pattern
                    :files files
+                   :filter filter
+                   :paths paths
                    :dir dir
                    :literal literal
                    :flags flags)))
@@ -623,6 +724,7 @@ the :query option is missing, set it to ASK"
            (alias-opt (plist-get search-cfg :files))
            (dir-opt (plist-get search-cfg :dir))
            (flags-opt (plist-get search-cfg :flags))
+           (filter-opt (plist-get search-cfg :filter))
            (binding-list `((literal ,(rg-parse-format-literal format-opt)))))
 
       ;; confirm binding
@@ -658,6 +760,9 @@ the :query option is missing, set it to ASK"
                        alias-opt)))
           (setq binding-list (append binding-list `((files ,files))))))
 
+      (unless (eq filter-opt 'ask)
+        (setq binding-list (append binding-list `((filter ,filter-opt)))))
+
       (when (eq flags-opt 'ask)
         (setq flags-opt 'flags))
 
@@ -675,6 +780,7 @@ the :query option is missing, set it to ASK"
            (literal (rg-parse-format-literal format-opt))
            (dir-opt (plist-get search-cfg :dir))
            (files-opt (plist-get search-cfg :files))
+           (filter-opt (plist-get search-cfg :filter))
            (flags-opt (plist-get search-cfg :flags))
            (iargs '()))
 
@@ -685,6 +791,10 @@ the :query option is missing, set it to ASK"
       (when (eq files-opt 'ask)
         (setq iargs
               (append iargs '((files . (rg-read-files))))))
+
+      (when (eq filter-opt 'ask)
+        (setq iargs
+              (append iargs '((filter . (rg-read-path-filter))))))
 
       (when (eq dir-opt 'ask)
         (setq iargs
@@ -746,6 +856,9 @@ specified default if left out.
             root.  Any form that evaluates to a directory string is
             also allowed.
             Default is `ask'.
+:filter     Key into rg-function-filters to use a custom path filter in
+            the search.  `ask' will prompt for a filter in that list.
+            Default is no filter.
 :confirm    `never', `always', or `prefix' are allowed values.  Specifies
             if the the final search command line string can be modified
             and confirmed the user.
@@ -781,13 +894,13 @@ Example:
          (interactive
           (list ,@(mapcar 'cdr iargs)))
          (let ,local-bindings
-           (rg-run query files dir literal confirm flags)))
+           (rg-run query files dir literal confirm flags filter)))
        (rg-menu-wrap-transient-search ,name)
        ,@menu-forms)))
 
 ;;;###autoload (autoload 'rg-project "rg.el" "" t)
 (rg-define-search rg-project
-  "Run ripgrep in current project searching for REGEXP in FILES.
+  "Run ripgrep in current project searching for QUERY in FILES.
 The project root will will be determined by either common project
 packages like projectile and `find-file-in-project' or the source
 version control system."
@@ -839,22 +952,32 @@ files with the same name pattern still will be searched."
    ((eq 16 (and (consp curdir) (car curdir))) (rg-dwim-current-file))
    (t     (rg-dwim-project-dir))))
 
+;;;###autoload (autoload 'rg-buffers "rg.el" "" t)
+(rg-define-search rg-buffers
+  "Search for for literal QUERY pattern in DIR directory in open
+buffers.  QUERY is interpreted literally. With \\[universal-argument]
+prefix, you can edit the constructed shell command line before it is
+executed."
+  :format literal
+  :filter "open-files"
+  :confirm prefix)
+
 ;;;###autoload (autoload 'rg-literal "rg.el" "" t)
 (rg-define-search rg-literal
-  "Run ripgrep, searching for literal PATTERN in FILES in directory DIR.
-With \\[universal-argument] prefix (CONFIRM), you can edit the
+  "Run ripgrep, searching for literal QUERY in FILES in directory DIR.
+With \\[universal-argument] prefix, you can edit the
 constructed shell command line before it is executed."
   :format literal
   :confirm prefix)
 
 ;;;###autoload (autoload 'rg "rg.el" "" t)
 (rg-define-search rg
-  "Run ripgrep, searching for REGEXP in FILES in directory DIR.
+  "Run ripgrep, searching for QUERY in FILES in directory DIR.
 The search is limited to file names matching shell pattern FILES.
 FILES may use abbreviations defined in `rg-custom-type-aliases'
 or ripgrep builtin type aliases, e.g. entering `elisp' is
-equivalent to `*.el'. REGEXP is a regexp as defined by the
-ripgrep executable. With \\[universal-argument] prefix (CONFIRM),
+equivalent to `*.el'. QUERY is a regexp as defined by the
+ripgrep executable. With \\[universal-argument] prefix,
 you can edit the constructed shell command line before it is
 executed. Collect output in a buffer. While ripgrep runs
 asynchronously, you can use \\[next-error] (M-x `next-error'), or

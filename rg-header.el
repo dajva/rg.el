@@ -134,7 +134,9 @@ If FULL-COMMAND specifies if the full command line search was done."
                `(not (member "--no-ignore" (rg-search-flags ,search)))))
              itemspace
              (rg-header-render-label "hits")
-               '(:eval (format "%d" rg-hit-count)))))))
+             '(:eval (format "%d" rg-hit-count))
+             (rg-header-render-label "filter")
+             `(:eval (or (rg-search-filter ,search) "-")))))))
 
 (provide 'rg-header)
 

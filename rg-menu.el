@@ -37,6 +37,7 @@
 (declare-function rg-literal "rg.el")
 (declare-function rg-dwim "rg.el")
 (declare-function rg-project "rg.el")
+(declare-function rg-buffers "rg.el")
 (declare-function rg-dwim-current-dir "rg.el")
 (declare-function rg-dwim-current-file "rg.el")
 (declare-function rg-list-searches "rg.el")
@@ -101,6 +102,7 @@ FUNC is an rerun function invoked from an `rg-mode' buffer."
 (rg-menu-wrap-transient-search rg-literal)
 (rg-menu-wrap-transient-search rg-dwim)
 (rg-menu-wrap-transient-search rg-project)
+(rg-menu-wrap-transient-search rg-buffers)
 (rg-menu-wrap-transient-search rg-dwim-current-dir)
 (rg-menu-wrap-transient-search rg-dwim-current-file)
 (rg-menu-wrap-transient-search rg-list-searches)
@@ -114,6 +116,7 @@ FUNC is an rerun function invoked from an `rg-mode' buffer."
 (rg-menu-wrap-transient-rerun rg-rerun-change-regexp)
 (rg-menu-wrap-transient-rerun rg-rerun-change-literal)
 (rg-menu-wrap-transient-rerun rg-rerun-change-files)
+(rg-menu-wrap-transient-rerun rg-rerun-change-filter)
 (rg-menu-wrap-transient-rerun rg-rerun-change-dir)
 
  ;;;###autoload (autoload 'rg-menu "rg-menu.el" "" t)
@@ -155,14 +158,16 @@ FUNC is an rerun function invoked from an `rg-mode' buffer."
     (4 "f" "Dwim current file" rg-dwim-current-file--transient)
     (3 "r" "Regex" rg--transient)
     (3 "t" "Literal" rg-literal--transient)
-    (3 "p" "Project" rg-project--transient)]
+    (3 "p" "Project" rg-project--transient)
+    (3 "B" "Buffers" rg-buffers--transient)]
    [:if-mode rg-mode
     :description "Rerun"
     (3 "g" "Go" rg-rerun--transient)
     (3 "r" "Change regex" rg-rerun-change-regexp--transient)
     (3 "t" "Change literal" rg-rerun-change-literal--transient)
-    (3 "f" "Change files" rg-rerun-change-files--transient)
-    (3 "d" "Change directory" rg-rerun-change-dir--transient)]
+    (3 "f" "Change file type" rg-rerun-change-files--transient)
+    (3 "d" "Change directory" rg-rerun-change-dir--transient)
+    (3 "F" "Change file filter" rg-rerun-change-filter--transient)]
    ["Manage"
     (4 "l" "List" rg-list-searches--transient)
     (4 "s" "Save" rg-save-search--transient)

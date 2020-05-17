@@ -31,6 +31,7 @@
 (require 'mouse)
 (require 'rg-header)
 (require 'rg-history)
+(require 'seq)
 (require 'subr-x)
 (require 'wgrep-rg)
 
@@ -39,6 +40,9 @@
 (declare-function rg-get-type-aliases "rg.el")
 (declare-function rg-list-searches "rg.el")
 (declare-function rg-read-pattern "rg.el")
+(declare-function rg-read-path-filter "rg.el")
+(declare-function rg-filter-paths "rg.el")
+(declare-function rg-get-path-filter-reapply-list "rg.el")
 (declare-function rg-menu "rg-menu.el")
 
 
@@ -172,6 +176,8 @@ and, depending on configuration, column number and file name."
                          (:copier rg-search-copy))
   pattern                ; search pattern
   files                  ; files to search
+  filter                 ; path filter applied
+  paths                  ; paths to search
   dir                    ; base directory
   full-command           ; full-command (t or nil)
   literal                ; literal patterh (t or nil)
@@ -576,12 +582,13 @@ Commands:
 If NO-HISTORY is non nil skip adding the search to the search history."
   (let ((pattern (rg-search-pattern rg-cur-search))
         (files (rg-search-files rg-cur-search))
+        (paths (rg-search-paths rg-cur-search))
         (dir (rg-search-dir rg-cur-search))
         (literal (rg-search-literal rg-cur-search))
         (flags (rg-search-flags rg-cur-search)))
     (setcar compilation-arguments
             (or (rg-search-full-command rg-cur-search)
-                (rg-build-command pattern files literal flags)))
+                (rg-build-command pattern files literal flags paths)))
     ;; compilation-directory is used as search dir and
     ;; default-directory is used as the base for file paths.
     (setq compilation-directory dir)
@@ -690,7 +697,34 @@ IF LITERAL is non nil this will trigger a literal search, otherwise a regexp sea
            (rg-get-type-aliases)
            nil nil nil 'rg-files-history
            files))
+    (when (rg-should-reapply-filter 'files)
+      (rg-reapply-filter))
     (rg-rerun)))
+
+(defalias 'rg-seq-contains-p
+  (if (and (>= emacs-major-version 27) (>= emacs-minor-version 0))
+      'seq-contains
+    'seq-contains-p))
+
+(defun rg-should-reapply-filter (changed)
+  (when-let (reapply-when-changed
+             (rg-get-path-filter-reapply-list (rg-search-filter rg-cur-search)))
+    (rg-seq-contains-p reapply-when-changed changed 'eq)))
+
+(defun rg-reapply-filter ()
+  (let ((filter (rg-search-filter rg-cur-search))
+        (dir (rg-search-dir rg-cur-search))
+        (files (rg-search-files rg-cur-search)))
+    (setf (rg-search-paths rg-cur-search)
+          (rg-filter-paths filter dir files))))
+
+(defun rg-rerun-change-filter()
+  "Rerun last search but prompt for new filter."
+  (interactive)
+  (setf (rg-search-filter rg-cur-search)
+        (rg-read-path-filter))
+  (rg-reapply-filter)
+  (rg-rerun))
 
 (defun rg-rerun-change-dir()
   "Rerun last search but prompt for new dir."
@@ -698,6 +732,8 @@ IF LITERAL is non nil this will trigger a literal search, otherwise a regexp sea
   (setf (rg-search-dir rg-cur-search)
         (read-directory-name "In directory: "
                              (rg-search-dir rg-cur-search) nil))
+  (when (rg-should-reapply-filter 'dir)
+    (rg-reapply-filter))
   (rg-rerun))
 
 (defun rg-next-file (n)
