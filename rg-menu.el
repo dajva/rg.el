@@ -40,6 +40,7 @@
 (declare-function rg-buffers "rg.el")
 (declare-function rg-dwim-current-dir "rg.el")
 (declare-function rg-dwim-current-file "rg.el")
+(declare-function rg-isearch-current-file "rg.el")
 (declare-function rg-list-searches "rg.el")
 (declare-function rg-save-search "rg.el")
 (declare-function rg-save-search-as-name "rg.el")
@@ -102,6 +103,7 @@ FUNC is an rerun function invoked from an `rg-mode' buffer."
 (rg-menu-wrap-transient-search rg-buffers)
 (rg-menu-wrap-transient-search rg-dwim-current-dir)
 (rg-menu-wrap-transient-search rg-dwim-current-file)
+(rg-menu-wrap-transient-search rg-isearch-current-file)
 (rg-menu-wrap-transient-search rg-list-searches)
 (rg-menu-wrap-transient-search rg-save-search)
 (rg-menu-wrap-transient-search rg-save-search-as-name)
@@ -155,7 +157,9 @@ FUNC is an rerun function invoked from an `rg-mode' buffer."
     (3 "r" "Regex" rg--transient)
     (3 "t" "Literal" rg-literal--transient)
     (3 "p" "Project" rg-project--transient)
-    (3 "B" "Buffers" rg-buffers--transient)]
+    (3 "B" "Buffers" rg-buffers--transient)
+    (4 "i" "Isearch" rg-isearch-current-file--transient)
+    ]
    [:if-mode rg-mode
     :description "Rerun"
     (3 "g" "Go" rg-rerun--transient)
