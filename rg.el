@@ -282,18 +282,14 @@ Paths are relative to DIR."
                                                         (rg-get-type-aliases 'skip-internal)
                                                         " "))
                              (t (cdr (assoc type-alias (rg-get-type-aliases))))))))
-    (or (mapcar
-         'abbreviate-file-name
-         (seq-filter
-          (lambda (file)
-            (and (string-match-p type-alias-regexp file)
-                 (string-prefix-p (expand-file-name dir) file)))
-          (mapcar
-           (lambda (buffer)
-             (expand-file-name (buffer-file-name buffer)))
-           (seq-filter
-            (lambda (file) (buffer-file-name file))
-            (buffer-list)))))
+    (or (thread-last (buffer-list)
+          (seq-filter (lambda (file) (buffer-file-name file)))
+          (mapcar (lambda (buffer)
+                    (expand-file-name (buffer-file-name buffer))))
+          (seq-filter (lambda (file)
+                        (and (string-match-p type-alias-regexp file)
+                             (string-prefix-p (expand-file-name dir) file))))
+          (mapcar 'abbreviate-file-name))
         (user-error "No open '%s' type-alias found in directory '%s'" type-alias dir))))
 
 (defun rg-is-custom-file-pattern (files)
