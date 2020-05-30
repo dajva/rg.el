@@ -567,6 +567,23 @@ reports."
     (message environment)
     (kill-new environment)))
 
+(defun rg-get-isearch-string ()
+  "Extract the isearch string from the last isearch."
+  ;; Do what `isearch-occur' does.
+  (cond
+   ((functionp isearch-regexp-function)
+    (funcall isearch-regexp-function isearch-string))
+   (isearch-regexp-function (word-search-regexp isearch-string))
+   (isearch-regexp isearch-string)
+   (t isearch-string)))
+
+(defun rg-isearch-literal-p ()
+  "Return t if last isearch was literal, nil otherwise."
+  (not (or
+        (functionp isearch-regexp-function)
+        isearch-regexp-function
+        isearch-regexp)))
+
 ;;;###autoload
 (defmacro rg-define-toggle (flag &optional key default)
   "Define a command line flag that can be toggled from the rg result buffer.
@@ -893,6 +910,14 @@ Example:
            (rg-run query files dir literal confirm flags filter)))
        (rg-menu-wrap-transient-search ,name)
        ,@menu-forms)))
+
+;;;###autoload (autoload 'rg-isearch-file "rg.el" "" t)
+(rg-define-search rg-isearch-current-file
+  :dir current
+  :query (rg-get-isearch-string)
+  :format (rg-isearch-literal-p)
+  :files current
+  :dir current)
 
 ;;;###autoload (autoload 'rg-project "rg.el" "" t)
 (rg-define-search rg-project
