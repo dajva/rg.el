@@ -122,7 +122,7 @@ Can be string or function."
   :group 'rg)
 
 (defcustom rg-ignore-ripgreprc t
-  "Ingore the ripgrep config file.
+  "Ignore the ripgrep config file.
 Disabling this setting can break functionality of this package."
   :type 'boolean
   :group 'rg)
