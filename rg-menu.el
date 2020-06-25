@@ -124,6 +124,7 @@ FUNC is an rerun function invoked from an `rg-mode' buffer."
    (6 "-a" "Search binary files" "--text")
    (4 "-z" "Search zipped files" "--search-zip")
    (4 "-v" "Invert match" "--invert-match")
+   (4 "-u" "Reduce smart search" "--unrestricted")
    (4 "-U" "Multi line" "--multiline-dotall --multiline")
    (3 "-w" "Search words" "--word-regexp")
    (5 "-x" "Search lines" "--line-regexp")
