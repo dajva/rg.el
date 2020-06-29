@@ -49,8 +49,7 @@
 (defun rg-menu-search-initial-value ()
   "Provide initial value for `rg-menu' transient command."
   (when (eq major-mode 'rg-mode)
-    (append (rg-search-toggle-flags rg-cur-search)
-            (rg-search-flags rg-cur-search))))
+    (rg-search-flags rg-cur-search)))
 
 (eval-and-compile
   (defun rg-menu-create-search-body (func)

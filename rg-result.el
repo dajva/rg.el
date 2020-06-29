@@ -174,7 +174,6 @@ and, depending on configuration, column number and file name."
   dir                    ; base directory
   full-command           ; full-command (t or nil)
   literal                ; literal patterh (t or nil)
-  toggle-flags           ; toggle command line flags
   flags)                 ; search specific flags
 
 (defvar-local rg-cur-search nil
@@ -210,7 +209,7 @@ Becomes buffer local in `rg-mode' buffers.")
     ;; "filename-linenumber-" or "linenumber-" format is used for
     ;; context lines in rg
     ("^ *\\(?:.+?-\\)?[0-9]+-.*\n" (0 'rg-context-face))
-    ("^.*rg \\(--color always .*$\\)"
+    ("^.*rg \\(--color=always .*$\\)"
      (0 (rg-command-line-properties))
      (1 (rg-hidden-command-line-properties)))))
 
@@ -506,12 +505,10 @@ If NO-HISTORY is non nil skip adding the search to the search history."
         (files (rg-search-files rg-cur-search))
         (dir (rg-search-dir rg-cur-search))
         (literal (rg-search-literal rg-cur-search))
-        (toggle-flags (rg-search-toggle-flags rg-cur-search))
         (flags (rg-search-flags rg-cur-search)))
     (setcar compilation-arguments
             (or (rg-search-full-command rg-cur-search)
-                (rg-build-command pattern files literal
-                                  (append toggle-flags flags))))
+                (rg-build-command pattern files literal flags)))
     ;; compilation-directory is used as search dir and
     ;; default-directory is used as the base for file paths.
     (setq compilation-directory dir)
@@ -559,8 +556,8 @@ backwards and positive means forwards."
 
 (defun rg-rerun-toggle-flag (flag)
   "Toggle FLAG in `rg-cur-search`."
-  (setf (rg-search-toggle-flags rg-cur-search)
-        (rg-list-toggle flag (rg-search-toggle-flags rg-cur-search)))
+  (setf (rg-search-flags rg-cur-search)
+        (rg-list-toggle flag (rg-search-flags rg-cur-search)))
   (rg-rerun))
 
 (defun rg-rerun-toggle-case ()

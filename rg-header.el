@@ -100,10 +100,10 @@ If FULL-COMMAND specifies if the full command line search was done."
              `(:eval (rg-search-files ,search)) itemspace
              (rg-header-render-label "case")
              (rg-header-render-toggle
-              `(not (member "-i" (rg-search-toggle-flags ,search)))) itemspace
+              `(not (member "-i" (rg-search-flags ,search)))) itemspace
               (rg-header-render-label "ign")
               (rg-header-render-toggle
-               `(not (member "--no-ignore" (rg-search-toggle-flags ,search)))) itemspace
+               `(not (member "--no-ignore" (rg-search-flags ,search)))) itemspace
                (rg-header-render-label "hits")
                '(:eval (format "%d" rg-hit-count)))))))
 

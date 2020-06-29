@@ -139,7 +139,7 @@ SEARCH can either be a search string or a form invocating `rg-run'."
                 (rg-search-create
                  :pattern pattern
                  :files files
-                 :toggle-flags rg-toggle-command-line-flags)))
+                 :flags rg-initial-toggle-flags)))
 
 (defun rg-file-message-exist-in-result (grouped)
   "Search and return non nil if 'rg-file-tag-face exist in buffer.

@@ -138,24 +138,24 @@ line flags to use.")
 (defvar rg-builtin-type-aliases nil
   "Cache for 'rg --type-list'.")
 
-(defvar rg-toggle-command-line-flags nil
-  "List of command line flags defined by `rg-define-toggle' macro.")
+(defvar rg-initial-toggle-flags nil
+  "List of command line flags set by default by `rg-define-toggle' macro.")
 
 (defvar rg-history nil "History for full rg commands.")
 (defvar rg-files-history nil "History for files args.")
 (defvar rg-pattern-history nil "History for search patterns.")
 
 (defvar rg-required-command-line-flags
-  '("--color always"
-    "--colors match:fg:red"
-    "--colors path:fg:magenta"
-    "--colors line:fg:green"
-    "--colors column:none"
+  '("--color=always"
+    "--colors=match:fg:red"
+    "--colors=path:fg:magenta"
+    "--colors=line:fg:green"
+    "--colors=column:none"
     "-n"
     "--column"))
 
 (defconst rg-internal-type-aliases
-  '(("all" . "all defined type aliases") ; rg --type all
+  '(("all" . "all defined type aliases") ; rg --type=all
     ("everything" . "*")) ; rg without '--type' arg
   "Internal type aliases for special purposes.
 These are not produced by 'rg --type-list' but we need them anyway.")
@@ -204,7 +204,7 @@ NAME-OF-MODE is needed to pass this function to `compilation-start'."
            (globs (cdr typedef)))
        (mapconcat
         (lambda (glob)
-          (concat "--type-add "
+          (concat "--type-add="
                   (shell-quote-argument (concat name ":" glob))))
         (split-string globs) " ")))
    (rg-get-custom-type-aliases)))
@@ -231,11 +231,11 @@ are command line flags to use for the search."
           (when rg-ignore-ripgreprc
             (list "--no-config"))
           (when (rg-is-custom-file-pattern files)
-            (list (concat "--type-add " (shell-quote-argument (concat "custom:" files)))))
+            (list (concat "--type-add=" (shell-quote-argument (concat "custom:" files)))))
           (when literal
             (list "--fixed-strings"))
           (when (not (equal files "everything"))
-            (list "--type <F>"))
+            (list "--type=<F>"))
           (list "-e <R>")
           (when (eq system-type 'windows-nt)
             (list ".")))))
@@ -361,8 +361,8 @@ executing.  FLAGS is additional command line flags to use in the search."
   (rg-apply-case-flag pattern)
   (let ((command (rg-build-command
                   pattern files literal
-                  (append rg-toggle-command-line-flags flags)))
-        confirmed)
+                  (append rg-initial-toggle-flags flags)))
+         confirmed)
     (setq dir (file-name-as-directory (expand-file-name dir)))
     (if confirm
         (setq confirmed
@@ -375,7 +375,6 @@ executing.  FLAGS is additional command line flags to use in the search."
                    :files files
                    :dir dir
                    :literal literal
-                   :toggle-flags rg-toggle-command-line-flags
                    :flags flags)))
       (when (and confirmed
                  (not (string= confirmed command)))
@@ -409,10 +408,10 @@ detailed info."
           (and (or (eq rg-ignore-case 'smart)
                    (and (eq rg-ignore-case 'case-fold-search) case-fold-search))
                (isearch-no-upper-case-p pattern t)))
-      (setq rg-toggle-command-line-flags
-            (add-to-list 'rg-toggle-command-line-flags "-i" ))
-    (setq rg-toggle-command-line-flags
-          (delete "-i" rg-toggle-command-line-flags))))
+      (setq rg-initial-toggle-flags
+            (add-to-list 'rg-initial-toggle-flags "-i" ))
+    (setq rg-initial-toggle-flags
+          (delete "-i" rg-initial-toggle-flags))))
 
 (defun rg-get-rename-target ()
   "Return the buffer that will be target for renaming."
@@ -445,10 +444,10 @@ optional DEFAULT parameter is non nil the flag will be enabled by default."
          (funname (concat "rg-custom-toggle-flag-" flagname)))
     `(progn
        ,(if default
-            `(setq rg-toggle-command-line-flags
-                   (add-to-list 'rg-toggle-command-line-flags ,flagvalue))
-          `(setq rg-toggle-command-line-flags
-                 (delete ,flagvalue rg-toggle-command-line-flags)))
+            `(setq rg-initial-toggle-flags
+                   (add-to-list 'rg-initial-toggle-flags ,flagvalue))
+          `(setq rg-initial-toggle-flags
+                 (delete ,flagvalue rg-initial-toggle-flags)))
        ,(when key
           `(define-key rg-mode-map ,key (quote ,(intern funname))))
        (defun ,(intern funname) ()

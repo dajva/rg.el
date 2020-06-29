@@ -70,7 +70,6 @@
                  :files "all"
                  :dir "/tmp"
                  :literal t
-                 :toggle-flags nil
                  :flags nil)))
 
   (rg-menu-wrap-transient-search test-search)
@@ -143,14 +142,13 @@
                         :files "all"
                         :dir "/tmp"
                         :literal t
-                        :toggle-flags '("a" "b" "c")
-                        :flags '("d" "e"))))
+                        :flags '("a" "b"))))
     (with-temp-buffer
       (should (equal (rg-menu-search-initial-value) nil))
       (rg-mode)
       (should-not (seq-difference
                    (rg-menu-search-initial-value)
-                   '("a" "b" "c" "d" "e"))))))
+                   '("a" "b"))))))
 
 (provide 'rg-menu.el-test)
 

@@ -31,32 +31,32 @@
 
 (ert-deftest rg-unit-test/case-expand-template ()
   "Test that `rg-apply-case-flag' handles case settings correctly."
-  (let (rg-toggle-command-line-flags)
+  (let (rg-initial-toggle-flags)
     (let ((case-fold-search t))
       (rg-apply-case-flag "foo")
-      (should (member  "-i" rg-toggle-command-line-flags))
+      (should (member  "-i" rg-initial-toggle-flags))
       (rg-apply-case-flag "fOo")
-      (should-not (member "-i" rg-toggle-command-line-flags)))
+      (should-not (member "-i" rg-initial-toggle-flags)))
     (let ((case-fold-search nil))
       (rg-apply-case-flag "foo")
-      (should-not (member "-i" rg-toggle-command-line-flags))
+      (should-not (member "-i" rg-initial-toggle-flags))
       (rg-apply-case-flag "fOo")
-      (should-not (member "-i" rg-toggle-command-line-flags)))
+      (should-not (member "-i" rg-initial-toggle-flags)))
     (let ((rg-ignore-case 'smart))
       (rg-apply-case-flag "foo")
-      (should (member "-i" rg-toggle-command-line-flags))
+      (should (member "-i" rg-initial-toggle-flags))
       (rg-apply-case-flag "fOo")
-      (should-not (member "-i" rg-toggle-command-line-flags)))
+      (should-not (member "-i" rg-initial-toggle-flags)))
     (let ((rg-ignore-case 'force))
       (rg-apply-case-flag "foo")
-      (should (member "-i" rg-toggle-command-line-flags))
+      (should (member "-i" rg-initial-toggle-flags))
       (rg-apply-case-flag "fOo")
-      (should (member "-i" rg-toggle-command-line-flags)))
+      (should (member "-i" rg-initial-toggle-flags)))
     (let ((rg-ignore-case nil))
       (rg-apply-case-flag "foo")
-      (should-not (member "-i" rg-toggle-command-line-flags))
+      (should-not (member "-i" rg-initial-toggle-flags))
       (rg-apply-case-flag "fOo")
-      (should-not (member "-i" rg-toggle-command-line-flags)))))
+      (should-not (member "-i" rg-initial-toggle-flags)))))
 
 (ert-deftest rg-unit-test/custom-command-line-flags ()
   "Test that `rg-command-line-flags' is added to the template."
@@ -175,30 +175,29 @@ on emacs version."
     (cl-letf (((symbol-function #'rg-rerun) #'ignore))
       (rg-define-toggle "--foo")
       (should (functionp 'rg-custom-toggle-flag-foo))
-      (should-not (member "--foo" rg-toggle-command-line-flags))
+      (should-not (member "--foo" rg-initial-toggle-flags))
       (rg-define-toggle "--bar" nil t)
       (should (functionp 'rg-custom-toggle-flag-bar))
-      (should (member "--bar" rg-toggle-command-line-flags))
+      (should (member "--bar" rg-initial-toggle-flags))
 
       (simulate-rg-run (rg-search-pattern rg-cur-search)
                        (rg-search-files rg-cur-search)
                        (rg-search-dir rg-cur-search))
 
       (rg-custom-toggle-flag-foo)
-      (should (member "--foo" (rg-search-toggle-flags rg-cur-search)))
-      (should (member "--bar" (rg-search-toggle-flags rg-cur-search)))
+      (should (member "--foo" (rg-search-flags rg-cur-search)))
+      (should (member "--bar" (rg-search-flags rg-cur-search)))
 
       (rg-custom-toggle-flag-foo)
-      (should-not (member "--foo" (rg-search-toggle-flags rg-cur-search)))
-      (should (member "--bar" (rg-search-toggle-flags rg-cur-search)))
+      (should-not (member "--foo" (rg-search-flags rg-cur-search)))
+      (should (member "--bar" (rg-search-flags rg-cur-search)))
+      (rg-custom-toggle-flag-bar)
+      (should-not (member "--foo" (rg-search-flags rg-cur-search)))
+      (should-not (member "--bar" (rg-search-flags rg-cur-search)))
 
       (rg-custom-toggle-flag-bar)
-      (should-not (member "--foo" (rg-search-toggle-flags rg-cur-search)))
-      (should-not (member "--bar" (rg-search-toggle-flags rg-cur-search)))
-
-      (rg-custom-toggle-flag-bar)
-      (should-not (member "--foo" rg-toggle-command-line-flags))
-      (should (member "--bar" rg-toggle-command-line-flags)))))
+      (should-not (member "--foo" rg-initial-toggle-flags))
+      (should (member "--bar" rg-initial-toggle-flags)))))
 
 (ert-deftest rg-unit-test/custom-toggle-key-binding ()
   "Test `rg-define-toggle' macro key bindings."
@@ -216,11 +215,11 @@ on emacs version."
       (rg-define-toggle "--qux" nil t)
       (should (functionp 'rg-custom-toggle-flag-qux))
       (should-not (eq 'rg-custom-toggle-flag-qux (lookup-key rg-mode-map "q")))
-      (should (member "--qux" rg-toggle-command-line-flags))
+      (should (member "--qux" rg-initial-toggle-flags))
       (rg-define-toggle "--qux" "q")
       (should (functionp 'rg-custom-toggle-flag-qux))
       (should (eq 'rg-custom-toggle-flag-qux (lookup-key rg-mode-map "q")))
-      (should-not (member "--qux" rg-toggle-command-line-flags))
+      (should-not (member "--qux" rg-initial-toggle-flags))
       (rg-define-toggle "--qux" "z")
       (should (functionp 'rg-custom-toggle-flag-qux))
       (should (eq 'rg-custom-toggle-flag-qux (lookup-key rg-mode-map "z")))
@@ -235,13 +234,13 @@ alias."
         (rg-custom-type-aliases nil)
         full-command)
     (setq full-command (rg-build-command "foo" "cpp" nil nil))
-    (should (s-matches? "rg.*? +--type +cpp.*? +foo" full-command))
+    (should (s-matches? "rg.*? +--type=cpp.*? +foo" full-command))
     (setq full-command (rg-build-command "foo" "everything" nil nil))
-    (should-not (s-matches? "rg.*? +--type.*? +foo" full-command))
+    (should-not (s-matches? "rg.*? +--type=.*? +foo" full-command))
     (setq full-command (rg-build-command "foo" "bar" nil nil))
-    (should (s-matches? (concat "rg.*? +--type-add +"
+    (should (s-matches? (concat "rg.*? +--type-add="
                                 (regexp-quote (shell-quote-argument "custom:bar"))
-                                " +--type +\"?custom.*? +foo")
+                                " +--type=\"?custom.*? +foo")
                         full-command))))
 
 (ert-deftest rg-unit-test/build-command-type ()
@@ -251,10 +250,10 @@ alias."
          (notype-command (rg-build-command "query" "everything" nil nil))
          (builtin-type-command (rg-build-command "query" "elisp" nil nil))
          (custom-type-command (rg-build-command "query" "glob" nil nil))
-         (type-pattern (rg-regexp-anywhere-but-last "--type [^ ]+"))
+         (type-pattern (rg-regexp-anywhere-but-last "--type=[^ ]+"))
          (type-add-pattern (rg-regexp-anywhere-but-last
                             (concat
-                             "--type-add "
+                             "--type-add="
                              (s-replace "----" "[^ ]+"
                                         (regexp-quote
                                          (shell-quote-argument "custom:----")))))))
@@ -264,7 +263,7 @@ alias."
     (should (s-matches? type-pattern builtin-type-command))
     (should-not (s-matches? type-add-pattern builtin-type-command))
     (should (s-matches? type-add-pattern custom-type-command))
-    (should (s-matches? (rg-regexp-anywhere-but-last "--type custom") custom-type-command))))
+    (should (s-matches? (rg-regexp-anywhere-but-last "--type=custom") custom-type-command))))
 
 (ert-deftest rg-unit-test/default-alias ()
   "Test that `rg-default-alias' detects the current file and selects
@@ -507,7 +506,7 @@ Test `:flags' directive."
 
 (ert-deftest rg-integration-test/search-alias-all-custom ()
   "Test that aliases defined in `rg-custom-type-ailiases' work if
-  implicitly selected via '--type all'."
+  implicitly selected via '--type=all'."
   :tags '(need-rg)
   (let ((rg-group-result nil)
         (rg-ignore-case 'force)
@@ -685,7 +684,7 @@ method. "
     (rg-test-with-first-error
       (rg-run "amid" "elisp"
               (concat default-directory "test/data")
-              nil nil '("--context 3"))
+              nil nil '("--context=3"))
       (forward-line 1)
       (should (looking-at ctx-line-rx))
       (setq ctx-match (match-string 0))
@@ -711,7 +710,7 @@ method. "
     (rg-test-with-first-error
       (rg-run "amid" "elisp"
               (concat default-directory "test/data")
-              nil nil '("--context 3"))
+              nil nil '("--context=3"))
       (forward-line 1)
       (should (looking-at contex-line-rx))
       (setq ctx-match (match-string 0))
@@ -730,7 +729,7 @@ method. "
   (let ((rg-group-result t)
         (files '("bar.el" "foo.el"))
         pos)
-    (rg-run "hello" "elisp" (concat default-directory "test/data") nil nil (list "--sort path"))
+    (rg-run "hello" "elisp" (concat default-directory "test/data") nil nil (list "--sort=path"))
     (rg-with-current-result
       (goto-char (point-min))
       (rg-navigate-file-group 1)
@@ -758,7 +757,7 @@ method. "
   (let ((rg-group-result t)
         (files '("bar.el" "foo.el"))
         pos)
-    (rg-run "hello" "elisp" (concat default-directory "test/data") nil nil (list "--sort path"))
+    (rg-run "hello" "elisp" (concat default-directory "test/data") nil nil (list "--sort=path"))
     (rg-with-current-result
       (goto-char (point-min))
       (rg-next-file 1)
@@ -831,7 +830,7 @@ and ungrouped otherwise."
         (setf (rg-search-files rg-cur-search) "all")
         (setf (rg-search-pattern rg-cur-search) "Hello")
         (setf (rg-search-dir rg-cur-search) parent-dir)
-        (setf (rg-search-toggle-flags rg-cur-search) '("--text"))
+        (setf (rg-search-flags rg-cur-search) '("--text"))
         (rg-rerun))
         (should (rg-wait-for-search-result))
         (should (equal
@@ -839,7 +838,7 @@ and ungrouped otherwise."
                  (list (rg-search-pattern rg-cur-search)
                        (rg-search-files rg-cur-search)
                        (rg-search-dir rg-cur-search))))
-        (should (equal '("--text") (rg-search-toggle-flags rg-cur-search)))
+        (should (equal '("--text") (rg-search-flags rg-cur-search)))
         (rg-recompile)
         (should (rg-wait-for-search-result))
         (should (equal
@@ -847,7 +846,7 @@ and ungrouped otherwise."
                  (list (rg-search-pattern rg-cur-search)
                        (rg-search-files rg-cur-search)
                        (rg-search-dir rg-cur-search))))
-        (should (equal '("--text") (rg-search-toggle-flags rg-cur-search))))))
+        (should (equal '("--text") (rg-search-flags rg-cur-search))))))
 
 (ert-deftest rg-integration/display-exit-message ()
   "Verify exit messages."

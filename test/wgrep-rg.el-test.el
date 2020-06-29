@@ -149,7 +149,7 @@
   (rg-test-with-fontified-buffer
       (rg-run "amid" "elisp"
               (concat default-directory "test/data")
-              nil nil '("--context 3"))
+              nil nil '("--context=3"))
     (wgrep-change-to-wgrep-mode)
     (rg-check-wgrep-current-buffer)
     (rg-move-to-context-line)
