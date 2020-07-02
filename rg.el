@@ -1,4 +1,4 @@
-;;; rg.el --- A search tool based on ripgrep. -*- lexical-binding: t; -*-
+;;; rg.el --- A search tool based on ripgrep -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 1985-1987, 1993-1999, 2001-2015 Free Software
 ;; Foundation, Inc.
@@ -103,7 +103,7 @@ NIL means case sensitive search will be forced."
                  (const :tag "Off" nil))
   :group 'rg)
 
-(defcustom rg-keymap-prefix (kbd "C-c s")
+(defcustom rg-keymap-prefix "\C-cs"
   "Prefix for global `rg' keymap."
   :type 'key-sequence
   :group 'rg)
@@ -422,9 +422,10 @@ detailed info."
     (or buffer
         (error "Current buffer is not an rg-mode buffer and no buffer with name '%s'" buffer-name))))
 
+
 (defalias 'kill-rg 'kill-compilation)
-(defalias 'rg-kill-current 'kill-compilation "Kill the ongoing ripgrep search.")
-(make-obsolete 'kill-rg 'rg-kill-current "1.7.1")
+(define-obsolete-function-alias 'kill-rg 'rg-kill-current "1.7.1"
+  "Kill the ongoing ripgrep search.")
 
 ;;;###autoload
 (defmacro rg-define-toggle (flag &optional key default)
