@@ -50,7 +50,6 @@
 ;;; Code:
 
 (require 'cl-lib)
-(require 'edmacro)
 (require 'grep)
 (require 'rg-ibuffer)
 (require 'rg-menu)
@@ -499,9 +498,7 @@ If prefix is not supplied `rg-keymap-prefix' is used."
   (when-let ((prefix (or prefix rg-keymap-prefix)))
     (if rg-use-transient-menu
         (rg-enable-menu prefix)
-      (global-set-key prefix rg-global-map)
-      (message "Global key bindings for `rg' enabled with prefix: %s"
-               (edmacro-format-keys prefix)))))
+      (global-set-key prefix rg-global-map))))
 
 ;;;###autoload
 (defun rg-use-old-defaults ()
