@@ -146,12 +146,12 @@ FUNC is an rerun function invoked from an `rg-mode' buffer."
    (6 "-r" "Replace match" "--replace=")]
   [[:if-not-mode rg-mode
     :description "Search"
-    (3 "d" "Dwim" rg-dwim--transient)
+    (3 "d" "Dwim project" rg-dwim--transient)
+    (4 "c" "Dwim current directory" rg-dwim-current-dir--transient)
+    (4 "f" "Dwim current file" rg-dwim-current-file--transient)
     (3 "r" "Regex" rg--transient)
     (3 "t" "Literal" rg-literal--transient)
-    (3 "p" "Project" rg-project--transient)
-    (4 "c" "Current directory" rg-dwim-current-dir--transient)
-    (4 "f" "Current file" rg-dwim-current-file--transient)]
+    (3 "p" "Project" rg-project--transient)]
    [:if-mode rg-mode
     :description "Rerun"
     (3 "g" "Go" rg-rerun--transient)
