@@ -423,8 +423,8 @@ detailed info."
 
 
 (defalias 'kill-rg 'kill-compilation)
-(define-obsolete-function-alias 'kill-rg 'rg-kill-current "1.7.1"
-  "Kill the ongoing ripgrep search.")
+(defalias 'rg-kill-current 'kill-compilation "Kill the ongoing ripgrep search.")
+(make-obsolete 'kill-rg 'rg-kill-current "1.7.1")
 
 ;;;###autoload
 (defmacro rg-define-toggle (flag &optional key default)
