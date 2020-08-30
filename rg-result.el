@@ -37,6 +37,7 @@
 ;; Forward declarations.
 (declare-function rg-build-command "rg.el")
 (declare-function rg-get-type-aliases "rg.el")
+(declare-function rg-list-searches "rg.el")
 (declare-function rg-read-pattern "rg.el")
 (declare-function rg-menu "rg-menu.el")
 
@@ -213,6 +214,31 @@ Becomes buffer local in `rg-mode' buffers.")
      (0 (rg-command-line-properties))
      (1 (rg-hidden-command-line-properties)))))
 
+(defmacro rg-define-key-deprecated (keymap new-key old-key fn)
+  "In KEYMAP, define key sequence NEW-KEY as FN and deprecate OLD-KEY.
+The OLD-KEY will still work but a warning will be issued whenever that
+binding is used.  FN is a quoted symbol bound to a function.  Key
+definitions is a string or a vector of symbols an characters."
+  (let* ((fn-name (symbol-name (cadr fn)))
+         (deprecated-fn-name (concat "rg-deprecated-" fn-name))
+         (deprecated-fn (intern deprecated-fn-name))
+         (deprecated-fn-docstring
+          (format
+           "Call `%s' with a key binding deprecation warning."
+           fn-name))
+         (deprecated-message
+          (format
+           "'%s' is a deprecated binding for `%s' use '%s' instead."
+           old-key fn-name new-key)))
+    `(progn
+       (defun ,deprecated-fn ()
+         ,deprecated-fn-docstring
+         (interactive)
+         (,(cadr fn))
+         (message ,deprecated-message))
+    (define-key ,keymap ,old-key ',deprecated-fn)
+    (define-key ,keymap ,new-key ,fn))))
+
 (defvar rg-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map grep-mode-map)
@@ -221,13 +247,12 @@ Becomes buffer local in `rg-mode' buffers.")
     (define-key map "f" 'rg-rerun-change-files)
     (define-key map "g" 'rg-recompile)
     (define-key map "i" 'rg-rerun-toggle-ignore)
-    (define-key map "l" 'rg-list-searches)
+    (rg-define-key-deprecated map "L" "l" 'rg-list-searches)
     (define-key map "r" 'rg-rerun-change-regexp)
     (define-key map "s" 'rg-save-search)
     (define-key map "S" 'rg-save-search-as-name)
     (define-key map "t" 'rg-rerun-change-literal)
-    (define-key map "w" 'rg-deprecated-key-change-to-wgrep)
-    (define-key map "e" 'wgrep-change-to-wgrep-mode)
+    (rg-define-key-deprecated map "e" "w" 'wgrep-change-to-wgrep-mode)
     (define-key map "\M-N" 'rg-next-file)
     (define-key map "\M-P" 'rg-prev-file)
     (define-key map "\C-c>" 'rg-forward-history)
@@ -665,12 +690,6 @@ previous file with grouped matches."
         (setq rg-cur-search (rg-search-copy next))
         (rg-rerun 'no-history))
     (message "No more history elements for forward.")))
-
-(defun rg-deprecated-key-change-to-wgrep ()
-  "Call `wgrep-change-to-wgrep-mode' with a key binding deprecation warning."
-  (interactive)
-  (wgrep-change-to-wgrep-mode)
-  (message "'w' is a deprecated binding for changing to wgrep, use 'e' instead."))
 
 (provide 'rg-result)
 
