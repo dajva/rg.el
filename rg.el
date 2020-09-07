@@ -8,7 +8,7 @@
 ;;         Roland McGrath <roland@gnu.org>
 ;; Version: 1.8.0
 ;; URL: https://github.com/dajva/rg.el
-;; Package-Requires: ((emacs "25.1") (s "1.10.0") (transient "0.1.0") (wgrep "2.1.10"))
+;; Package-Requires: ((emacs "25.1") (transient "0.1.0") (wgrep "2.1.10"))
 ;; Keywords: matching, tools
 
 ;; This file is not part of GNU Emacs.
@@ -55,7 +55,7 @@
 (require 'rg-menu)
 (require 'rg-result)
 (require 'rg-info-hack)
-(require 's)
+(require 'subr-x)
 (require 'vc)
 
 
@@ -254,8 +254,8 @@ are command line flags to use for the search."
     (mapcar
      (lambda (type-alias)
        (setq type-alias (split-string type-alias ":" t))
-       (cons (s-trim (car type-alias))
-             (s-trim
+       (cons (string-trim (car type-alias))
+             (string-trim
               (mapconcat 'identity
                          (split-string (cadr type-alias) "," t )
                          " "))))
@@ -440,7 +440,9 @@ value that will be excluded from the function name.
 Optional KEY is a key binding that is added to `rg-mode-map'.  If the
 optional DEFAULT parameter is non nil the flag will be enabled by default."
   (let* ((flagvalue (eval flag))
-         (flagname (s-chop-prefixes '("-" "-") (car (s-split " " flagvalue t))))
+         (flagname (thread-last (car (split-string flagvalue " "  t))
+                     (string-remove-prefix "-")
+                     (string-remove-prefix "-")))
          (funname (concat "rg-custom-toggle-flag-" flagname)))
     `(progn
        ,(if default
