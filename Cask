@@ -10,6 +10,7 @@
  "rg-header.el"
  "rg-ibuffer.el"
  "rg-info-hack.el"
+ "rg-isearch.el"
  "rg-menu.el"
  "wgrep-rg.el")
 

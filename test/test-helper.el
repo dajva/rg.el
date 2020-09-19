@@ -33,6 +33,7 @@
 (require 'ert)
 (require 'rg)
 (require 'rg-history)
+(require 'rg-isearch)
 (require 'rg-menu)
 (require 's)
 (require 'seq)

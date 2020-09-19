@@ -670,8 +670,7 @@ Returns forms for binding function with NAME into rg-menu."
       (unless (and (consp menu-opt)
                    (= (length menu-opt) 3))
         (user-error "'%S' should be a list of length 3" menu-opt))
-      `((rg-menu-wrap-transient-search ,name)
-        (rg-menu-transient-insert
+      `((rg-menu-transient-insert
          ,@menu-opt
          ',(intern (concat (symbol-name name) "--transient")))))))
 
@@ -746,6 +745,7 @@ Example:
           (list ,@(mapcar 'cdr iargs)))
          (let ,local-bindings
            (rg-run query files dir literal confirm flags)))
+       (rg-menu-wrap-transient-search ,name)
        ,@menu-forms)))
 
 ;;;###autoload (autoload 'rg-project "rg.el" "" t)

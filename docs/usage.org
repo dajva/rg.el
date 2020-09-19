@@ -97,6 +97,20 @@
   buffer. No setup is needed.
 
   :RUBRIC:
+  Isearch integration
+  :END:
+  Optional [[#isearch_search][isearch integration]] can be enabled to allow you to extend
+  isearch to trigger ripgrep searching.
+  Enable it in your configuration with:
+  #+BEGIN_SRC elisp
+    (require 'rg-isearch)
+    (define-key isearch-mode-map "\M-sr" 'rg-isearch-menu)
+  #+END_SRC
+  For the evil use case where isearch-mode is exited after first search hit,
+  users would also want to add the binding to the =global-map= or
+  similar.
+
+  :RUBRIC:
   Interaction with the /ripgrep/ configuration file
   :END:
   The /ripgrep/ binary allows using a [[https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md#configuration-file][configuration file]] to set
@@ -253,6 +267,20 @@
     directory]] is used and with double /universal arguments/ a [[cmd:rg-dwim-current-file][file
     search]] is done.
     :END:
+*** Isearch search
+    :PROPERTIES:
+    :CUSTOM_ID: isearch_search
+    :END:
+    Isearch integration is optional and need to be enabled explicitly
+    in your emacs configuration. See [[#installation][installation]] for more info.
+
+    This functionality is similar to emacs built in occur package but offers
+    some additional choices for the search and provides the full
+    functionality of the rg search result buffer.
+    When enabled, the choosen binding can be used from isearch to
+    trigger a menu for extending the isearch to to a ripgrep search in
+    current file, current directory or current project.
+
 *** File type aliases
     :PROPERTIES:
     :CUSTOM_ID: file_type_aliases
