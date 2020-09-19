@@ -27,7 +27,6 @@
 
 ;;; Code:
 
-(require 'edmacro)
 (require 'rg-result)
 (require 'seq)
 (require 'transient)
@@ -213,9 +212,7 @@ If prefix is not supplied `rg-keymap-prefix' is used."
     ;; If it's already bound it might have been rebound so keep that
     ;; instead of overriding.
     (unless (where-is-internal #'rg-menu (list rg-mode-map) t)
-      (define-key rg-mode-map "m" #'rg-menu))
-    (message "Transient menu for `rg' enabled with key binding: %s"
-             (edmacro-format-keys prefix))))
+      (define-key rg-mode-map "m" #'rg-menu))))
 
 (provide 'rg-menu)
 
