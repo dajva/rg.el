@@ -421,6 +421,13 @@ detailed info."
     (or buffer
         (error "Current buffer is not an rg-mode buffer and no buffer with name '%s'" buffer-name))))
 
+(defun rg-get-buffer-file-name ()
+  "Wrapper for function `buffer-file-name'.
+Return the result of function `buffer-file-name' if buffer has an
+associated file, otherwise raise a user error."
+  (if (buffer-file-name)
+      (file-name-nondirectory (buffer-file-name))
+    (user-error "Buffer does not have an associated file")))
 
 (defalias 'kill-rg 'kill-compilation)
 (defalias 'rg-kill-current 'kill-compilation "Kill the ongoing ripgrep search.")
@@ -773,7 +780,7 @@ under the current directory."
 name (as a pattern) under the current directory."
   :query point
   :format literal
-  :files (file-name-nondirectory (buffer-file-name))
+  :files (rg-get-buffer-file-name)
   :dir current)
 
 ;;;###autoload
