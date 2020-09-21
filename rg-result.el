@@ -326,18 +326,10 @@ Set up `compilation-exit-message-function' and run `grep-setup-hook'."
   ;; Run this hook to intergrate with wgrep
   (run-hooks 'grep-setup-hook))
 
-(defun rg-string-repeat (count s)
-  "Create a string with S repeated S COUNT times."
-  (let (repeated)
-    (while (> count 0)
-      (setf repeated (cons s repeated))
-      (cl-decf count))
-    (apply 'concat repeated)))
-
 (defun rg-prepend-space (text length)
   "Prepend TEXT with LENGTH number of spaces."
   (let ((space-count (- length (length text))))
-    (concat (rg-string-repeat space-count " ") text)))
+    (concat (make-string space-count ?\s) text)))
 
 (defun rg-perform-position-numbers-alignment (line-number &optional column-number context-marker )
   "Return aligned LINE-NUMBER, COLUMN-NUMBER and CONTEXT-MARKER."
