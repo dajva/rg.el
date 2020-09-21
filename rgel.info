@@ -1,6 +1,6 @@
 This is rgel.info, produced by makeinfo version 6.5 from rgel.texi.
 
-     rg.el 2.0.1, Sep 19, 2020
+     rg.el 2.0.1, Sep 21, 2020
 
      David Landell
 
@@ -20,7 +20,7 @@ File: rgel.info,  Node: Top,  Next: Usage,  Up: (dir)
 RG User Manual
 **************
 
-     rg.el 2.0.1, Sep 19, 2020
+     rg.el 2.0.1, Sep 21, 2020
 
      David Landell
 
@@ -339,7 +339,7 @@ This functionality is similar to emacs built in occur package but offers
 some additional choices for the search and provides the full
 functionality of the rg search result buffer.  When enabled, the choosen
 binding can be used from isearch to trigger a menu for extending the
-isearch to to a ripgrep search in current file, current directory or
+isearch to do a ripgrep search in current file, current directory or
 current project.
 
 
