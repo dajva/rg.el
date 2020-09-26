@@ -329,7 +329,9 @@ Set up `compilation-exit-message-function' and run `grep-setup-hook'."
 (defun rg-prepend-space (text length)
   "Prepend TEXT with LENGTH number of spaces."
   (let ((space-count (- length (length text))))
-    (concat (make-string space-count ?\s) text)))
+    (concat
+     (when (> space-count 0) (make-string space-count ?\s))
+     text)))
 
 (defun rg-perform-position-numbers-alignment (line-number &optional column-number context-marker )
   "Return aligned LINE-NUMBER, COLUMN-NUMBER and CONTEXT-MARKER."
