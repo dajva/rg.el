@@ -6,7 +6,7 @@
 ;;
 ;; Author: David Landell <david.landell@sunnyhill.email>
 ;;         Roland McGrath <roland@gnu.org>
-;; Version: 1.8.0
+;; Version: 2.1.0
 ;; URL: https://github.com/dajva/rg.el
 ;; Package-Requires: ((emacs "25.1") (transient "0.1.0") (wgrep "2.1.10"))
 ;; Keywords: matching, tools
