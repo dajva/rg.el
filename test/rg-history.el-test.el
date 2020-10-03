@@ -1,4 +1,4 @@
-;;; rg-history.el-test.el --- Tests for rg-history.el *- lexical-binding: t; -*-
+;;; rg-history.el-test.el --- Tests for rg-history.el -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2018 David Landell <david.landell@sunnyhill.email>
 ;;

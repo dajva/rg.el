@@ -1,4 +1,4 @@
-;;; wgrep-rg.el-test.el --- wgrep-rg.el tests *- lexical-binding: t; -*-
+;;; wgrep-rg.el-test.el --- wgrep-rg.el tests -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2018 David Landell <david.landell@sunnyhill.email>
 ;;

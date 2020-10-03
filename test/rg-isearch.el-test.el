@@ -1,4 +1,4 @@
-;;; rg-isearch.el-test.el --- rg-isearch.el tests *- lexical-binding: t; -*-
+;;; rg-isearch.el-test.el --- rg-isearch.el tests -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020 David Landell <david.landell@sunnyhill.email>
 ;;

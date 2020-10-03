@@ -1,4 +1,4 @@
-;;; rg-menu.el-test.el --- Tests for rg-menu.el *- lexical-binding: t; -*-
+;;; rg-menu.el-test.el --- Tests for rg-menu.el -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2018 David Landell <david.landell@sunnyhill.email>
 ;;
