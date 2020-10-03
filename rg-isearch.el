@@ -1,4 +1,4 @@
-;;; rg-isearch.el --- rg integration into isearch *- lexical-binding: t; -*-
+;;; rg-isearch.el --- rg integration into isearch -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020 David Landell <david.landell@sunnyhill.email>
 ;;

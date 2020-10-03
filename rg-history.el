@@ -1,4 +1,4 @@
-;;; rg-history.el --- History navigation in rg.el *- lexical-binding: t; -*-
+;;; rg-history.el --- History navigation in rg.el -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2018 David Landell <david.landell@sunnyhill.email>
 ;;

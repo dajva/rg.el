@@ -1,4 +1,4 @@
-;;; rg-header.el --- Header line for rg-mode *- lexical-binding: t; -*-
+;;; rg-header.el --- Header line for rg-mode -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2018 David Landell <david.landell@sunnyhill.email>
 ;;

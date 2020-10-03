@@ -1,4 +1,4 @@
-;;; org-bootstrap.el --- Description *- lexical-binding: t; -*-
+;;; org-bootstrap.el --- Description -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019 David Landell <david.landell@sunnyhill.email>
 ;;

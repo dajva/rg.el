@@ -1,4 +1,4 @@
-;;; rg-result.el ---- Result buffer implementation for rg.el. *- lexical-binding: t; -*-
+;;; rg-result.el ---- Result buffer implementation for rg.el. -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2018 David Landell <david.landell@sunnyhill.email>
 ;;
@@ -271,8 +271,7 @@ definitions is a string or a vector of symbols an characters."
 ;; be more usable.
 (defun rg-command-line-properties ()
   "Return properties for graying out and keymap for hiding command line."
-  (let ((map (make-sparse-keymap))
-        properties)
+  (let ((map (make-sparse-keymap)))
     (define-key map [down-mouse-2] 'mouse-set-point)
     (define-key map [mouse-2] 'rg-toggle-command-hiding)
     (define-key map "\C-m" 'rg-toggle-command-hiding)

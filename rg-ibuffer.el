@@ -1,4 +1,4 @@
-;;; rg-ibuffer.el --- List search buffers for rg-mode *- lexical-binding: t; -*-
+;;; rg-ibuffer.el --- List search buffers for rg-mode -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2018 David Landell <david.landell@sunnyhill.email>
 ;;

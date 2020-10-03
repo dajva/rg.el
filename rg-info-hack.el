@@ -1,4 +1,4 @@
-;;; rg-info-hack.el --- Make sure rg.el info documentation looks good *- lexical-binding: t; -*-
+;;; rg-info-hack.el --- Make sure rg.el info documentation looks good -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019 David Landell <david.landell@sunnyhill.email>
 ;;
