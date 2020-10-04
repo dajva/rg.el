@@ -28,6 +28,7 @@
 
 (require 'cl-lib)
 (require 'grep)
+(require 'mouse)
 (require 'rg-header)
 (require 'rg-history)
 (require 'subr-x)
@@ -209,8 +210,10 @@ Becomes buffer local in `rg-mode' buffers.")
     ;; context lines in rg
     ("^ *\\(?:.+?-\\)?[0-9]+-.*\n" (0 'rg-context-face))
     ("^.*rg \\(--color=always .*$\\)"
-     (0 (rg-command-line-properties))
-     (1 (rg-hidden-command-line-properties)))))
+     (0 rg-command-line-properties)
+     (1 rg-hidden-command-line-properties))
+    ("^-\\*- mode: rg; default-directory: \"\\(.*\\)\" -\\*-$"
+     (1 rg-directory-properties))))
 
 (defmacro rg-define-key-deprecated (keymap new-key old-key fn)
   "In KEYMAP, define key sequence NEW-KEY as FN and deprecate OLD-KEY.
@@ -324,24 +327,31 @@ definitions is a string or a vector of symbols an characters."
 
 ;; Defuns
 
-;; This solution was mostly copied from emacs grep.el and adjusted to
-;; be more usable.
-(defun rg-command-line-properties ()
-  "Return properties for graying out and keymap for hiding command line."
+(defun rg-create-mouse-map (command)
+  "Create a mouse-map for the COMMAND.
+This makes sure point moves to click and that the clicked window is
+selected."
   (let ((map (make-sparse-keymap)))
     (define-key map [down-mouse-2] 'mouse-set-point)
-    (define-key map [mouse-2] 'rg-toggle-command-hiding)
-    (define-key map "\C-m" 'rg-toggle-command-hiding)
+    (define-key map [mouse-2] command)
+    (define-key map "\C-m" command)
+    map))
+
+;; This solution was mostly copied from emacs grep.el and adjusted to
+;; be more usable.
+(defvar rg-command-line-properties
+  (let ((map (rg-create-mouse-map 'rg-toggle-command-hiding)))
     `(face rg-context-face mouse-face highlight
            help-echo "RET, mouse-2: show unabbreviated command"
-           keymap ,map)))
+           keymap ,map))
+  "Properties for graying out and keymap for hiding command line.")
 
-(defun rg-hidden-command-line-properties ()
-  "Return properties of button-like ellipsis on part of rg command line."
+(defvar rg-hidden-command-line-properties
   (append
    '(face nil rg-command-hidden-part t)
    (when rg-hide-command
-     `(display ,rg-ellipsis))))
+     `(display ,rg-ellipsis)))
+  "Properties of button-like ellipsis on part of rg command line.")
 
 (defun rg-toggle-command-hiding ()
   "Toggle showing the hidden part of rg command line."
@@ -355,6 +365,13 @@ definitions is a string or a vector of symbols an characters."
               (remove-list-of-text-properties beg end '(display))
             (add-text-properties beg end `(display ,rg-ellipsis)))
         (user-error "No abbreviated part to hide/show")))))
+
+(defvar rg-directory-properties
+  (let ((map (rg-create-mouse-map 'rg-rerun-change-dir)))
+    `(face rg-filename-face mouse-face highlight
+           help-echo "RET, mouse-2: Change search directory"
+           keymap ,map))
+  "Properties for `default-directory' in header.")
 
 (defun rg-list-toggle (elem list)
   "Remove ELEM from LIST if present or add it if not present.
@@ -648,6 +665,13 @@ backwards and positive means forwards."
   "Rerun last search with toggled '--no-ignore' flag."
   (interactive)
   (rg-rerun-toggle-flag "--no-ignore"))
+
+(defun rg-rerun-toggle-rexexp-literal ()
+  "Rerun last search with toggled '--no-ignore' flag."
+  (interactive)
+  (if (rg-search-literal rg-cur-search)
+      (rg-rerun-change-regexp)
+    (rg-rerun-change-literal)))
 
 (defun rg-rerun-change-search-string (literal)
   "Rerun last search but prompt for new search pattern.

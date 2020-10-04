@@ -28,6 +28,7 @@
 
 ;;; Code:
 
+(require 'mouse)
 
 ;; Faces
 (defface rg-toggle-on-face
@@ -82,6 +83,20 @@ string."
                  (face (if on 'rg-toggle-on-face 'rg-toggle-off-face)))
             (propertize value 'font-lock-face `(bold ,face)))))
 
+(defun rg-header-mouse-action (command help &rest items)
+  "Add a keymap with mouse click action for COMMAND.
+When hoovering HELP is shown as a tooltip.  ITEMS is the header line
+items that the map will be applied to."
+  (let ((map (make-sparse-keymap)))
+    (define-key map [header-line mouse-2]
+      (lambda (click)
+        (interactive "e")
+        (mouse-select-window click)
+        (call-interactively command)))
+    `(:propertize ,items mouse-face header-line-highlight
+                  help-echo ,help
+                  keymap ,map)))
+
 ;; Use full-command here to avoid dependency on rg-search
 ;; struct. Should be properly fixed.
 (defun rg-create-header-line (search full-command)
@@ -92,19 +107,24 @@ If FULL-COMMAND specifies if the full command line search was done."
           (if full-command
               (list (rg-header-render-label "command line") "no refinement")
             (list
-             (rg-header-render-label `((rg-search-literal ,search)
-                                       ("literal" rg-literal-face)
-                                       ("regexp" rg-regexp-face)))
-             `(:eval (rg-search-pattern ,search)) itemspace
+             (rg-header-mouse-action 'rg-rerun-toggle-rexexp-literal "Toggle literal/regexp"
+                                     (rg-header-render-label `((rg-search-literal ,search)
+                                                               ("literal" rg-literal-face)
+                                                               ("regexp" rg-regexp-face))))
+             (rg-header-mouse-action 'rg-rerun-change-literal "Change search string"
+                                     `(:eval (rg-search-pattern ,search))) itemspace
              (rg-header-render-label "files")
-             `(:eval (rg-search-files ,search)) itemspace
+             (rg-header-mouse-action 'rg-rerun-change-files "Change file types"
+                                     `(:eval (rg-search-files ,search))) itemspace
              (rg-header-render-label "case")
-             (rg-header-render-toggle
-              `(not (member "-i" (rg-search-flags ,search)))) itemspace
-              (rg-header-render-label "ign")
-              (rg-header-render-toggle
-               `(not (member "--no-ignore" (rg-search-flags ,search)))) itemspace
-               (rg-header-render-label "hits")
+             (rg-header-mouse-action 'rg-rerun-toggle-case "Toggle case"
+                                     (rg-header-render-toggle
+                                      `(not (member "-i" (rg-search-flags ,search))))) itemspace
+             (rg-header-render-label "ign")
+             (rg-header-mouse-action 'rg-rerun-toggle-ignore "Toggle ignore"
+                                     (rg-header-render-toggle
+                                      `(not (member "--no-ignore" (rg-search-flags ,search))))) itemspace
+             (rg-header-render-label "hits")
                '(:eval (format "%d" rg-hit-count)))))))
 
 (provide 'rg-header)
