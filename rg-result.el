@@ -211,7 +211,7 @@ Becomes buffer local in `rg-mode' buffers.")
     ("^ *\\(?:.+?-\\)?[0-9]+-.*\n" (0 'rg-context-face))
     ("^.*rg \\(--color=always .*$\\)"
      (0 rg-command-line-properties)
-     (1 rg-hidden-command-line-properties))
+     (1 (rg-hidden-command-line-properties)))
     ("^-\\*- mode: rg; default-directory: \"\\(.*\\)\" -\\*-$"
      (1 rg-directory-properties))))
 
@@ -346,12 +346,12 @@ selected."
            keymap ,map))
   "Properties for graying out and keymap for hiding command line.")
 
-(defvar rg-hidden-command-line-properties
+(defun rg-hidden-command-line-properties ()
+  "Return properties of button-like ellipsis on part of rg command line."
   (append
    '(face nil rg-command-hidden-part t)
    (when rg-hide-command
-     `(display ,rg-ellipsis)))
-  "Properties of button-like ellipsis on part of rg command line.")
+     `(display ,rg-ellipsis))))
 
 (defun rg-toggle-command-hiding ()
   "Toggle showing the hidden part of rg command line."
