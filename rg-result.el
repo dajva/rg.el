@@ -568,7 +568,7 @@ Commands:
   (set (make-local-variable 'compilation-error-screen-columns) nil)
   (unless rg-search-history
     (setq rg-search-history (rg-history-create)))
-  (add-hook 'compilation-filter-hook 'rg-filter nil t))
+  (set (make-local-variable 'compilation-filter-hook) 'rg-filter))
 
 (defun rg-maybe-show-header ()
   "Recreate header if enabled."
