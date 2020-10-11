@@ -242,7 +242,7 @@ are command line flags to use for the search."
 
     (grep-expand-template
      (mapconcat 'identity (cons (rg-executable) (delete-dups command-line)) " ")
-     pattern
+     (shell-quote-argument pattern)
      (if (rg-is-custom-file-pattern files) "custom" files))))
 
 (defun rg-invoke-rg-type-list ()
