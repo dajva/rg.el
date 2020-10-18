@@ -215,31 +215,6 @@ Becomes buffer local in `rg-mode' buffers.")
     ("^-\\*- mode: rg; default-directory: \"\\(.*\\)\" -\\*-$"
      (1 rg-directory-properties))))
 
-(defmacro rg-define-key-deprecated (keymap new-key old-key fn)
-  "In KEYMAP, define key sequence NEW-KEY as FN and deprecate OLD-KEY.
-The OLD-KEY will still work but a warning will be issued whenever that
-binding is used.  FN is a quoted symbol bound to a function.  Key
-definitions is a string or a vector of symbols an characters."
-  (let* ((fn-name (symbol-name (cadr fn)))
-         (deprecated-fn-name (concat "rg-deprecated-" fn-name))
-         (deprecated-fn (intern deprecated-fn-name))
-         (deprecated-fn-docstring
-          (format
-           "Call `%s' with a key binding deprecation warning."
-           fn-name))
-         (deprecated-message
-          (format
-           "'%s' is a deprecated binding for `%s' use '%s' instead."
-           old-key fn-name new-key)))
-    `(progn
-       (defun ,deprecated-fn ()
-         ,deprecated-fn-docstring
-         (interactive)
-         (,(cadr fn))
-         (message ,deprecated-message))
-    (define-key ,keymap ,old-key ',deprecated-fn)
-    (define-key ,keymap ,new-key ,fn))))
-
 (defvar rg-menu-map
   (let ((map (make-sparse-keymap "RipGrep")))
     (define-key map [rg-toggle-command-hiding]
@@ -302,12 +277,12 @@ definitions is a string or a vector of symbols an characters."
     (define-key map "f" 'rg-rerun-change-files)
     (define-key map "g" 'rg-recompile)
     (define-key map "i" 'rg-rerun-toggle-ignore)
-    (rg-define-key-deprecated map "L" "l" 'rg-list-searches)
+    (define-key map "L" 'rg-list-searches)
     (define-key map "r" 'rg-rerun-change-regexp)
     (define-key map "s" 'rg-save-search)
     (define-key map "S" 'rg-save-search-as-name)
     (define-key map "t" 'rg-rerun-change-literal)
-    (rg-define-key-deprecated map "e" "w" 'wgrep-change-to-wgrep-mode)
+    (define-key map "e" 'wgrep-change-to-wgrep-mode)
     (define-key map "\M-N" 'rg-next-file)
     (define-key map "\M-P" 'rg-prev-file)
     (define-key map "\C-c>" 'rg-forward-history)
