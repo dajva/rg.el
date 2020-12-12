@@ -102,6 +102,7 @@ NIL means case sensitive search will be forced."
                  (const :tag "Off" nil))
   :group 'rg)
 
+;;;###autoload
 (defcustom rg-keymap-prefix "\C-cs"
   "Prefix for global `rg' keymap."
   :type 'key-sequence
@@ -126,6 +127,7 @@ Disabling this setting can break functionality of this package."
   :type 'boolean
   :group 'rg)
 
+;;;###autoload
 (defvar rg-command-line-flags-function 'identity
   "Function to modify command line flags of a search.
 The argument of the function is an optional list of search specific
