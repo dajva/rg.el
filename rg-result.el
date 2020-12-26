@@ -470,8 +470,10 @@ This function is called from `compilation-filter-hook'."
         ;; Delete all remaining escape sequences
         (goto-char beg)
         (while (re-search-forward "\033\\[[0-9;]*[0mK]" end 1)
-          (replace-match "" t t))))
-    (run-hooks 'rg-filter-hook)))
+          (replace-match "" t t))
+
+        (goto-char beg)
+        (run-hooks 'rg-filter-hook)))))
 
 ;; The regexp and filter functions below were taken from ag.el
 ;; Kudos to the people from https://github.com/Wilfred/ag.el for these.
