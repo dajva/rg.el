@@ -152,8 +152,7 @@ line flags to use.")
     "--colors=path:fg:magenta"
     "--colors=line:fg:green"
     "--colors=column:none"
-    "-n"
-    "--column"))
+    "-n"))
 
 (defconst rg-internal-type-aliases
   '(("all" . "all defined type aliases") ; rg --type=all
@@ -221,6 +220,8 @@ are command line flags to use for the search."
   (let ((command-line
          (append
           rg-required-command-line-flags
+          (when (or rg-show-columns rg-group-result)
+            (list "--column"))
           (rg-build-type-add-args)
           (if (functionp rg-command-line-flags)
               (funcall rg-command-line-flags)

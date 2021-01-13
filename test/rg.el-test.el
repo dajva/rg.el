@@ -619,6 +619,22 @@ method. "
         (rg-toggle-command-hiding)
         (should (get-text-property (point) 'display)))))
 
+(ert-deftest rg-integration/nogroup-show-columns ()
+  "Test that column numbers are shown in no group mode if enabled."
+  :tags '(need-rg)
+  (let ((rg-group-result nil)
+        (rg-show-columns t))
+    (rg-test-with-first-error "hello"
+     (should (looking-at ".*:[0-9]:[0-9]")))))
+
+(ert-deftest rg-integration/nogroup-hide-columns ()
+  "Test that column numbers are hidden in no group mode if disabled."
+  :tags '(need-rg)
+  (let ((rg-group-result nil)
+        (rg-show-columns nil))
+    (rg-test-with-first-error "hello"
+     (should (looking-at ".*:[0-9]:[^0-9]")))))
+
 (ert-deftest rg-integration/positions-line-only ()
   "Test line position format without alignment."
   :tags '(need-rg)

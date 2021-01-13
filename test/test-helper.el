@@ -127,12 +127,11 @@ SEARCH can either be a search string or a form invocating `rg-run'."
 (defmacro rg-test-with-first-error (search &rest body)
   "Run search and put point at start of first error line when running BODY."
   (declare (indent 0) (debug t))
-  `(let ((rg-group-result t))
-     (rg-test-with-fontified-buffer ,search
-       (compilation-next-error 1)
-       (should-not (eq (point) (point-max)))
-       (beginning-of-line)
-       ,@body)))
+  `(rg-test-with-fontified-buffer ,search
+     (compilation-next-error 1)
+     (should-not (eq (point) (point-max)))
+     (beginning-of-line)
+     ,@body))
 
 (defun simulate-rg-run (pattern files dir)
   (setq-default rg-cur-search
