@@ -362,9 +362,10 @@ executing.  FLAGS is additional command line flags to use in the search."
   (unless (and (file-directory-p dir) (file-readable-p dir))
     (setq dir default-directory))
   (rg-apply-case-flag pattern)
-  (let ((command (rg-build-command
-                  pattern files literal
-                  (append rg-initial-toggle-flags flags)))
+  (let* ((flags (append rg-initial-toggle-flags flags))
+         (command (rg-build-command
+                   pattern files literal
+                   flags))
          confirmed)
     (setq dir (file-name-as-directory (expand-file-name dir)))
     (if confirm
