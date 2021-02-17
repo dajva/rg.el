@@ -74,10 +74,13 @@ regularly."
     (let ((func-name (concat (symbol-name func) "--transient"))
           (doc-string (format "Transient wrapper around `%s' for `rg-menu'."
                               (symbol-name func))))
-      `(defun ,(intern func-name) ()
-         ,doc-string
-         (interactive)
-         ,@body))))
+      `(progn
+         (defun ,(intern func-name) ()
+           (interactive)
+           ,@body)
+         (put ',(intern func-name) 'function-documentation
+              ;; quote to defer evalutation until func is available
+              '(concat ,doc-string "\n\n" (documentation ',func)))))))
 
 (defmacro rg-menu-wrap-transient-search (func)
   "Wrap FUNC with a command that apply transient arguments to the search.
