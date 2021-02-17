@@ -48,19 +48,12 @@
        (t isearch-string))
       ""))
 
-(defun rg-isearch-literal-p ()
-  "Return non nil if last isearch was literal."
-  (not (or
-        (functionp isearch-regexp-function)
-        isearch-regexp-function
-        isearch-regexp)))
-
 ;;;###autoload (autoload 'rg-isearch-current-file "rg-isearch.el" "" t)
 (rg-define-search rg-isearch-current-file
   "Run ripgrep on current file searching for latest isearch string."
   :dir current
   :query (rg-get-isearch-string)
-  :format (rg-isearch-literal-p)
+  :format literal
   :files (rg-get-buffer-file-name)
   :dir current)
 
@@ -69,7 +62,7 @@
   "Run ripgrep in current directory searching for latest isearch string
 in files matching the current file type."
   :query (rg-get-isearch-string)
-  :format (rg-isearch-literal-p)
+  :format literal
   :files current
   :dir current)
 
@@ -79,7 +72,7 @@ in files matching the current file type."
 in files matching the current file type."
   :dir project
   :query (rg-get-isearch-string)
-  :format (rg-isearch-literal-p)
+  :format literal
   :files current)
 
 (define-transient-command rg-isearch-menu ()

@@ -88,51 +88,6 @@
       (should (equal called-files "elisp"))
       (should (equal (expand-file-name called-dir) project-dir)))))
 
-(ert-deftest rg-unit/isearch-regexp ()
-  "Test that we do regexp search if required."
-  (cl-letf* ((called-pattern nil)
-             (called-literal nil)
-             ((symbol-function #'rg-run)
-              (lambda (pattern _files _dir &optional literal &rest _)
-                (setq called-pattern pattern)
-                (setq called-literal literal))))
-    (find-file "test/data/bar.el")
-    (let ((isearch-string "test")
-          (isearch-regexp t))
-      (rg-isearch-current-file)
-      (should (equal called-pattern "test"))
-      (should (eq called-literal nil)))))
-
-(ert-deftest rg-unit/isearch-regexp-func ()
-  "Test that we handle a regexp function correctly."
-  (cl-letf* ((called-pattern nil)
-             (called-literal nil)
-             ((symbol-function #'rg-run)
-              (lambda (pattern _files _dir &optional literal &rest _)
-                (setq called-pattern pattern)
-                (setq called-literal literal))))
-    (find-file "test/data/bar.el")
-    (let ((isearch-string "test")
-          (isearch-regexp-function #'word-search-regexp))
-      (rg-isearch-current-file)
-      (should (equal called-pattern "test"))
-      (should (eq called-literal nil)))))
-
-(ert-deftest rg-unit/isearch-regexp-word ()
-  "Test that we handle a regexp word search correctly."
-  (cl-letf* ((called-pattern nil)
-             (called-literal nil)
-             ((symbol-function #'rg-run)
-              (lambda (pattern _files _dir &optional literal &rest _)
-                (setq called-pattern pattern)
-                (setq called-literal literal))))
-    (find-file "test/data/bar.el")
-    (let ((isearch-string "test")
-          (isearch-regexp-function t))
-      (rg-isearch-current-file)
-      (should (equal called-pattern "\btest\b"))
-      (should (eq called-literal nil)))))
-
 (provide 'rg-isearch.el-test)
 
 ;;; rg-isearch.el-test.el ends here
