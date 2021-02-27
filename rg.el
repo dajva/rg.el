@@ -8,7 +8,7 @@
 ;;         Roland McGrath <roland@gnu.org>
 ;; Version: 2.1.0
 ;; URL: https://github.com/dajva/rg.el
-;; Package-Requires: ((emacs "25.1") (transient "0.1.0") (wgrep "2.1.10"))
+;; Package-Requires: ((emacs "25.1") (transient "0.3.0") (wgrep "2.1.10"))
 ;; Keywords: matching, tools
 
 ;; This file is not part of GNU Emacs.

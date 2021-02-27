@@ -117,7 +117,7 @@ FUNC is an rerun function invoked from an `rg-mode' buffer."
 (rg-menu-wrap-transient-rerun rg-rerun-change-dir)
 
  ;;;###autoload (autoload 'rg-menu "rg-menu.el" "" t)
-(define-transient-command rg-menu ()
+(transient-define-prefix rg-menu ()
   "Show menu buffer for rg commands."
   :man-page "rg"
   :value 'rg-menu-search-initial-value

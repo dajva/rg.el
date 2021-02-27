@@ -85,7 +85,7 @@
 
 (ert-deftest rg-unit/menu-transient-insert ()
   "Test adding new items to the menu"
-  (define-transient-command rg-menu ()
+  (transient-define-prefix rg-menu ()
     [ "Switches" ]
     [ "Options" ]
     [[ "Search"
@@ -111,7 +111,7 @@
 
 (ert-deftest rg-unit/menu-define-search ()
   "Test adding new items to the menu"
-  (define-transient-command rg-menu ()
+  (transient-define-prefix rg-menu ()
     [ "Switches" ]
     [ "Options" ]
     [[ "Search"

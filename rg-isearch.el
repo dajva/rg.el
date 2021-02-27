@@ -75,7 +75,7 @@ in files matching the current file type."
   :format literal
   :files current)
 
-(define-transient-command rg-isearch-menu ()
+(transient-define-prefix rg-isearch-menu ()
   "Show menu for rg isearch commands."
   [:description "Search with ripgrep"
     (3 "f" "File" rg-isearch-current-file--transient)
