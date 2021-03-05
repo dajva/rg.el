@@ -439,32 +439,36 @@ associated file, otherwise raise a user error."
 (make-obsolete 'kill-rg 'rg-kill-current "1.7.1")
 
 (defun rg-print-environment ()
-  "Print the environmet in which this packae is running.
-Should be attached to bug reports."
+  "Print the environmet in which this package is running.
+The result is also copied to the `kill-ring'.  Should be attached to bug
+reports."
   (interactive)
-  (let ((settings
-         (thread-last (custom-group-members 'rg nil)
-           (seq-filter (lambda (item)
-                         (eq (cadr item) 'custom-variable)))
-           (mapcar (lambda (member)
-                     (cons (car member) (symbol-value (car member)))))))
-        (rg-version (car
-                     (split-string
-                      (shell-command-to-string (format "%s --version" (rg-executable)))
-                      "\n")))
-        (compilation-filter-advised
-         (when-let (advice-alist (get 'compilation-filter 'ad-advice-info))
-           (cdr (assoc 'active advice-alist)))))
-    (message (concat
-              "--------- RG environment ---------\n"
-              (format "emacs-version: %s\n" (car (split-string (emacs-version) "\n")))
-              (format "ripgrep-version: %s\n" rg-version)
-              (format "compilation-filter-hook: %S\n" compilation-filter-hook)
-              (format "compilation-filter-advised: %S\n" compilation-filter-advised)
-              (mapconcat
-               (lambda (setting) (format "%S: %S" (car setting) (cdr setting)))
-               settings "\n")
-              "\n------------------ END ------------------"))))
+  (let* ((settings
+          (thread-last (custom-group-members 'rg nil)
+            (seq-filter (lambda (item)
+                          (eq (cadr item) 'custom-variable)))
+            (mapcar (lambda (member)
+                      (cons (car member) (symbol-value (car member)))))))
+         (rg-version (car
+                      (split-string
+                       (shell-command-to-string (format "%s --version" (rg-executable)))
+                       "\n")))
+         (compilation-filter-advised
+          (when-let (advice-alist (get 'compilation-filter 'ad-advice-info))
+            (cdr (assoc 'active advice-alist))))
+         (environment (concat
+                       "--------- RG environment ---------\n"
+                       (format "emacs-version: %s\n" (car (split-string (emacs-version) "\n")))
+                       (format "system: %s\n" system-type)
+                       (format "ripgrep-version: %s\n" rg-version)
+                       (format "compilation-filter-hook: %S\n" compilation-filter-hook)
+                       (format "compilation-filter-advised: %S\n" compilation-filter-advised)
+                       (mapconcat
+                        (lambda (setting) (format "%S: %S" (car setting) (cdr setting)))
+                        settings "\n")
+                       "\n------------------ END ------------------")))
+    (message environment)
+    (kill-new environment)))
 
 ;;;###autoload
 (defmacro rg-define-toggle (flag &optional key default)
