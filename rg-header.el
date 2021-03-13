@@ -107,23 +107,32 @@ If FULL-COMMAND specifies if the full command line search was done."
           (if full-command
               (list (rg-header-render-label "command line") "no refinement")
             (list
-             (rg-header-mouse-action 'rg-rerun-toggle-rexexp-literal "Toggle literal/regexp"
-                                     (rg-header-render-label `((rg-search-literal ,search)
-                                                               ("literal" rg-literal-face)
-                                                               ("regexp" rg-regexp-face))))
-             (rg-header-mouse-action 'rg-rerun-change-literal "Change search string"
-                                     `(:eval (rg-search-pattern ,search))) itemspace
+             (rg-header-mouse-action
+              'rg-rerun-toggle-rexexp-literal "Toggle literal/regexp"
+              (rg-header-render-label `((rg-search-literal ,search)
+                                        ("literal" rg-literal-face)
+                                        ("regexp" rg-regexp-face))))
+             (rg-header-mouse-action
+              'rg-rerun-change-query "Change search string"
+              `(:eval (rg-search-pattern ,search)))
+             itemspace
              (rg-header-render-label "files")
-             (rg-header-mouse-action 'rg-rerun-change-files "Change file types"
-                                     `(:eval (rg-search-files ,search))) itemspace
+             (rg-header-mouse-action
+              'rg-rerun-change-files "Change file types"
+              `(:eval (rg-search-files ,search)))
+             itemspace
              (rg-header-render-label "case")
-             (rg-header-mouse-action 'rg-rerun-toggle-case "Toggle case"
-                                     (rg-header-render-toggle
-                                      `(not (member "-i" (rg-search-flags ,search))))) itemspace
+             (rg-header-mouse-action
+              'rg-rerun-toggle-case "Toggle case"
+              (rg-header-render-toggle
+               `(not (member "-i" (rg-search-flags ,search)))))
+             itemspace
              (rg-header-render-label "ign")
-             (rg-header-mouse-action 'rg-rerun-toggle-ignore "Toggle ignore"
-                                     (rg-header-render-toggle
-                                      `(not (member "--no-ignore" (rg-search-flags ,search))))) itemspace
+             (rg-header-mouse-action
+              'rg-rerun-toggle-ignore "Toggle ignore"
+              (rg-header-render-toggle
+               `(not (member "--no-ignore" (rg-search-flags ,search)))))
+             itemspace
              (rg-header-render-label "hits")
                '(:eval (format "%d" rg-hit-count)))))))
 

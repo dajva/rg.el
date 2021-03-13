@@ -644,11 +644,17 @@ backwards and positive means forwards."
   (rg-rerun-toggle-flag "--no-ignore"))
 
 (defun rg-rerun-toggle-rexexp-literal ()
-  "Rerun last search with toggled '--no-ignore' flag."
+  "Switch between literal and regexp and rerun last search."
   (interactive)
-  (if (rg-search-literal rg-cur-search)
-      (rg-rerun-change-regexp)
-    (rg-rerun-change-literal)))
+  (setf (rg-search-literal rg-cur-search)
+        (not (rg-search-literal rg-cur-search)))
+  (rg-rerun))
+
+(defun rg-rerun-change-query ()
+  "Rerun last search and change search string."
+  (interactive)
+  (rg-rerun-change-search-string
+   (rg-search-literal rg-cur-search)))
 
 (defun rg-rerun-change-search-string (literal)
   "Rerun last search but prompt for new search pattern.
