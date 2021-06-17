@@ -1,6 +1,6 @@
-This is rgel.info, produced by makeinfo version 6.5 from rgel.texi.
+This is rgel.info, produced by makeinfo version 6.7 from rgel.texi.
 
-     rg.el 2.0.1, Sep 21, 2020
+     rg.el 2.0.1, Jun 17, 2021
 
      David Landell
 
@@ -20,7 +20,7 @@ File: rgel.info,  Node: Top,  Next: Usage,  Up: (dir)
 RG User Manual
 **************
 
-     rg.el 2.0.1, Sep 21, 2020
+     rg.el 2.0.1, Jun 17, 2021
 
      David Landell
 
@@ -107,7 +107,7 @@ this version these are:
 
    - *wgrep* 2.1.10
 
-   - *transient* 0.1.0
+   - *transient* 0.3.0
 
    - *emacs* 25.1
 
