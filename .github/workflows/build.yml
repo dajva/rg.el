@@ -35,12 +35,9 @@ jobs:
         emacs --version
         make test
   documentation:
-    on:
-      push:
-        branches:
-          - github_actions
-    needs: tests
     runs-on: ubuntu-latest
+    needs: tests
+    if: github.ref == 'refs/heads/github_actions'
     steps:
     - name: Setup emacs-ci-nix for documentation
       uses: purcell/setup-emacs@master
