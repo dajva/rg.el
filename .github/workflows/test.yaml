@@ -19,17 +19,18 @@ jobs:
     - name: Setup Cask
       run: |
         curl -fsSkL https://raw.github.com/cask/cask/master/go | python
-        export PATH=$HOME/.cask/bin:$PATH
+        echo "$HOME/.cask/bin" >> $GITHUB_PATH
     - name: Install rust
       run: |
         curl https://sh.rustup.rs -sSf | sh -s -- -y
         source $HOME/.cargo/env
     - name: Install ripgrep
       run: cargo install ripgrep
-    # - name: Checkout repository
-    #   uses: actions/checkout@v2
-    # - name: Install emacs deps
-    # - run: make deps
-    # - name: Run tests
-    # - run: emacs --version
-    # - run: make test
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Install emacs deps
+      run: make deps
+    - name: Run tests
+      run: |
+        emacs --version
+        make test
