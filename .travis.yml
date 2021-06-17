@@ -29,7 +29,7 @@ jobs:
     - stage: documentation
       env:
         - secure: iJ0dZerp1IGZMXHYNV9ciL/Uk09xeK91toBfEjj8dAWhs590WYVJ3CsSeYyTSowT9cTQeKxUilTg8KgmObPAoAz/Kwume409fb5sjPQgzBgaqE1JY/CSZopmWKbAv0xCauYxQFl+eKm8nS+uUBazOfAdcmUQzD61/KIKJYy7Ae1RTfv7udHXC8KExhwgscDqiXgvAv5M3WLVwG6DEEk03NA+tyff2AS+Lww7zAwn0ZF1hcWjtVEMhyHn08LrngLNCw4MoP4PN9FXGNhPfnMSVfpkkw7RrQUUVgL+x6+l1An+Nyuv4R9fGir1hRUq4DaLm5W3dzzPdKKtapDydG3HZDC9by4yTi5mzxqO+O75x71Y8dNR/A5wg2dDx7+7Hyn8/ARbBvVHGtxyE/8MvlMakJhRJ9EXBKmjnq6O3qQk2BmbgSSkAGDxWvOTDgo2TlZ1Irn6secnVNZiHalqWmxKcUjFjXDJu3+2WHCrJoUxSsvW/fmKQNn3KV+jxjlukRoV5C3ONpa5QmmrAsdQJIj2rImhhtVN5SZUR5Nbv56y5/uoZvp5vicZ+dJRK3aZ5DvUQe7a3/XP6L/gDRPBL9uG3GjleRm13F7osQzmxjXAjfNrDEF9k/Lb9bmpCephqqFtx9R/cypBjRtdDyjhFvVyNhQOLgM4E7Ezv2Nv7jby97Y=
-        - EMACS_CI=emacs-25-3
+        - EMACS_CI=emacs-27-2
       script:
         - make rst
       deploy:
