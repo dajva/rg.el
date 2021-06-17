@@ -37,7 +37,7 @@ jobs:
   documentation:
     runs-on: ubuntu-latest
     # needs: tests
-    if: github.ref == "refs/heads/github_actions"
+    if: github.ref == 'refs/heads/github_actions'
     steps:
     - name: Setup emacs-ci-nix for documentation
       uses: purcell/setup-emacs@master
