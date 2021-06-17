@@ -35,6 +35,10 @@ jobs:
         emacs --version
         make test
   documentation:
+    on:
+      push:
+        branches:
+          - github_actions
     needs: tests
     runs-on: ubuntu-latest
     steps:
@@ -52,3 +56,9 @@ jobs:
       run: make deps
     - name: Generate restructured text
       run:  make rst
+    - name: Deploy
+      uses: JamesIves/github-pages-deploy-action@4.1.4
+      with:
+        branch: test_github_actions
+        folder: docs/rst
+        repository-name: dajva/rg.el-docs
