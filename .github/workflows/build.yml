@@ -1,0 +1,36 @@
+name: Build
+on: [push]
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        emacs_version:
+          - 25.1
+          - 25.3
+          - 26.1
+          - 26.3
+          - 27.2
+    steps:
+    - name: Setup emacs-ci-nix for ${{ matrix.emacs_version }}
+      uses: purcell/setup-emacs@master
+      with:
+        version: ${{ matrix.emacs_version }}
+    - name: Setup Cask
+      run: |
+        curl -fsSkL https://raw.github.com/cask/cask/master/go | python
+        echo "$HOME/.cask/bin" >> $GITHUB_PATH
+    - name: Install rust
+      run: |
+        curl https://sh.rustup.rs -sSf | sh -s -- -y
+        source $HOME/.cargo/env
+    - name: Install ripgrep
+      run: cargo install ripgrep
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Install emacs deps
+      run: make deps
+    - name: Run tests
+      run: |
+        emacs --version
+        make test

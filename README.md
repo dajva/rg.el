@@ -4,6 +4,7 @@
 [![MELPA Stable](https://stable.melpa.org/packages/rg-badge.svg)](https://stable.melpa.org/#/rg)
 [![MELPA](http://melpa.org/packages/rg-badge.svg)](http://melpa.org/#/rg)
 [![Build Status](https://travis-ci.com/dajva/rg.el.svg?branch=master)](https://travis-ci.com/dajva/rg.el)
+[![master](https://github.com/dajva/rg.el/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/dajva/rg.el/actions/workflows/test.yaml)
 [![Coverage Status](https://coveralls.io/repos/github/dajva/rg.el/badge.svg)](https://coveralls.io/github/dajva/rg.el)
 
 Use [ripgrep](https://github.com/BurntSushi/ripgrep) in Emacs.
