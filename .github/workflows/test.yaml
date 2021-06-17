@@ -17,13 +17,11 @@ jobs:
       with:
         version: ${{ matrix.emacs_version }}
     - name: Setup Cask
-      run:
-        - curl -fsSkL https://raw.github.com/cask/cask/master/go | python
-        - export PATH=$HOME/.cask/bin:$PATH
+      - run: curl -fsSkL https://raw.github.com/cask/cask/master/go | python
+      - run: export PATH=$HOME/.cask/bin:$PATH
     - name: Install rust
-      run:
-        - curl https://sh.rustup.rs -sSf | sh -s -- -y
-        - source $HOME/.cargo/env
+      - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+      - run: source $HOME/.cargo/env
     - name: Install ripgrep
       run: cargo install ripgrep
     - name: Checkout repository
@@ -31,6 +29,5 @@ jobs:
     - name: Install emacs deps
       run: make deps
     - name: Run tests
-      run:
-        - emacs --version
-        - make test 
+      - run: emacs --version
+      - run: make test
