@@ -1,5 +1,10 @@
 name: Build
-on: [push]
+on:
+  push:
+  release:
+    types:
+      - created
+  pull_request:
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -16,21 +21,44 @@ jobs:
       uses: purcell/setup-emacs@master
       with:
         version: ${{ matrix.emacs_version }}
+
     - name: Setup Cask
-      run: |
-        curl -fsSkL https://raw.github.com/cask/cask/master/go | python
-        echo "$HOME/.cask/bin" >> $GITHUB_PATH
+      uses: conao3/setup-cask@master
+
     - name: Install rust
-      run: |
-        curl https://sh.rustup.rs -sSf | sh -s -- -y
-        source $HOME/.cargo/env
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+
     - name: Install ripgrep
       run: cargo install ripgrep
+
     - name: Checkout repository
       uses: actions/checkout@v2
+
     - name: Install emacs deps
       run: make deps
+
     - name: Run tests
       run: |
         emacs --version
         make test
+
+    - name: Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        flag-name: emacs-${{ matrix.emacs_version }}
+        parallel: true
+
+  finish:
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls Finished
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        parallel-finished: true
+

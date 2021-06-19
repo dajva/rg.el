@@ -1,0 +1,79 @@
+name: Documentation
+on:
+  push:
+  release:
+    types:
+      - created
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Setup emacs-ci-nix for emacs 27.2
+      uses: purcell/setup-emacs@master
+      with:
+        version: 27.2
+
+    - name: Setup Cask
+      uses: conao3/setup-cask@master
+
+    - name: Install sphinx
+      run: sudo apt-get --yes install python3-sphinx
+
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install emacs deps
+      run: make deps
+
+    - name: Changed files
+      id: files
+      uses: jitterbit/get-changed-files@v1
+
+    - name: Extract ref
+      id: extract_ref
+      run: echo ::set-output name=ref::${GITHUB_REF#refs/*/}
+
+    - name: Generate info documentation
+      if:  github.event_name != 'release' && contains(steps.files.outputs.all, 'docs/')
+      run: |
+        make info
+        git config user.name "GitHub Actions Bot"
+        git config user.email "<>"
+        git add rgel.info
+        git commit -m 'Generate info documentation'
+        git push
+        # Clean to avoid pushing build artifacts in the steps below
+        make clean-docs
+
+    - name: Generate restructured text
+      run:  make rst
+
+    - name: Set documentation branch
+      id: doc_branch
+      run: |
+        if [[ ${{ github.event_name }} = "release" ]]; then
+          echo ::set-output name=branch::release
+        else
+          echo ::set-output name=branch::master
+        fi
+
+    - name: Deploy to branch ${{ steps.doc_branch.outputs.branch }}
+      if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+      uses: JamesIves/github-pages-deploy-action@4.1.4
+      with:
+        branch: ${{ steps.doc_branch.outputs.branch }}
+        folder: docs/rst
+        repository-name: dajva/rg.el-docs
+        token: ${{ secrets.DOCUMENTATION_DEPLOYMENT }}
+
+    - name: Tag release ${{ steps.extract_ref.outputs.ref }}
+      if: github.event_name == 'release'
+      env:
+        RELEASE_VERSION: ${{ steps.extract_ref.outputs.ref }}
+        DOCUMENTATION_DEPLOYMENT: ${{ secrets.DOCUMENTATION_DEPLOYMENT }}
+      run: |
+        git clone https://github.com/dajva/rg.el-docs
+        cd rg.el-docs
+        git checkout release
+        git tag $RELEASE_VERSION
+        git push https://x-access-token:${DOCUMENTATION_DEPLOYMENT}@github.com/dajva/rg.el-docs $RELEASE_VERSION
