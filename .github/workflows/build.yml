@@ -66,4 +66,4 @@ jobs:
         token: ${{ secrets.DOCUMENTATION_DEPLOYMENT }}
     - name: Tag release
       if: github.event_name == 'release'
-      echo "Tagging"
+      run: echo "Tagging"
