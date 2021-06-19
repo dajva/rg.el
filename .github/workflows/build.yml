@@ -1,5 +1,9 @@
 name: Build
-on: [push]
+on:
+  push:
+  release:
+    types:
+      - created
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -37,7 +41,7 @@ jobs:
   documentation:
     runs-on: ubuntu-latest
     # needs: tests
-    if: github.ref == 'refs/heads/github_actions'
+    if: github.ref == 'refs/heads/github_actions' || github.event_name == 'release'
     steps:
     - name: Setup emacs-ci-nix for emacs 27.2
       uses: purcell/setup-emacs@master
@@ -55,10 +59,11 @@ jobs:
       run:  make rst
     - name: Deploy
       uses: JamesIves/github-pages-deploy-action@4.1.4
-      # env:
-      #     api_key: ${{ secrets.GITHUB_API_KEY }}
       with:
         branch: test_github_actions
         folder: docs/rst
         repository-name: dajva/rg.el-docs
         token: ${{ secrets.DOCUMENTATION_DEPLOYMENT }}
+    - name: Tag release
+      if: github.event_name == 'release'
+      echo "Tagging"
