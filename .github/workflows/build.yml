@@ -67,10 +67,10 @@ jobs:
       run: |
         make info
         cp docs/rst/_build/info/rgel.info .
-        git commit -m 'Generate info documentation'
         git config user.name "GitHub Actions Bot"
-        git add rgel.info
         git config user.email "<>"
+        git add rgel.info
+        git commit -m 'Generate info documentation'
         git push
     - name: Deploy
       uses: JamesIves/github-pages-deploy-action@4.1.4
