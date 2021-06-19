@@ -64,6 +64,18 @@ jobs:
         folder: docs/rst
         repository-name: dajva/rg.el-docs
         token: ${{ secrets.DOCUMENTATION_DEPLOYMENT }}
-    - name: Tag release
+    - name: Extract tag
+      id: vars
+      run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+    - name: Tag release ${{ steps.vars.outputs.tag }}
       if: github.event_name == 'release'
-      run: echo "Tagging"
+      env:
+        RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
+        DOCUMENTATION_DEPLOYMENT: ${{ secrets.DOCUMENTATION_DEPLOYMENT }}
+      run: |
+        git clone https://github.com/dajva/rg.el-docs
+        cd rg.el-docs
+        git checkout release
+        git tag $RELEASE_VERSION
+        git push https://x-access-token:${DOCUMENTATION_DEPLOYMENT}@github.com/dajva/rg.el-docs $RELEASE_VERSION
+
