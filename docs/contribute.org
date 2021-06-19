@@ -83,6 +83,7 @@ repository]]. If you find a bug, please report it in the [[https://github.com/da
   next change
   Now
   This
+  Foo
 *** Setup
     :PROPERTIES:
     :CUSTOM_ID: documentation_setup

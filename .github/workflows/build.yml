@@ -47,31 +47,32 @@ jobs:
       uses: purcell/setup-emacs@master
       with:
         version: 27.2
+
     - name: Setup Cask
       run: |
         curl -fsSkL https://raw.github.com/cask/cask/master/go | python
         echo "$HOME/.cask/bin" >> $GITHUB_PATH
+
     - name: Install sphinx
       run: sudo apt-get --yes install python3-sphinx
+
     - name: Checkout repository
       uses: actions/checkout@v2
+
     - name: Install emacs deps
       run: make deps
+
     - name: Changed files
       id: files
       uses: jitterbit/get-changed-files@v1
+
     - name: Generate restructured text
       run:  make rst
-    - name: Deploy
-      uses: JamesIves/github-pages-deploy-action@4.1.4
-      with:
-        branch: test_github_actions
-        folder: docs/rst
-        repository-name: dajva/rg.el-docs
-        token: ${{ secrets.DOCUMENTATION_DEPLOYMENT }}
+
     - name: Extract tag
       id: vars
       run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+
     - name: Generate info documentation
       if: github.ref == 'refs/heads/github_actions' && contains(steps.files.outputs.all, 'docs/')
       run: |
@@ -83,6 +84,15 @@ jobs:
         git add rgel.info
         git commit -m 'Generate info documentation'
         git push origin  ${{ steps.vars.outputs.tag }}
+
+    - name: Deploy
+      uses: JamesIves/github-pages-deploy-action@4.1.4
+      with:
+        branch: test_github_actions
+        folder: docs/rst
+        repository-name: dajva/rg.el-docs
+        token: ${{ secrets.DOCUMENTATION_DEPLOYMENT }}
+
     - name: Tag release ${{ steps.vars.outputs.tag }}
       if: github.event_name == 'release'
       env:
