@@ -57,9 +57,13 @@ jobs:
       uses: actions/checkout@v2
     - name: Install emacs deps
       run: make deps
+    - name: Changed files
+      id: files
+      uses: jitterbit/get-changed-files@v1
     - name: Generate restructured text
       run:  make rst
     - name: Generate info documentation
+      if: contains(steps.files.outputs.all, 'workflows/')
       run: |
         make info
         cp docs/rst/_build/info/rgel.info .
