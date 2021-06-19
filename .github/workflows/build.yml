@@ -69,6 +69,9 @@ jobs:
         folder: docs/rst
         repository-name: dajva/rg.el-docs
         token: ${{ secrets.DOCUMENTATION_DEPLOYMENT }}
+    - name: Extract tag
+      id: vars
+      run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
     - name: Generate info documentation
       if: github.ref == 'refs/heads/github_actions' && contains(steps.files.outputs.all, 'docs/')
       run: |
@@ -79,10 +82,7 @@ jobs:
         git config user.email "<>"
         git add rgel.info
         git commit -m 'Generate info documentation'
-        git push 
-    - name: Extract tag
-      id: vars
-      run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+        git push origin  ${{ steps.vars.outputs.tag }}
     - name: Tag release ${{ steps.vars.outputs.tag }}
       if: github.event_name == 'release'
       env:
