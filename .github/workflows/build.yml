@@ -52,7 +52,7 @@ jobs:
         curl -fsSkL https://raw.github.com/cask/cask/master/go | python
         echo "$HOME/.cask/bin" >> $GITHUB_PATH
     - name: Install sphinx
-      run: apt-get --yes install python3-sphinx
+      run: sudo apt-get --yes install python3-sphinx
     - name: Checkout repository
       uses: actions/checkout@v2
     - name: Install emacs deps
