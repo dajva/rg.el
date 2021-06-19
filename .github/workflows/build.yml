@@ -81,7 +81,7 @@ jobs:
         git add rgel.info
         git commit -m 'Generate info documentation'
         git push origin  ${{ steps.vars.outputs.tag }}
-        make doc-clean
+        make clean-docs
 
     - name: Generate restructured text
       run:  make rst
