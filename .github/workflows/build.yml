@@ -77,7 +77,7 @@ jobs:
         git config user.email "<>"
         git add rgel.info
         git commit -m 'Generate info documentation'
-        git push
+        git push origin $GITHUB_REF
     - name: Extract tag
       id: vars
       run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}

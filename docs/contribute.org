@@ -79,6 +79,7 @@ repository]]. If you find a bug, please report it in the [[https://github.com/da
   both locally and verify the output to make sure the changes looks OK.
 
   test change
+  new change
 *** Setup
     :PROPERTIES:
     :CUSTOM_ID: documentation_setup
