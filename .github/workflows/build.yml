@@ -73,11 +73,12 @@ jobs:
       if: github.ref == 'refs/heads/github_actions' && contains(steps.files.outputs.all, 'docs/')
       run: |
         make info
+        git diff
         git config user.name "GitHub Actions Bot"
         git config user.email "<>"
         git add rgel.info
         git commit -m 'Generate info documentation'
-        git push origin $GITHUB_REF
+        git push origin HEAD:$GITHUB_REF
     - name: Extract tag
       id: vars
       run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
