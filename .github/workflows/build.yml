@@ -66,9 +66,9 @@ jobs:
       id: files
       uses: jitterbit/get-changed-files@v1
 
-    - name: Extract tag
+    - name: Extract ref
       id: vars
-      run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      run: echo ::set-output name=ref::${GITHUB_REF#refs/*/}
 
     - name: Generate info documentation
       if: github.ref == 'refs/heads/github_actions' && contains(steps.files.outputs.all, 'docs/')
@@ -80,7 +80,8 @@ jobs:
         git config user.email "<>"
         git add rgel.info
         git commit -m 'Generate info documentation'
-        git push origin  ${{ steps.vars.outputs.tag }}
+        git push origin  ${{ steps.vars.outputs.ref }}
+        # Clean to avoid pushing build artifacts in the steps below
         make clean-docs
 
     - name: Generate restructured text
@@ -94,10 +95,10 @@ jobs:
         repository-name: dajva/rg.el-docs
         token: ${{ secrets.DOCUMENTATION_DEPLOYMENT }}
 
-    - name: Tag release ${{ steps.vars.outputs.tag }}
+    - name: Tag release ${{ steps.vars.outputs.ref }}
       if: github.event_name == 'release'
       env:
-        RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
+        RELEASE_VERSION: ${{ steps.vars.outputs.ref }}
         DOCUMENTATION_DEPLOYMENT: ${{ secrets.DOCUMENTATION_DEPLOYMENT }}
       run: |
         git clone https://github.com/dajva/rg.el-docs
