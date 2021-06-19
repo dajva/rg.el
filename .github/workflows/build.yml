@@ -63,12 +63,13 @@ jobs:
     - name: Generate restructured text
       run:  make rst
     - name: Generate info documentation
-      if: contains(steps.files.outputs.all, 'workflows/')
+      if: github.ref == 'refs/heads/github_actions' && contains(steps.files.outputs.all, 'docs/')
       run: |
         make info
         cp docs/rst/_build/info/rgel.info .
-        git status
-        git diff
+        git add rgel.info
+        git commit -m 'Generate info documentation'
+        git push
     - name: Deploy
       uses: JamesIves/github-pages-deploy-action@4.1.4
       with:
