@@ -77,6 +77,8 @@ repository]]. If you find a bug, please report it in the [[https://github.com/da
   main repository but the info manual needs to be created locally and
   submitted as part of a documentation patch. It's advisable to build
   both locally and verify the output to make sure the changes looks OK.
+
+  test change
 *** Setup
     :PROPERTIES:
     :CUSTOM_ID: documentation_setup
