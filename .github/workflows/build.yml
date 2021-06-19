@@ -57,6 +57,12 @@ jobs:
       run: make deps
     - name: Generate restructured text
       run:  make rst
+    - name: Generate info documentation
+      run: |
+        make info
+        cp docs/rst/_build/info/rgel.info .
+        git status
+        git diff
     - name: Deploy
       uses: JamesIves/github-pages-deploy-action@4.1.4
       with:
