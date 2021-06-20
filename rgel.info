@@ -1,6 +1,6 @@
 This is rgel.info, produced by makeinfo version 6.7 from rgel.texi.
 
-     rg.el 2.0.1, Jun 19, 2021
+     rg.el 2.0.1, Jun 20, 2021
 
      David Landell
 
@@ -20,7 +20,7 @@ File: rgel.info,  Node: Top,  Next: Usage,  Up: (dir)
 RG User Manual
 **************
 
-     rg.el 2.0.1, Jun 19, 2021
+     rg.el 2.0.1, Jun 20, 2021
 
      David Landell
 
@@ -1171,7 +1171,7 @@ repository but the info manual needs to be created locally and submitted
 as part of a documentation patch.  It’s advisable to build both locally
 and verify the output to make sure the changes looks OK.
 
-test chang e new change next change Now This Foo Hello clean docs
+test chang e new change next change Now This Foo Hello clean docs jabba
 
 * Menu:
 
@@ -2315,32 +2315,32 @@ Ref: contribute documentation39891
 Ref: 7f39891
 Ref: contribute id339891
 Ref: 8039891
-Node: Setup<2>40758
-Ref: contribute documentation-setup40831
-Ref: 8140831
-Ref: contribute id440831
-Ref: 8240831
-Node: Building40986
-Ref: contribute building41082
-Ref: 8341082
-Ref: contribute documentation-building41082
-Ref: 8441082
-Node: Create a patch41387
-Ref: contribute create-a-patch41466
-Ref: 8541466
-Node: License41717
-Ref: index id141795
-Ref: 8641795
-Ref: index license41795
-Ref: 8741795
-Node: GNU General Public License42327
-Ref: gpl doc42395
-Ref: 8942395
-Ref: gpl gnu-general-public-license42395
-Ref: 8a42395
-Ref: gpl gpl42458
-Ref: 8842458
-Node: Index80371
+Node: Setup<2>40764
+Ref: contribute documentation-setup40837
+Ref: 8140837
+Ref: contribute id440837
+Ref: 8240837
+Node: Building40992
+Ref: contribute building41088
+Ref: 8341088
+Ref: contribute documentation-building41088
+Ref: 8441088
+Node: Create a patch41393
+Ref: contribute create-a-patch41472
+Ref: 8541472
+Node: License41723
+Ref: index id141801
+Ref: 8641801
+Ref: index license41801
+Ref: 8741801
+Node: GNU General Public License42333
+Ref: gpl doc42401
+Ref: 8942401
+Ref: gpl gnu-general-public-license42401
+Ref: 8a42401
+Ref: gpl gpl42464
+Ref: 8842464
+Node: Index80377
 
 End Tag Table
 
