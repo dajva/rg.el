@@ -86,6 +86,7 @@ repository]]. If you find a bug, please report it in the [[https://github.com/da
   Foo
   Hello
   clean docs
+  jabba
 *** Setup
     :PROPERTIES:
     :CUSTOM_ID: documentation_setup
