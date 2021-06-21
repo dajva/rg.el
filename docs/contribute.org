@@ -78,9 +78,6 @@ repository]]. If you find a bug, please report it in the [[https://github.com/da
   submitted as part of a documentation patch. It's advisable to build
   both locally and verify the output to make sure the changes looks OK.
 
-  test chang e
-  new change
-  next change
 *** Setup
     :PROPERTIES:
     :CUSTOM_ID: documentation_setup
