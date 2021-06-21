@@ -1,6 +1,6 @@
 This is rgel.info, produced by makeinfo version 6.7 from rgel.texi.
 
-     rg.el 2.0.1, Jun 20, 2021
+     rg.el 2.0.1, Jun 21, 2021
 
      David Landell
 
@@ -20,7 +20,7 @@ File: rgel.info,  Node: Top,  Next: Usage,  Up: (dir)
 RG User Manual
 **************
 
-     rg.el 2.0.1, Jun 20, 2021
+     rg.el 2.0.1, Jun 21, 2021
 
      David Landell
 
@@ -1171,7 +1171,7 @@ repository but the info manual needs to be created locally and submitted
 as part of a documentation patch.  It’s advisable to build both locally
 and verify the output to make sure the changes looks OK.
 
-test chang e new change next change Now This Foo Hello clean docs jabba
+test chang e new change next change
 
 * Menu:
 
@@ -2315,32 +2315,32 @@ Ref: contribute documentation39891
 Ref: 7f39891
 Ref: contribute id339891
 Ref: 8039891
-Node: Setup<2>40764
-Ref: contribute documentation-setup40837
-Ref: 8140837
-Ref: contribute id440837
-Ref: 8240837
-Node: Building40992
-Ref: contribute building41088
-Ref: 8341088
-Ref: contribute documentation-building41088
-Ref: 8441088
-Node: Create a patch41393
-Ref: contribute create-a-patch41472
-Ref: 8541472
-Node: License41723
-Ref: index id141801
-Ref: 8641801
-Ref: index license41801
-Ref: 8741801
-Node: GNU General Public License42333
-Ref: gpl doc42401
-Ref: 8942401
-Ref: gpl gnu-general-public-license42401
-Ref: 8a42401
-Ref: gpl gpl42464
-Ref: 8842464
-Node: Index80377
+Node: Setup<2>40728
+Ref: contribute documentation-setup40801
+Ref: 8140801
+Ref: contribute id440801
+Ref: 8240801
+Node: Building40956
+Ref: contribute building41052
+Ref: 8341052
+Ref: contribute documentation-building41052
+Ref: 8441052
+Node: Create a patch41357
+Ref: contribute create-a-patch41436
+Ref: 8541436
+Node: License41687
+Ref: index id141765
+Ref: 8641765
+Ref: index license41765
+Ref: 8741765
+Node: GNU General Public License42297
+Ref: gpl doc42365
+Ref: 8942365
+Ref: gpl gnu-general-public-license42365
+Ref: 8a42365
+Ref: gpl gpl42428
+Ref: 8842428
+Node: Index80341
 
 End Tag Table
 
