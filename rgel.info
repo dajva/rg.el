@@ -1171,8 +1171,6 @@ repository but the info manual needs to be created locally and submitted
 as part of a documentation patch.  It’s advisable to build both locally
 and verify the output to make sure the changes looks OK.
 
-test chang e new change next change
-
 * Menu:
 
 * Setup: Setup<2>.
@@ -2315,32 +2313,32 @@ Ref: contribute documentation39891
 Ref: 7f39891
 Ref: contribute id339891
 Ref: 8039891
-Node: Setup<2>40728
-Ref: contribute documentation-setup40801
-Ref: 8140801
-Ref: contribute id440801
-Ref: 8240801
-Node: Building40956
-Ref: contribute building41052
-Ref: 8341052
-Ref: contribute documentation-building41052
-Ref: 8441052
-Node: Create a patch41357
-Ref: contribute create-a-patch41436
-Ref: 8541436
-Node: License41687
-Ref: index id141765
-Ref: 8641765
-Ref: index license41765
-Ref: 8741765
-Node: GNU General Public License42297
-Ref: gpl doc42365
-Ref: 8942365
-Ref: gpl gnu-general-public-license42365
-Ref: 8a42365
-Ref: gpl gpl42428
-Ref: 8842428
-Node: Index80341
+Node: Setup<2>40691
+Ref: contribute documentation-setup40764
+Ref: 8140764
+Ref: contribute id440764
+Ref: 8240764
+Node: Building40919
+Ref: contribute building41015
+Ref: 8341015
+Ref: contribute documentation-building41015
+Ref: 8441015
+Node: Create a patch41320
+Ref: contribute create-a-patch41399
+Ref: 8541399
+Node: License41650
+Ref: index id141728
+Ref: 8641728
+Ref: index license41728
+Ref: 8741728
+Node: GNU General Public License42260
+Ref: gpl doc42328
+Ref: 8942328
+Ref: gpl gnu-general-public-license42328
+Ref: 8a42328
+Ref: gpl gpl42391
+Ref: 8842391
+Node: Index80304
 
 End Tag Table
 
