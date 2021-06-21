@@ -27,7 +27,9 @@
 ;;; Code:
 
 (when (require 'undercover nil t)
-  (undercover "*.el"))
+  (undercover "*.el"
+              (:report-format 'lcov)
+              (:send-report nil)))
 
 (require 'cl-lib)
 (require 'ert)
