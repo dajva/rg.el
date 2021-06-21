@@ -4,7 +4,6 @@ on:
   release:
     types:
       - created
-  pull_request:
 jobs:
   tests:
     runs-on: ubuntu-latest

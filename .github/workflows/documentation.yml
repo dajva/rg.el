@@ -37,8 +37,6 @@ jobs:
       if: ${{ github.event_name }} != "release"
       run: |
         make info
-        ls
-        git diff
         git config user.name "GitHub Actions Bot"
         git config user.email "<>"
         git add rgel.info
