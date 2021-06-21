@@ -51,7 +51,7 @@ jobs:
         flag-name: emacs-${{ matrix.emacs_version }}
         parallel: true
   finish:
-    needs: test
+    needs: tests
     runs-on: ubuntu-latest
     steps:
     - name: Coveralls Finished
