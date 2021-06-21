@@ -34,7 +34,7 @@ jobs:
       run: echo ::set-output name=ref::${GITHUB_REF#refs/*/}
 
     - name: Generate info documentation ${{ github.event_name }}
-      if: ${{ github.event_name }} != 'release' && contains(steps.files.outputs.all, 'docs/')
+      if:  github.event_name != 'release' && contains(steps.files.outputs.all, 'docs/')
       run: |
         make info
         git config user.name "GitHub Actions Bot"
