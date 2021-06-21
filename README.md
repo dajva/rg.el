@@ -3,7 +3,7 @@
 [![License GPL 3](https://img.shields.io/badge/license-GPL_3-green.svg?style=flat)](LICENSE)
 [![MELPA Stable](https://stable.melpa.org/packages/rg-badge.svg)](https://stable.melpa.org/#/rg)
 [![MELPA](http://melpa.org/packages/rg-badge.svg)](http://melpa.org/#/rg)
-[![Build Status](https://github.com/dajva/rg.el/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/dajva/rg.el/actions/workflows/test.yaml)
+[![Build Status](https://github.com/dajva/rg.el/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/dajva/rg.el/actions/workflows/build.yml)
 [![Coverage Status](https://coveralls.io/repos/github/dajva/rg.el/badge.svg)](https://coveralls.io/github/dajva/rg.el)
 
 Use [ripgrep](https://github.com/BurntSushi/ripgrep) in Emacs.
