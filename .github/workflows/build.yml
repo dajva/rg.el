@@ -44,12 +44,12 @@ jobs:
         emacs --version
         make test
 
-  #   - name: Coveralls
-  #     uses: coverallsapp/github-action@master
-  #     with:
-  #       github-token: ${{ secrets.GITHUB_TOKEN }}
-  #       flag-name: emacs-${{ matrix.emacs_version }}
-  #       parallel: true
+    - name: Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        flag-name: emacs-${{ matrix.emacs_version }}
+        parallel: true
 
   # finish:
   #   needs: test
