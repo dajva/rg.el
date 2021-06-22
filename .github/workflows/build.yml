@@ -27,14 +27,33 @@ jobs:
     - name: Setup Cask
       uses: conao3/setup-cask@master
 
-    - name: Install rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        override: true
-
     - name: Install ripgrep
-      run: cargo install ripgrep
+      env:
+        REPO: BurntSushi/ripgrep
+      run: |
+        RELEASE_TAG=$(curl -sL --fail \
+        -H 'Accept: application/vnd.github.v3+json' \
+        -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+        'https://api.github.com/repos/BurntSushi/ripgrep/releases/latest' \
+        | jq -r '.name')
+
+        PACKAGE_NAME=ripgrep-${RELEASE_TAG}-x86_64-unknown-linux-musl.tar.gz
+
+        curl -sL --fail  \
+        -H "Accept: application/vnd.github.v3+json" \
+        -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+        "https://api.github.com/repos/${REPO}/releases/tags/${RELEASE_TAG}" \
+        | jq -r ".assets | .[] | select(.name | test(\"${PACKAGE_NAME}\")) | .url" \
+        | tee asset.url
+
+        curl -sL --fail \
+        -H "Accept: application/octet-stream" \
+        -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+        -o "${PACKAGE_NAME}" \
+        "$(cat asset.url)"
+        tar xf ${PACKAGE_NAME}
+        echo "$PWD/$(basename -s .tar.gz $PACKAGE_NAME)" >> $GITHUB_PATH
+        export PATH=$PWD/$(basename -s .tar.gz $PACKAGE_NAME):$PATH
 
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -45,6 +64,7 @@ jobs:
     - name: Run tests
       run: |
         emacs --version
+        rg --version
         make test
 
     - name: Coveralls
