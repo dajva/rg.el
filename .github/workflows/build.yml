@@ -54,6 +54,7 @@ jobs:
         tar xf ${PACKAGE_NAME}
         echo "$PWD/$(basename -s .tar.gz $PACKAGE_NAME)" >> $GITHUB_PATH
         export PATH=$PWD/$(basename -s .tar.gz $PACKAGE_NAME):$PATH
+        ls $PWD/$(basename -s .tar.gz $PACKAGE_NAME)
         rg --version
 
     - name: Checkout repository
