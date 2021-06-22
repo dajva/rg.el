@@ -66,6 +66,9 @@ jobs:
 
     - name: Run tests
       run: |
+        pwd
+        ls
+        echo $PATH
         emacs --version
         rg --version
         make test
