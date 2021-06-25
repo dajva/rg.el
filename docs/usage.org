@@ -315,10 +315,10 @@
     :CUSTOM_ID: the_menu
     :END:
     The global [[opt:rg-keymap-prefix][prefix key]] may be bound to a transient
-    prefix command, which in normal words mean that the key binding
-    will popup a menu. This package is using the same [[https://magit.vc/manual/transient][popup menu
-    backend]] as the [[https://magit.vc/manual/magit][magit]] package. If you are familiar with magit this
-    should feels like home.
+    prefix command, which means that the key binding will popup a
+    menu. This package is using the same popup menu backend called
+    [[https://magit.vc/manual/transient][transient]] as the [[https://magit.vc/manual/magit][magit]] package. If you are familiar with magit
+    this should feels like home.
 
     The menu is mostly interesting when you want to give specific
     command line flags to the /ripgrep/ binary. When you just want to do
@@ -347,8 +347,15 @@
     The menu can be triggered from the [[#results_buffer][results buffer]] with the =m= key.
     The commands in the menu differs, depending on from where it's
     triggered but the available options are the same. The menu does
-    not show all options by default. The visible options can be
-    controlled by the transient suffix levels documented [[https://magit.vc/manual/transient/Enabling-and-Disabling-Suffixes.html#Enabling-and-Disabling-Suffixes][here]].
+    not show all options by default.
+
+    The visible options can be controlled by the transient suffix
+    levels documented [[https://magit.vc/manual/transient/Enabling-and-Disabling-Suffixes.html#Enabling-and-Disabling-Suffixes][here]].  To modify what is enabled at the default
+    level 4 press =C-x l= to enter edit mode when the menu is
+    visible. Then select the option by pressing the key sequence that
+    activates the option and choose the level 4 for that option. It's
+    also possible to use the transient edit mode for modifying the
+    overall level of the menu to enable more options at once.
 
 * Results buffer
   :PROPERTIES:
