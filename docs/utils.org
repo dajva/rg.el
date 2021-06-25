@@ -41,6 +41,11 @@
   (defun rg-emacs-min-version ()
     (cdr (assq 'emacs (rg-package-deps))))
 
+  (defun rg-default-keymap ()
+    (if rg-use-transient-menu
+        "rg-menu"
+      "rg-global-map"))
+
   (defun rg-custom-info (sym &optional default)
     (let* ((type (custom-variable-type sym))
            (value (or default

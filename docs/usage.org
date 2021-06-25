@@ -27,8 +27,9 @@
   #+BEGIN_SRC elisp
       (rg-enable-default-bindings)
   #+END_SRC
-  The above will enable the default key map under the default prefix
-  key {{{elisp_code((edmacro-format-keys rg-keymap-prefix))}}}.
+  The above will enable the default key map
+  {{{elisp_code((rg-default-keymap))}}} under the default prefix key
+  {{{elisp_code((edmacro-format-keys rg-keymap-prefix))}}}.
 
   :RUBRIC:
   Manual
