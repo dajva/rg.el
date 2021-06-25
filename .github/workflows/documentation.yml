@@ -28,6 +28,7 @@ jobs:
     - name: Changed files
       id: files
       uses: jitterbit/get-changed-files@v1
+      continue-on-error: true
 
     - name: Extract ref
       id: extract_ref
