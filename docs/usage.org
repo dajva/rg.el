@@ -647,3 +647,20 @@
   will be kept. So be careful when killing saved searches to avoid
   losing important search results.
   :END:
+
+* Multi line search
+  :PROPERTIES:
+  :CUSTOM_ID: search_management
+  :END:
+  By default, ripgrep does matching per line. The =--multiline= flag
+  can be used for enabling matching over multiple lines. This
+  flag is available in the [[#the_menu][rg-menu]] as an option. The =--multiline=
+  flag does not match new line characters with the =.= as one might
+  expect though. A separate flag is used to allow this,
+  =--multiline-dotall=. The casual user of multi line search commonly
+  want this flag on by default so it's recommended to add this to
+  [[opt:rg-command-line-flags]] to avoid having to trigger this flag
+  manually from the menu.
+
+  See the ripgrep manual page for more info about the multi line
+  flags.
