@@ -974,6 +974,35 @@ and ungrouped otherwise."
     (should (equal (expand-file-name called-dir) project-dir))
     (should (eq called-literal nil))))
 
+
+(defun rg-only-rg-regexps-p ()
+  (and (seq-every-p
+        (lambda (elem) (eq elem t))
+        (mapcar (lambda (regexp)
+                  (s-starts-with-p "rg-" (symbol-name regexp)))
+                compilation-error-regexp-alist))
+       (seq-every-p
+        (lambda (elem) (eq elem t))
+        (mapcar (lambda (pair)
+                  (s-starts-with-p "rg-" (symbol-name (car pair))))
+                compilation-error-regexp-alist-alist))))
+
+(ert-deftest rg-integration/compilation-error-regexp ()
+  "Test that compilation-error-regexp-alist is only using rg regexps."
+  (with-temp-buffer
+    (rg-mode)
+    (should (rg-only-rg-regexps-p)))
+  (with-temp-buffer
+    (setq compilation-error-regexp-alist '(foo-bar))
+    (rg-mode)
+    (should (rg-only-rg-regexps-p)))
+  (with-temp-buffer
+    (add-hook 'compilation-mode-hook
+              (lambda ()
+                (setq compilation-error-regexp-alist '(foo-bar))))
+    (rg-mode)
+    (should (rg-only-rg-regexps-p))))
+
 (provide 'rg.el-test)
 
 ;;; rg.el-test.el ends here

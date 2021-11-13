@@ -507,6 +507,19 @@ This function is called from `compilation-filter-hook'."
       (when (re-search-backward "^File: \\(.*\\)$" (point-min) t)
         (list (match-string 1))))))
 
+(defun rg-set-compilation-error-regexps ()
+  "Set the compilation mode regexps for errors for rg-mode buffers."
+  (set (make-local-variable 'compilation-error-regexp-alist)
+       '(rg-group-with-column
+         rg-nogroup-with-column
+         rg-group-no-column
+         rg-nogroup-no-column))
+  (set (make-local-variable 'compilation-error-regexp-alist-alist)
+       (list (cons 'rg-nogroup-no-column (list rg-file-line-pattern-nogroup 1 2))
+             (cons 'rg-nogroup-with-column (list rg-file-line-column-pattern-nogroup 1 2 3))
+             (cons 'rg-group-with-column (list (rg-file-line-column-pattern-group) 'rg-match-grouped-filename 1 2))
+             (cons 'rg-group-no-column (list (rg-file-line-pattern-group) 'rg-match-grouped-filename 1)))))
+
 (define-compilation-mode rg-mode "rg"
   "Major mode for `rg' search results.
 Commands:
@@ -528,14 +541,6 @@ Commands:
   (set (make-local-variable 'compilation-line-face) 'rg-line-number-face)
   (set (make-local-variable 'compilation-column-face) 'rg-column-number-face)
 
-  (set (make-local-variable 'compilation-error-regexp-alist)
-       '(rg-group-with-column rg-nogroup-with-column rg-group-no-column  rg-nogroup-no-column))
-  (set (make-local-variable 'compilation-error-regexp-alist-alist)
-       (list (cons 'rg-nogroup-no-column (list rg-file-line-pattern-nogroup 1 2))
-             (cons 'rg-nogroup-with-column (list rg-file-line-column-pattern-nogroup 1 2 3))
-             (cons 'rg-group-with-column (list (rg-file-line-column-pattern-group) 'rg-match-grouped-filename 1 2))
-             (cons 'rg-group-no-column (list (rg-file-line-pattern-group) 'rg-match-grouped-filename 1))))
-
   ;; compilation-directory-matcher can't be nil, so we set it to a regexp that
   ;; can never match.
   (set (make-local-variable 'compilation-directory-matcher) '("\\`a\\`"))
@@ -545,7 +550,11 @@ Commands:
   (set (make-local-variable 'compilation-error-screen-columns) nil)
   (unless rg-search-history
     (setq rg-search-history (rg-history-create)))
-  (set (make-local-variable 'compilation-filter-hook) '(rg-filter)))
+  (set (make-local-variable 'compilation-filter-hook) '(rg-filter))
+  ;; Set compilation error regexps as the last compilation-mode-hook to be
+  ;; able to override these if they were set by other hooks.
+  (add-hook 'compilation-mode-hook
+            'rg-set-compilation-error-regexps 90 'local))
 
 (defun rg-maybe-show-header ()
   "Recreate header if enabled."
