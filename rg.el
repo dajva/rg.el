@@ -748,7 +748,7 @@ specified default if left out.
             Default is `ask'.
 :confirm    `never', `always', or `prefix' are allowed values.  Specifies
             if the the final search command line string can be modified
-            and confirmed the user.
+            and confirmed by the user.
             Default is `never'.
 :flags      `ask' or a list of command line flags that will be used when
             invoking the search.
