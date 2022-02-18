@@ -147,6 +147,8 @@ line flags to use.")
 (defvar rg-files-history nil "History for files args.")
 (defvar rg-pattern-history nil "History for search patterns.")
 
+(defvar-local rg--executable-local 'unknown)
+
 (defvar rg-required-command-line-flags
   '("--color=always"
     "--colors=match:fg:red"
@@ -179,9 +181,39 @@ These are not produced by 'rg --type-list' but we need them anyway.")
 (defun rg-executable ()
   "Return the 'rg' executable.
 Raises an error if it can not be found."
-  (unless rg-executable
+  (cond
+   ((not rg--executable-local)                    ;; searched already but not found
+    (error "No 'rg' executable in host %s"
+	   (file-remote-p default-directory 'host)))
+   ((not (eq rg--executable-local 'unknown))      ;; already searched and found
+    rg--executable-local)
+   ((and (version<= "27" emacs-version)           ;; can search remotely
+         (file-remote-p default-directory))
+    (with-connection-local-variables
+     (if (boundp 'rg--executable-connection)      ;; use if cached as connection-local
+         (setq-local rg--executable-local rg--executable-connection)
+
+       ;; Else search and set as connection local for next uses.
+       (setq-local rg--executable-local
+		   (with-no-warnings (executable-find "rg" t)))
+
+       (let* ((host (file-remote-p default-directory 'host))
+              (symvars (intern (concat host "-vars")))) ;; profile name
+
+	 (if rg--executable-local
+	     (setq-local rg--executable-local
+			 (shell-quote-argument rg--executable-local))
+	   (warn "No 'rg' executable found in host %s" host))
+         (connection-local-set-profile-variables
+          symvars
+          `((rg--executable-connection . ,rg--executable-local)))
+
+         (connection-local-set-profiles `(:machine ,host) symvars))
+       rg--executable-local)))
+   ((not rg-executable)
     (error "No 'rg' executable found"))
-  (shell-quote-argument rg-executable))
+   (t
+    (shell-quote-argument rg-executable))))
 
 (defun rg--buffer-name ()
   "Wrapper for variable `rg-buffer-name'.  Return string or call function."
