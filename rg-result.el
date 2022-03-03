@@ -500,12 +500,19 @@ This function is called from `compilation-filter-hook'."
           (regexp-quote (or (and rg-align-position-numbers
                                  rg-align-position-content-separator) ":"))))
 
+(defconst rg-file-name-pattern-group
+  "^File: \\(.*\\)$"
+  "A regexp pattern to match file name in grouped output mode")
+
 (defun rg-match-grouped-filename ()
   "Match filename backwards when a line/column match is found in grouped output mode."
   (save-match-data
     (save-excursion
-      (when (re-search-backward "^File: \\(.*\\)$" (point-min) t)
+      (when (re-search-backward rg-file-name-pattern-group (point-min) t)
         (list (match-string 1))))))
+
+(defun first-available-line-number ()
+  1)
 
 (defun rg-set-compilation-error-regexps ()
   "Set the compilation mode regexps for errors for rg-mode buffers."
@@ -513,12 +520,14 @@ This function is called from `compilation-filter-hook'."
        '(rg-group-with-column
          rg-nogroup-with-column
          rg-group-no-column
-         rg-nogroup-no-column))
+         rg-nogroup-no-column
+         rg-group-file-itself))
   (set (make-local-variable 'compilation-error-regexp-alist-alist)
        (list (cons 'rg-nogroup-no-column (list rg-file-line-pattern-nogroup 1 2))
              (cons 'rg-nogroup-with-column (list rg-file-line-column-pattern-nogroup 1 2 3))
              (cons 'rg-group-with-column (list (rg-file-line-column-pattern-group) 'rg-match-grouped-filename 1 2))
-             (cons 'rg-group-no-column (list (rg-file-line-pattern-group) 'rg-match-grouped-filename 1)))))
+             (cons 'rg-group-no-column (list (rg-file-line-pattern-group) 'rg-match-grouped-filename 1))
+             (cons 'rg-group-file-itself (list rg-file-name-pattern-group 1 'first-available-line-number)))))
 
 (define-compilation-mode rg-mode "rg"
   "Major mode for `rg' search results.
