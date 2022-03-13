@@ -58,6 +58,7 @@
 (require 'rg-info-hack)
 (require 'subr-x)
 (require 'vc)
+(require 'files-x)
 
 
 ;; Customizations/public vars
@@ -78,6 +79,12 @@ A lambda should return nil if it currently has no type aliases to contribute."
 (defcustom rg-executable (executable-find "rg")
   "'rg' executable."
   :type 'string
+  :group 'rg)
+
+(defcustom rg-executable-per-connection t
+  "Invoke `executable-find' per host and store as connection local variable.
+Only works in Emacs 27.1 or later."
+  :type 'boolean
   :group 'rg)
 
 (defcustom rg-command-line-flags nil
@@ -176,44 +183,49 @@ These are not produced by 'rg --type-list' but we need them anyway.")
     map)
   "The global keymap for `rg'.")
 
+(defvar rg-connection-local-executable nil
+  "Holds path to remote executable as a connection local variable.
+Used to work around limitation in Emacs connection local API:s.")
+
 
 ;; Defuns
+(defun rg-has-connection-local-executable (host)
+  "Return non nil if there is a connection local executable for HOST."
+  (when (and (fboundp 'hack-connection-local-variables)
+             (boundp 'connection-local-variables-alist))
+    (hack-connection-local-variables `(:machine ,host))
+    (assoc 'rg-connection-local-executable connection-local-variables-alist)))
+
 (defun rg-executable ()
   "Return the 'rg' executable.
 Raises an error if it can not be found."
-  (cond
-   ((not rg--executable-local)                    ;; searched already but not found
-    (error "No 'rg' executable in host %s"
-	   (file-remote-p default-directory 'host)))
-   ((not (eq rg--executable-local 'unknown))      ;; already searched and found
-    rg--executable-local)
-   ((and (version<= "27" emacs-version)           ;; can search remotely
-         (file-remote-p default-directory))
-    (with-connection-local-variables
-     (if (boundp 'rg--executable-connection)      ;; use if cached as connection-local
-         (setq-local rg--executable-local rg--executable-connection)
+  (let ((remote-host (file-remote-p default-directory 'host)))
+    (if (and remote-host
+             rg-executable-per-connection
+             ;; Below are just to make byte compiler happy
+             (fboundp 'connection-local-set-profile-variables)
+             (fboundp 'connection-local-set-profiles)
+             (fboundp 'hack-connection-local-variables-apply)
+             (fboundp 'with-connection-local-variables))
+        (progn
+          ;; Find executable on remote host once
+          (when (not (rg-has-connection-local-executable remote-host))
+            (let ((rg-vars-symbol (intern (concat "rg-vars-" remote-host)))
+                  (rg-exec (with-no-warnings (executable-find "rg" t))))
+              (connection-local-set-profile-variables
+               rg-vars-symbol
+               `((rg-connection-local-executable . ,rg-exec)))
+              (connection-local-set-profiles `(:machine ,remote-host) rg-vars-symbol)))
 
-       ;; Else search and set as connection local for next uses.
-       (setq-local rg--executable-local
-		   (with-no-warnings (executable-find "rg" t)))
+          ;; Here there should be a remote executable available if found
+          (with-connection-local-variables
+           (if rg-connection-local-executable
+               (shell-quote-argument rg-connection-local-executable)
+             (user-error
+              (format "No 'rg' executable found in host %s" remote-host)))))
+      ;; Use local executable for non local file
+      (shell-quote-argument rg-executable))))
 
-       (let* ((host (file-remote-p default-directory 'host))
-              (symvars (intern (concat host "-vars")))) ;; profile name
-
-	 (if rg--executable-local
-	     (setq-local rg--executable-local
-			 (shell-quote-argument rg--executable-local))
-	   (warn "No 'rg' executable found in host %s" host))
-         (connection-local-set-profile-variables
-          symvars
-          `((rg--executable-connection . ,rg--executable-local)))
-
-         (connection-local-set-profiles `(:machine ,host) symvars))
-       rg--executable-local)))
-   ((not rg-executable)
-    (error "No 'rg' executable found"))
-   (t
-    (shell-quote-argument rg-executable))))
 
 (defun rg--buffer-name ()
   "Wrapper for variable `rg-buffer-name'.  Return string or call function."
@@ -394,19 +406,19 @@ executing.  FLAGS is additional command line flags to use in the search."
   (unless (and (file-directory-p dir) (file-readable-p dir))
     (setq dir default-directory))
   (rg-apply-case-flag pattern)
+  (setq dir (file-name-as-directory (expand-file-name dir)))
   (let* ((flags (append rg-initial-toggle-flags flags))
+         (default-directory dir)
          (command (rg-build-command
                    pattern files literal
                    flags))
          confirmed)
-    (setq dir (file-name-as-directory (expand-file-name dir)))
     (if confirm
         (setq confirmed
               (read-from-minibuffer "Confirm: "
                                     command nil nil 'rg-history))
       (add-to-history 'rg-history command))
-    (let ((default-directory dir)
-          (search (rg-search-create
+    (let ((search (rg-search-create
                    :pattern pattern
                    :files files
                    :dir dir

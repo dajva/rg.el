@@ -588,13 +588,13 @@ If NO-HISTORY is non nil skip adding the search to the search history."
         (dir (rg-search-dir rg-cur-search))
         (literal (rg-search-literal rg-cur-search))
         (flags (rg-search-flags rg-cur-search)))
-    (setcar compilation-arguments
-            (or (rg-search-full-command rg-cur-search)
-                (rg-build-command pattern files literal flags)))
     ;; compilation-directory is used as search dir and
     ;; default-directory is used as the base for file paths.
     (setq compilation-directory dir)
     (setq default-directory compilation-directory)
+    (setcar compilation-arguments
+            (or (rg-search-full-command rg-cur-search)
+                (rg-build-command pattern files literal flags)))
     (unless no-history
       (rg-history-push (rg-search-copy rg-cur-search)
                        rg-search-history))

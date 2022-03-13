@@ -39,6 +39,7 @@
 (require 'rg-menu)
 (require 's)
 (require 'seq)
+(require 'tramp)
 (require 'wgrep-rg)
 
 (defun rg-regexp-anywhere (needle)
@@ -134,6 +135,16 @@ SEARCH can either be a search string or a form invocating `rg-run'."
      (compilation-next-error 1)
      (should-not (eq (point) (point-max)))
      (beginning-of-line)
+     ,@body))
+
+(defmacro rg-with-ececutable-find-mock (&rest body)
+  "Mock `executable-find' in BODY."
+  (declare (indent 0) (debug t))
+  `(cl-letf* (((symbol-function #'executable-find)
+               (lambda (command &optional remote)
+                 (let ((tramp-name (tramp-dissect-file-name default-directory)))
+                   (concat "remote-rg-" (tramp-file-name-host-port tramp-name)))))
+              (rg-executable "local-rg"))
      ,@body))
 
 (defun simulate-rg-run (pattern files dir)

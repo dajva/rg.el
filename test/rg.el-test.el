@@ -1003,6 +1003,124 @@ and ungrouped otherwise."
     (rg-mode)
     (should (rg-only-rg-regexps-p))))
 
+(ert-deftest rg-integration/rg-executable-remote-notfound ()
+  "Test error if remote exeutable not found."
+  (skip-unless (version<= "27" emacs-version))
+  (cl-letf (((symbol-function #'executable-find)
+             (lambda (command &rest) nil))
+            (connection-local-profile-alist '())
+            (default-directory
+              (format "/sudo:%s@localhost:%s"
+                      (user-login-name) default-directory)))
+    (with-temp-buffer
+      (should-error (rg-executable)))))
+
+(ert-deftest rg-integration/rg-executable-local ()
+  "Local buffer should get local executable."
+  (skip-unless (version<= "27" emacs-version))
+  (rg-with-ececutable-find-mock
+    (let ((connection-local-profile-alist '()))
+      (with-temp-buffer
+        (should (equal (rg-executable) "local-rg"))))))
+
+(ert-deftest rg-integration/rg-executable-through-rg-run ()
+  "Correct executable should be trigggered through main entry points."
+  (skip-unless (version<= "27" emacs-version))
+  (rg-with-ececutable-find-mock
+    (cl-letf* ((connection-local-profile-alist '())
+               (result nil)
+               ((symbol-function #'compilation-start)
+                (lambda (command &rest _)
+                  (setq result command)
+                  (let ((buffer (get-buffer-create "*rg-temp*")))
+                    (with-current-buffer buffer
+                      (rg-mode))
+                    buffer))))
+      (with-temp-buffer
+        (rg-run "pattern" "all" "/tmp")
+        (should (string-prefix-p "local-rg" result)))
+      (with-temp-buffer
+        (rg-run "pattern" "all"
+                (format "/sudo:%s@localhost:%s"
+                        (user-login-name) default-directory))
+        (should (string-prefix-p "remote-rg-localhost" result))))))
+
+(ert-deftest rg-integration/rg-executable-remote-new-buffers ()
+  "Once set the remote executable should be applied to new buffers for the same host."
+  (skip-unless (version<= "27" emacs-version))
+  (rg-with-ececutable-find-mock
+    (let ((default-directory
+            (format "/sudo:%s@localhost:%s" (user-login-name) default-directory))
+          (connection-local-profile-alist '()))
+      (with-temp-buffer
+        (should (equal (rg-executable) "remote-rg-localhost")))
+      (with-temp-buffer
+        (should (equal (rg-executable) "remote-rg-localhost"))))))
+
+(ert-deftest rg-integration/rg-executable-remote-open-buffers ()
+  "Once set the remote executable should be applied to already open buffers for the same host."
+  (skip-unless (version<= "27" emacs-version))
+  (rg-with-ececutable-find-mock
+    (let ((connection-local-profile-alist '())
+          (default-directory
+            (format "/sudo:%s@localhost:%s"
+                    (user-login-name) default-directory)))
+      (with-temp-buffer
+        (with-temp-buffer
+          (should (equal (rg-executable) "remote-rg-localhost")))
+        (should (equal (rg-executable) "remote-rg-localhost"))))))
+
+(ert-deftest rg-integration/rg-executable-remote-multiple-hosts ()
+  "Different hosts should get get remote specific binary."
+  (skip-unless (version<= "27" emacs-version))
+  (rg-with-ececutable-find-mock
+    (let ((connection-local-profile-alist '()))
+      (let ((default-directory
+              (format "/sudo:%s@localhost:%s"
+                      (user-login-name) default-directory)))
+        (with-temp-buffer
+          (should (equal (rg-executable) "remote-rg-localhost"))))
+
+      (let ((default-directory
+              (format "/sudo:%s@127.0.0.1:%s"
+                      (user-login-name) default-directory)))
+        (with-temp-buffer
+          (should (equal (rg-executable) "remote-rg-127.0.0.1")))))))
+
+(ert-deftest rg-integration/rg-executable-remote-and-local ()
+  "Remote host get remote executable and local host get local executable."
+  (skip-unless (version<= "27" emacs-version))
+  (rg-with-ececutable-find-mock
+    (let ((connection-local-profile-alist '()))
+      (let ((default-directory
+              (format "/sudo:%s@localhost:%s" (user-login-name) default-directory)))
+        (with-temp-buffer
+          (should (equal (rg-executable) "remote-rg-localhost"))
+          (let ((default-directory "/tmp"))
+            (should (equal (rg-executable) "local-rg"))))))))
+
+(ert-deftest rg-integration/rg-executable-result-buffer ()
+  "Correct executable should be trigggered through main entry points."
+  (skip-unless (version<= "27" emacs-version))
+  (rg-with-ececutable-find-mock
+    (let ((connection-local-profile-alist '()))
+      (with-temp-buffer
+        (rg-run "pattern" "all" "/tmp")
+        (rg-with-current-result
+          (should (string-prefix-p "local-rg" (car compilation-arguments)))
+          (setf (rg-search-dir rg-cur-search)
+                (format "/sudo:%s@localhost:%s"
+                        (user-login-name) default-directory))
+          (rg-rerun)
+          (rg-wait-for-search-result)
+          (should (string-prefix-p "remote-rg-localhost"
+                                   (car compilation-arguments)))
+          (setf (rg-search-dir rg-cur-search) "/tmp")
+          (rg-rerun)
+          (rg-wait-for-search-result)
+          (message "hello")
+          (should (string-prefix-p "local-rg" (car compilation-arguments))))))))
+
 (provide 'rg.el-test)
 
 ;;; rg.el-test.el ends here
