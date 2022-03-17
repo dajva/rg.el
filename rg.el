@@ -116,7 +116,7 @@ NIL means case sensitive search will be forced."
   :type 'key-sequence
   :group 'rg)
 
-(defcustom rg-default-alias-fallback "all"
+(defcustom rg-default-alias-fallback "everything"
   "The default file alias to use when no alias can be determined.
 This must be a string that can be match against the types returned
 from `rg-get-type-aliases'."
@@ -609,7 +609,8 @@ If prefix is not supplied `rg-keymap-prefix' is used."
   (setf rg-align-position-numbers nil)
   (setf rg-align-line-column-separator nil)
   (setf rg-align-position-content-separator nil)
-  (setf rg-use-transient-menu nil))
+  (setf rg-use-transient-menu nil)
+  (setf rg-default-alias-fallback "all"))
 
 
 (eval-and-compile
