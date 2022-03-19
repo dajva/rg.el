@@ -26,6 +26,20 @@
   =executable-find= to locate the command. If you want to use this
   package with tramp it might be better to set it to just "rg" in
   order to let the OS find the binary where it's invoked.
+  From Emacs 27.1, the tramp use case is by default handled
+  automatically. See [[opt:rg-executable-per-connection]] for details.
+  :END:
+
+  :OPTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-custom-info 'rg-executable-per-connection)
+  #+END_SRC
+
+  This setting only has effect in Emacs 27.1 or later.
+  Handle the [[opt:rg-executable]] automatically for different hosts if used
+  with tramp. =executable-find= for "rg" binary will be invoked on
+  remote hosts to determine the path to ripgrep. The result is stored
+  per connection.
   :END:
 
   :OPTION:

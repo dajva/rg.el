@@ -73,18 +73,22 @@ repository]]. If you find a bug, please report it in the [[https://github.com/da
   and HTML documentation. The resulting .rst files are used for the online
   documentation on [[https://readthedocs.io]].
 
-  The ReadTheDocs documentation is generated after committing to the
-  main repository but the info manual needs to be created locally and
-  submitted as part of a documentation patch. It's advisable to build
-  both locally and verify the output to make sure the changes looks OK.
+  The end user documentation is generated after committing to the
+  main repository. It's advisable to build
+  both html and info documentation locally and verify the output to
+  make sure the changes looks as expected.
 *** Setup
     :PROPERTIES:
     :CUSTOM_ID: documentation_setup
     :END:
     - [[http://www.sphinx-doc.org/en/master/usage/installation.html][Install Sphinx]]
       #+BEGIN_SRC bash
-      apt-get install python3-sphinx
+      sudo apt install python3-sphinx python3-sphinx-rtd-theme
       #+END_SRC
+    - Install makeinfo
+      #+begin_src bash
+      sudo apt install texinfo
+      #+end_src
 *** Building
     :PROPERTIES:
     :CUSTOM_ID: documentation_building
@@ -103,11 +107,3 @@ repository]]. If you find a bug, please report it in the [[https://github.com/da
       C-u M-x info [RET]
       #+END_SRC
       Then select the =docs/rst/_build/info/rgel.info= file.
-*** Create a patch
-    - Edit the org files in =docs= directory.
-    - When everything looks good in both HTML and info.
-      #+BEGIN_SRC bash
-      make info
-      #+END_SRC
-    - Commit both the changed org files and info file.
-    - Push and create PR.
