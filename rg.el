@@ -183,23 +183,19 @@ These are not produced by 'rg --type-list' but we need them anyway.")
     map)
   "The global keymap for `rg'.")
 
-(defvar rg-connection-local-executable nil
-  "Holds path to remote executable as a connection local variable.
-Used to work around limitation in Emacs connection local API:s.")
-
 
 ;; Defuns
-(defun rg-has-connection-local-executable (host)
+(defun rg-has-connection-local-executable (criteria)
   "Return non nil if there is a connection local executable for HOST."
   (when (and (fboundp 'hack-connection-local-variables)
              (boundp 'connection-local-variables-alist))
-    (hack-connection-local-variables `(:machine ,host))
-    (assoc 'rg-connection-local-executable connection-local-variables-alist)))
+    (hack-connection-local-variables criteria)
+    (assoc 'rg-executable connection-local-variables-alist)))
 
-(defun rg-executable ()
-  "Return the 'rg' executable.
-Raises an error if it can not be found."
-  (let ((remote-host (file-remote-p default-directory 'host)))
+(defun rg-find-executable ()
+  "Determine which rg executable to use."
+  (let* ((remote-host (file-remote-p default-directory 'host))
+         (criteria `(:application rg :machine ,remote-host)))
     (if (and remote-host
              rg-executable-per-connection
              ;; Below are just to make byte compiler happy
@@ -209,23 +205,27 @@ Raises an error if it can not be found."
              (fboundp 'with-connection-local-variables))
         (progn
           ;; Find executable on remote host once
-          (when (not (rg-has-connection-local-executable remote-host))
+          (when (not (rg-has-connection-local-executable criteria))
             (let ((rg-vars-symbol (intern (concat "rg-vars-" remote-host)))
                   (rg-exec (with-no-warnings (executable-find "rg" t))))
               (connection-local-set-profile-variables
                rg-vars-symbol
-               `((rg-connection-local-executable . ,rg-exec)))
-              (connection-local-set-profiles `(:machine ,remote-host) rg-vars-symbol)))
-
+               `((rg-executable . ,rg-exec)))
+              (connection-local-set-profiles criteria rg-vars-symbol)))
           ;; Here there should be a remote executable available if found
-          (with-connection-local-variables
-           (if rg-connection-local-executable
-               (shell-quote-argument rg-connection-local-executable)
-             (user-error
-              (format "No 'rg' executable found in host %s" remote-host)))))
-      ;; Use local executable for non local file
-      (shell-quote-argument rg-executable))))
+          (hack-connection-local-variables-apply criteria)
+          rg-executable)
+      ;; Use local executable for local buffer
+      (default-value 'rg-executable))))
 
+(defun rg-executable ()
+  "Return the 'rg' executable.
+Raises an error if it can not be found."
+  (let ((executable (rg-find-executable)))
+    (if executable
+        (shell-quote-argument executable)
+      (user-error "No 'rg' executable found in host %s"
+                  (or (file-remote-p default-directory 'host) "localhost")))))
 
 (defun rg--buffer-name ()
   "Wrapper for variable `rg-buffer-name'.  Return string or call function."

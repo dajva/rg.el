@@ -1003,6 +1003,32 @@ and ungrouped otherwise."
     (rg-mode)
     (should (rg-only-rg-regexps-p))))
 
+(ert-deftest rg-integration/rg-executable-per-connection ()
+  "Disabling setting should disable connection local variable."
+  (skip-unless (version<= "27" emacs-version))
+  (rg-with-executable-find-mock
+   (let ((rg-executable-per-connection nil)
+         (connection-local-profile-alist '())
+         (default-directory
+           (format "/sudo:%s@localhost:%s" (user-login-name) default-directory)))
+     (with-temp-buffer
+       (should (equal (rg-executable) "local-rg"))))))
+
+(ert-deftest rg-integration/rg-executable-local-notfound ()
+  "Test error if local exeutable not found."
+  (rg-with-executable-find-mock
+   (let ((rg-executable nil)
+         (default-directory "/tmp"))
+     (with-temp-buffer
+       (should-error (rg-executable))))))
+
+(ert-deftest rg-integration/rg-executable-local ()
+  "Local buffer should get local executable."
+  (rg-with-executable-find-mock
+    (let ((connection-local-profile-alist '()))
+      (with-temp-buffer
+        (should (equal (rg-executable) "local-rg"))))))
+
 (ert-deftest rg-integration/rg-executable-remote-notfound ()
   "Test error if remote exeutable not found."
   (skip-unless (version<= "27" emacs-version))
@@ -1015,18 +1041,11 @@ and ungrouped otherwise."
     (with-temp-buffer
       (should-error (rg-executable)))))
 
-(ert-deftest rg-integration/rg-executable-local ()
-  "Local buffer should get local executable."
-  (skip-unless (version<= "27" emacs-version))
-  (rg-with-ececutable-find-mock
-    (let ((connection-local-profile-alist '()))
-      (with-temp-buffer
-        (should (equal (rg-executable) "local-rg"))))))
 
 (ert-deftest rg-integration/rg-executable-through-rg-run ()
   "Correct executable should be trigggered through main entry points."
   (skip-unless (version<= "27" emacs-version))
-  (rg-with-ececutable-find-mock
+  (rg-with-executable-find-mock
     (cl-letf* ((connection-local-profile-alist '())
                (result nil)
                ((symbol-function #'compilation-start)
@@ -1048,7 +1067,7 @@ and ungrouped otherwise."
 (ert-deftest rg-integration/rg-executable-remote-new-buffers ()
   "Once set the remote executable should be applied to new buffers for the same host."
   (skip-unless (version<= "27" emacs-version))
-  (rg-with-ececutable-find-mock
+  (rg-with-executable-find-mock
     (let ((default-directory
             (format "/sudo:%s@localhost:%s" (user-login-name) default-directory))
           (connection-local-profile-alist '()))
@@ -1060,7 +1079,7 @@ and ungrouped otherwise."
 (ert-deftest rg-integration/rg-executable-remote-open-buffers ()
   "Once set the remote executable should be applied to already open buffers for the same host."
   (skip-unless (version<= "27" emacs-version))
-  (rg-with-ececutable-find-mock
+  (rg-with-executable-find-mock
     (let ((connection-local-profile-alist '())
           (default-directory
             (format "/sudo:%s@localhost:%s"
@@ -1073,7 +1092,7 @@ and ungrouped otherwise."
 (ert-deftest rg-integration/rg-executable-remote-multiple-hosts ()
   "Different hosts should get get remote specific binary."
   (skip-unless (version<= "27" emacs-version))
-  (rg-with-ececutable-find-mock
+  (rg-with-executable-find-mock
     (let ((connection-local-profile-alist '()))
       (let ((default-directory
               (format "/sudo:%s@localhost:%s"
@@ -1090,7 +1109,7 @@ and ungrouped otherwise."
 (ert-deftest rg-integration/rg-executable-remote-and-local ()
   "Remote host get remote executable and local host get local executable."
   (skip-unless (version<= "27" emacs-version))
-  (rg-with-ececutable-find-mock
+  (rg-with-executable-find-mock
     (let ((connection-local-profile-alist '()))
       (let ((default-directory
               (format "/sudo:%s@localhost:%s" (user-login-name) default-directory)))
@@ -1099,10 +1118,10 @@ and ungrouped otherwise."
           (let ((default-directory "/tmp"))
             (should (equal (rg-executable) "local-rg"))))))))
 
-(ert-deftest rg-integration/rg-executable-result-buffer ()
-  "Correct executable should be trigggered through main entry points."
+(ert-deftest rg-integration/rg-executable-results-buffer ()
+  "Correct executable should be trigggered from results buffer."
   (skip-unless (version<= "27" emacs-version))
-  (rg-with-ececutable-find-mock
+  (rg-with-executable-find-mock
     (let ((connection-local-profile-alist '()))
       (with-temp-buffer
         (rg-run "pattern" "all" "/tmp")
@@ -1118,7 +1137,6 @@ and ungrouped otherwise."
           (setf (rg-search-dir rg-cur-search) "/tmp")
           (rg-rerun)
           (rg-wait-for-search-result)
-          (message "hello")
           (should (string-prefix-p "local-rg" (car compilation-arguments))))))))
 
 (provide 'rg.el-test)

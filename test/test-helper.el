@@ -137,7 +137,7 @@ SEARCH can either be a search string or a form invocating `rg-run'."
      (beginning-of-line)
      ,@body))
 
-(defmacro rg-with-ececutable-find-mock (&rest body)
+(defmacro rg-with-executable-find-mock (&rest body)
   "Mock `executable-find' in BODY."
   (declare (indent 0) (debug t))
   `(cl-letf* (((symbol-function #'executable-find)
