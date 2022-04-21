@@ -75,6 +75,7 @@ in files matching the current file type."
   :format literal
   :files current)
 
+ ;;;###autoload (autoload 'rg-isearch-menu "rg-isearch.el" "" t)
 (transient-define-prefix rg-isearch-menu ()
   "Show menu for rg isearch commands."
   [:description "Search with ripgrep"
