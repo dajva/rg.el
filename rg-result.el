@@ -571,7 +571,8 @@ Commands:
   (setq rg-cur-search search)
   (rg-history-push (rg-search-copy rg-cur-search)
                    rg-search-history)
-  (rg-maybe-show-header))
+  (rg-maybe-show-header)
+  (rg-configure-imenu))
 
 (defun rg-recompile ()
   "Rerun the current search."
@@ -579,7 +580,8 @@ Commands:
   (let ((rg-recompile t))
     (recompile))
   (hack-dir-local-variables-non-file-buffer)
-  (rg-maybe-show-header))
+  (rg-maybe-show-header)
+  (rg-configure-imenu))
 
 (defun rg-rerun (&optional no-history)
   "Run `recompile' with `compilation-arguments' taken from `rg-cur-search'.
@@ -762,6 +764,23 @@ previous file with grouped matches."
         (setq rg-cur-search (rg-search-copy next))
         (rg-rerun 'no-history))
     (message "No more history elements for forward.")))
+
+(defun rg-configure-imenu ()
+  "Add files with matches to imenu if rg-group-result is enabled."
+  (when rg-group-result
+    (setq imenu-create-index-function
+          (lambda ()
+            (goto-char (point-min))
+            (let ((elements nil)
+                  (filepath nil)
+                  (nextfile (point-min)))
+              (while (setq nextfile (rg-navigate-file-message nextfile nil 1))
+                (save-excursion
+                  (goto-char nextfile)
+                  (skip-chars-forward "File: ")
+                  (setq filepath (buffer-substring-no-properties (point) (line-end-position))))
+                (push (cons filepath nextfile) elements))
+              (nreverse elements))))))
 
 (provide 'rg-result)
 
