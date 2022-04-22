@@ -440,6 +440,9 @@
     Visit match in file.
     :END:
 
+    If [[opt:rg-group-result][rg-group-result]] is enabled, the [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Imenu.html][Imenu]] facility is configured to
+    jump across files.
+
 *** Refine search
     From the results buffer it's easy to change the search
     parameters. Some bindings toggle a flag while others allow you to
