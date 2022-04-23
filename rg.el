@@ -443,9 +443,9 @@ executing.  FLAGS is additional command line flags to use in the search."
         ;; Setting process-setup-function makes exit-message-function work
         ;; even when async processes aren't supported.
         (with-current-buffer (compilation-start command 'rg-mode #'rg-buffer-name)
-          (rg-mode-init search))))
-    (if (eq next-error-last-buffer (current-buffer))
-        (setq default-directory dir))))
+          (rg-mode-init search)))))
+  (if (eq next-error-last-buffer (current-buffer))
+      (setq default-directory dir)))
 
 (defun rg-apply-case-flag (pattern)
   "Make sure -i is added to the command if needed.
