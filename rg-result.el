@@ -479,7 +479,8 @@ This function is called from `compilation-filter-hook'."
 ;; Kudos to the people from https://github.com/Wilfred/ag.el for these.
 (defconst rg-file-line-column-pattern-nogroup
   "^\\(.+?\\):\\([1-9][0-9]*\\):\\([1-9][0-9]*\\):"
-  "A regexp pattern that groups output into filename, line number and column number.")
+  "A regexp pattern that groups output.
+Groups into filename,line number and column number.")
 
 (defun rg-file-line-column-pattern-group ()
   "A regexp pattern to match line number and column number with grouped output."
@@ -501,7 +502,7 @@ This function is called from `compilation-filter-hook'."
                                  rg-align-position-content-separator) ":"))))
 
 (defun rg-match-grouped-filename ()
-  "Match filename backwards when a line/column match is found in grouped output mode."
+  "Match filename backwards when a line/column match is found."
   (save-match-data
     (save-excursion
       (when (re-search-backward "^File: \\(.*\\)$" (point-min) t)
@@ -667,7 +668,8 @@ backwards and positive means forwards."
 
 (defun rg-rerun-change-search-string (literal)
   "Rerun last search but prompt for new search pattern.
-IF LITERAL is non nil this will trigger a literal search, otherwise a regexp search."
+IF LITERAL is non nil this will trigger a literal search,
+otherwise a regexp search."
   (let ((pattern (rg-search-pattern rg-cur-search))
         (read-from-minibuffer-orig (symbol-function 'read-from-minibuffer)))
     ;; Override read-from-minibuffer in order to insert the original
@@ -762,5 +764,9 @@ previous file with grouped matches."
     (message "No more history elements for forward.")))
 
 (provide 'rg-result)
+
+;; Local Variables:
+;; byte-compile-warnings: (not docstrings)
+;; End:
 
 ;;; rg-result.el ends here

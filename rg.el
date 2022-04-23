@@ -242,7 +242,8 @@ NAME-OF-MODE is needed to pass this function to `compilation-start'."
     (format "*%s*" (rg--buffer-name))))
 
 (defun rg-build-type-add-args ()
-  "Build a list of --type-add: 'foo:*.foo' flags for each type in `rg-custom-type-aliases'."
+  "Build a list of --type-add: 'foo:*.foo' flags.
+Do this for each type in `rg-custom-type-aliases'."
   (mapcar
    (lambda (typedef)
      (let ((name (car typedef))
@@ -369,7 +370,8 @@ excluded."
 
 (defun rg-read-pattern (literal &optional default)
   "Read search pattern argument from user.
-If LITERAL is non nil prompt for literal string.  DEFAULT is the default pattern to use at the prompt."
+If LITERAL is non nil prompt for literal string.
+DEFAULT is the default pattern to use at the prompt."
   (let ((default (or default (grep-tag-default)))
         (prompt (concat (if literal "Literal" "Regexp")
                         " search for")))

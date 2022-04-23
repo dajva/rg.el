@@ -192,7 +192,8 @@ Returns the transient location coordinates for the group or NIL if not found."
     "Insert a new suffix into the rg-menu under GROUP.
 GROUP is the description of an existing group. If the group does not exist
 A new group will be created. KEY and DESCRIPTION defines the binding
-    and description of the new menu entry. COMMAND is a transient wrapped command."
+and description of the new menu entry. COMMAND is a transient wrapped
+command."
     (unless (stringp group)
       (user-error "'%S' is not a string" group))
     (unless (or (stringp key)
