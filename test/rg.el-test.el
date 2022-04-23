@@ -1142,8 +1142,7 @@ and ungrouped otherwise."
 (ert-deftest rg-integration/default-directory-search-from-results ()
   "Verify default-directory when doing a search from results buffer."
   :tags '(need-rg)
-  (let ((rg-buffer-name "rg results")
-        (search-dir1 (expand-file-name default-directory))
+  (let ((search-dir1 (expand-file-name default-directory))
         (search-dir2 (file-name-directory
                       (expand-file-name
                        (concat default-directory "test/data")))))
@@ -1152,7 +1151,8 @@ and ungrouped otherwise."
       (should (equal default-directory search-dir1))
       (rg-wait-for-search-result)
       (rg-run "foo" "*.baz" search-dir2)
-      (should (equal default-directory search-dir2)))))
+      (should (equal default-directory search-dir2))
+      (rg-wait-for-search-result))))
 
 (provide 'rg.el-test)
 
