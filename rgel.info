@@ -1,6 +1,6 @@
 This is rgel.info, produced by makeinfo version 6.7 from rgel.texi.
 
-     rg.el 2.2.0, Mar 19, 2022
+     rg.el 2.2.0, Apr 27, 2022
 
      David Landell
 
@@ -20,7 +20,7 @@ File: rgel.info,  Node: Top,  Next: Usage,  Up: (dir)
 RG User Manual
 **************
 
-     rg.el 2.2.0, Mar 19, 2022
+     rg.el 2.2.0, Apr 27, 2022
 
      David Landell
 
@@ -497,6 +497,10 @@ Navigation works mostly as in grep/compilation buffers.
  -- ELisp Command: RET (compile-goto-error)
 
      Visit match in file.
+
+If *note rg-group-result: 2b. is enabled, the Imenu
+(https://www.gnu.org/software/emacs/manual/html_node/emacs/Imenu.html)
+facility is configured to jump across files.
 
 
 File: rgel.info,  Node: Refine search,  Next: Full command line search,  Prev: Navigation,  Up: Results buffer
@@ -2208,239 +2212,239 @@ Ref: usage command-compilation-previous-file17369
 Ref: 2e17369
 Ref: usage command-compile-goto-error17459
 Ref: 2f17459
-Node: Refine search17531
-Ref: usage refine-search17645
-Ref: 3017645
-Ref: usage command-rg-rerun-change-dir17862
-Ref: 3117862
-Ref: usage command-rg-rerun-change-files17953
-Ref: 3217953
-Ref: usage command-rg-rerun-change-literal18049
-Ref: 3318049
-Ref: usage command-rg-rerun-change-regexp18177
-Ref: 3418177
-Ref: usage command-rg-recompile18616
-Ref: 3518616
-Ref: usage command-rg-rerun-toggle-case18717
-Ref: 3618717
-Ref: usage command-rg-rerun-toggle-ignore18870
-Ref: 3718870
-Ref: usage command-rg-menu19142
-Ref: 3919142
-Node: Full command line search19245
-Ref: usage full-command-line-search19367
-Ref: 1119367
-Ref: usage id919367
-Ref: 3a19367
-Node: History navigation19891
-Ref: usage history-navigation20020
-Ref: 3b20020
-Ref: usage id1020020
-Ref: 3c20020
-Ref: usage command-rg-back-history20266
-Ref: 3d20266
-Ref: usage command-rg-forward-history20342
-Ref: 3e20342
-Node: Edit and apply wgrep20588
-Ref: usage edit-and-apply20684
-Ref: 3f20684
-Ref: usage edit-and-apply-wgrep20684
-Ref: 4020684
-Ref: usage command-wgrep-change-to-wgrep-mode20906
-Ref: 4120906
-Node: Search management21152
-Ref: usage id1221258
-Ref: 4221258
-Ref: usage search-management21258
-Ref: 4321258
-Ref: usage command-rg-save-search21499
-Ref: 4421499
-Ref: usage command-rg-save-search-as-name21942
-Ref: 4521942
-Ref: usage command-rg-list-searches22683
-Ref: 4722683
-Ref: usage command-rg-kill-saved-searches22838
-Ref: 4822838
-Node: Multi line search23339
-Ref: usage id1323422
-Ref: 4923422
-Ref: usage multi-line-search23422
-Ref: 4a23422
-Node: Configuration24109
-Ref: configuration doc24193
-Ref: 4c24193
-Ref: configuration configuration24193
-Ref: 4d24193
-Node: Customization24365
-Ref: configuration customization24440
-Ref: 4e24440
-Ref: configuration id124440
-Ref: 4f24440
-Ref: configuration option-rg-executable24631
-Ref: 5024631
-Ref: configuration option-rg-executable-per-connection25192
-Ref: 5125192
-Ref: configuration option-rg-custom-type-aliases25563
-Ref: 1f25563
-Ref: configuration option-rg-default-alias-fallback26260
-Ref: 1826260
-Ref: configuration option-rg-command-line-flags26511
-Ref: 4b26511
-Ref: configuration option-rg-group-result26734
-Ref: 2b26734
-Ref: configuration option-rg-show-columns27076
-Ref: 5227076
-Ref: configuration option-rg-ignore-case27183
-Ref: c27183
-Ref: configuration option-rg-hide-command27823
-Ref: 5327823
-Ref: configuration option-rg-keymap-prefix28077
-Ref: 2128077
-Ref: configuration option-rg-use-transient-menu28309
-Ref: 5428309
-Ref: configuration option-rg-show-header28515
-Ref: 5528515
-Ref: configuration option-rg-buffer-name28723
-Ref: 4628723
-Ref: configuration option-rg-ignore-ripgreprc29445
-Ref: 729445
-Node: Position numbers alignment30080
-Ref: configuration id230154
-Ref: 5630154
-Ref: configuration position-numbers-alignment30154
-Ref: 5730154
-Ref: configuration option-rg-align-position-numbers30761
-Ref: 5830761
-Ref: configuration option-rg-align-line-number-field-length30918
-Ref: 5930918
-Ref: configuration option-rg-align-column-number-field-length31028
-Ref: 5a31028
-Ref: configuration option-rg-align-line-column-separator31142
-Ref: 5b31142
-Ref: configuration option-rg-align-position-content-separator31321
-Ref: 5c31321
-Node: Faces31522
-Ref: configuration faces31629
-Ref: 5d31629
-Node: Results buffer<2>31832
-Ref: configuration results-buffer31909
-Ref: 5e31909
-Ref: configuration option-rg-match-face31952
-Ref: 5f31952
-Ref: configuration option-rg-error-face32043
-Ref: 6032043
-Ref: configuration option-rg-context-face32159
-Ref: 6132159
-Ref: configuration option-rg-info-face32314
-Ref: 6232314
-Ref: configuration option-rg-warning-face32476
-Ref: 6332476
-Ref: configuration option-rg-filename-face32598
-Ref: 6432598
-Ref: configuration option-rg-file-tag-face32705
-Ref: 6532705
-Ref: configuration option-rg-line-number-face32825
-Ref: 6632825
-Ref: configuration option-rg-column-number-face32925
-Ref: 6732925
-Ref: configuration option-rg-match-position-face33031
-Ref: 6833031
-Node: Header line33250
-Ref: configuration header-line33327
-Ref: 6933327
-Ref: configuration header-line-config33327
-Ref: 6a33327
-Ref: configuration option-rg-toggle-on-face33364
-Ref: 6b33364
-Ref: configuration option-rg-toggle-off-face33475
-Ref: 6c33475
-Ref: configuration option-rg-literal-face33585
-Ref: 6d33585
-Ref: configuration option-rg-regexp-face33709
-Ref: 6e33709
-Node: Configuration functions33838
-Ref: configuration configuration-functions33952
-Ref: 6f33952
-Ref: configuration id333952
-Ref: 7033952
-Ref: configuration function-rg-enable-default-bindings34009
-Ref: 7134009
-Ref: configuration function-rg-enable-menu34355
-Ref: 7234355
-Ref: configuration function-rg-use-old-defaults34603
-Ref: 7334603
-Node: Configuration macros34896
-Ref: configuration configuration-macros35023
-Ref: 7435023
-Ref: configuration id435023
-Ref: 7535023
-Ref: configuration function-rg-define-toggle35074
-Ref: 3835074
-Ref: configuration function-rg-define-search35983
-Ref: 2235983
-Node: Use with evil-mode38982
-Ref: configuration use-with-evil-mode39106
-Ref: 7639106
-Node: Customizing the menu40080
-Ref: configuration customizing-the-menu40175
-Ref: 7740175
-Ref: configuration id540175
-Ref: 7840175
-Ref: configuration function-rg-menu-transient-insert41211
-Ref: 7941211
-Node: Contribute41834
-Ref: contribute doc41920
-Ref: 7a41920
-Ref: contribute contribute41920
-Ref: 7b41920
-Node: Pull requests42215
-Ref: contribute id142287
-Ref: 7c42287
-Ref: contribute pull-requests42287
-Ref: 7d42287
-Node: Tests43093
-Ref: contribute id243187
-Ref: 7e43187
-Ref: contribute tests43187
-Ref: 7f43187
-Node: Setup43506
-Ref: contribute setup43567
-Ref: 8043567
-Ref: contribute tests-setup43567
-Ref: 8143567
-Node: Running43743
-Ref: contribute running43804
-Ref: 8243804
-Ref: contribute tests-running43804
-Ref: 8343804
-Node: Documentation44085
-Ref: contribute documentation44157
-Ref: 8444157
-Ref: contribute id344157
-Ref: 8544157
-Node: Setup<2>44877
-Ref: contribute documentation-setup44950
-Ref: 8644950
-Ref: contribute id444950
-Ref: 8744950
-Node: Building45190
-Ref: contribute building45263
-Ref: 8845263
-Ref: contribute documentation-building45263
-Ref: 8945263
-Node: License45568
-Ref: index id145646
-Ref: 8a45646
-Ref: index license45646
-Ref: 8b45646
-Node: GNU General Public License46178
-Ref: gpl doc46246
-Ref: 8d46246
-Ref: gpl gnu-general-public-license46246
-Ref: 8e46246
-Ref: gpl gpl46309
-Ref: 8c46309
-Node: Index84222
+Node: Refine search17700
+Ref: usage refine-search17814
+Ref: 3017814
+Ref: usage command-rg-rerun-change-dir18031
+Ref: 3118031
+Ref: usage command-rg-rerun-change-files18122
+Ref: 3218122
+Ref: usage command-rg-rerun-change-literal18218
+Ref: 3318218
+Ref: usage command-rg-rerun-change-regexp18346
+Ref: 3418346
+Ref: usage command-rg-recompile18785
+Ref: 3518785
+Ref: usage command-rg-rerun-toggle-case18886
+Ref: 3618886
+Ref: usage command-rg-rerun-toggle-ignore19039
+Ref: 3719039
+Ref: usage command-rg-menu19311
+Ref: 3919311
+Node: Full command line search19414
+Ref: usage full-command-line-search19536
+Ref: 1119536
+Ref: usage id919536
+Ref: 3a19536
+Node: History navigation20060
+Ref: usage history-navigation20189
+Ref: 3b20189
+Ref: usage id1020189
+Ref: 3c20189
+Ref: usage command-rg-back-history20435
+Ref: 3d20435
+Ref: usage command-rg-forward-history20511
+Ref: 3e20511
+Node: Edit and apply wgrep20757
+Ref: usage edit-and-apply20853
+Ref: 3f20853
+Ref: usage edit-and-apply-wgrep20853
+Ref: 4020853
+Ref: usage command-wgrep-change-to-wgrep-mode21075
+Ref: 4121075
+Node: Search management21321
+Ref: usage id1221427
+Ref: 4221427
+Ref: usage search-management21427
+Ref: 4321427
+Ref: usage command-rg-save-search21668
+Ref: 4421668
+Ref: usage command-rg-save-search-as-name22111
+Ref: 4522111
+Ref: usage command-rg-list-searches22852
+Ref: 4722852
+Ref: usage command-rg-kill-saved-searches23007
+Ref: 4823007
+Node: Multi line search23508
+Ref: usage id1323591
+Ref: 4923591
+Ref: usage multi-line-search23591
+Ref: 4a23591
+Node: Configuration24278
+Ref: configuration doc24362
+Ref: 4c24362
+Ref: configuration configuration24362
+Ref: 4d24362
+Node: Customization24534
+Ref: configuration customization24609
+Ref: 4e24609
+Ref: configuration id124609
+Ref: 4f24609
+Ref: configuration option-rg-executable24800
+Ref: 5024800
+Ref: configuration option-rg-executable-per-connection25361
+Ref: 5125361
+Ref: configuration option-rg-custom-type-aliases25732
+Ref: 1f25732
+Ref: configuration option-rg-default-alias-fallback26429
+Ref: 1826429
+Ref: configuration option-rg-command-line-flags26680
+Ref: 4b26680
+Ref: configuration option-rg-group-result26903
+Ref: 2b26903
+Ref: configuration option-rg-show-columns27245
+Ref: 5227245
+Ref: configuration option-rg-ignore-case27352
+Ref: c27352
+Ref: configuration option-rg-hide-command27992
+Ref: 5327992
+Ref: configuration option-rg-keymap-prefix28246
+Ref: 2128246
+Ref: configuration option-rg-use-transient-menu28478
+Ref: 5428478
+Ref: configuration option-rg-show-header28684
+Ref: 5528684
+Ref: configuration option-rg-buffer-name28892
+Ref: 4628892
+Ref: configuration option-rg-ignore-ripgreprc29614
+Ref: 729614
+Node: Position numbers alignment30249
+Ref: configuration id230323
+Ref: 5630323
+Ref: configuration position-numbers-alignment30323
+Ref: 5730323
+Ref: configuration option-rg-align-position-numbers30930
+Ref: 5830930
+Ref: configuration option-rg-align-line-number-field-length31087
+Ref: 5931087
+Ref: configuration option-rg-align-column-number-field-length31197
+Ref: 5a31197
+Ref: configuration option-rg-align-line-column-separator31311
+Ref: 5b31311
+Ref: configuration option-rg-align-position-content-separator31490
+Ref: 5c31490
+Node: Faces31691
+Ref: configuration faces31798
+Ref: 5d31798
+Node: Results buffer<2>32001
+Ref: configuration results-buffer32078
+Ref: 5e32078
+Ref: configuration option-rg-match-face32121
+Ref: 5f32121
+Ref: configuration option-rg-error-face32212
+Ref: 6032212
+Ref: configuration option-rg-context-face32328
+Ref: 6132328
+Ref: configuration option-rg-info-face32483
+Ref: 6232483
+Ref: configuration option-rg-warning-face32645
+Ref: 6332645
+Ref: configuration option-rg-filename-face32767
+Ref: 6432767
+Ref: configuration option-rg-file-tag-face32874
+Ref: 6532874
+Ref: configuration option-rg-line-number-face32994
+Ref: 6632994
+Ref: configuration option-rg-column-number-face33094
+Ref: 6733094
+Ref: configuration option-rg-match-position-face33200
+Ref: 6833200
+Node: Header line33419
+Ref: configuration header-line33496
+Ref: 6933496
+Ref: configuration header-line-config33496
+Ref: 6a33496
+Ref: configuration option-rg-toggle-on-face33533
+Ref: 6b33533
+Ref: configuration option-rg-toggle-off-face33644
+Ref: 6c33644
+Ref: configuration option-rg-literal-face33754
+Ref: 6d33754
+Ref: configuration option-rg-regexp-face33878
+Ref: 6e33878
+Node: Configuration functions34007
+Ref: configuration configuration-functions34121
+Ref: 6f34121
+Ref: configuration id334121
+Ref: 7034121
+Ref: configuration function-rg-enable-default-bindings34178
+Ref: 7134178
+Ref: configuration function-rg-enable-menu34524
+Ref: 7234524
+Ref: configuration function-rg-use-old-defaults34772
+Ref: 7334772
+Node: Configuration macros35065
+Ref: configuration configuration-macros35192
+Ref: 7435192
+Ref: configuration id435192
+Ref: 7535192
+Ref: configuration function-rg-define-toggle35243
+Ref: 3835243
+Ref: configuration function-rg-define-search36152
+Ref: 2236152
+Node: Use with evil-mode39151
+Ref: configuration use-with-evil-mode39275
+Ref: 7639275
+Node: Customizing the menu40249
+Ref: configuration customizing-the-menu40344
+Ref: 7740344
+Ref: configuration id540344
+Ref: 7840344
+Ref: configuration function-rg-menu-transient-insert41380
+Ref: 7941380
+Node: Contribute42003
+Ref: contribute doc42089
+Ref: 7a42089
+Ref: contribute contribute42089
+Ref: 7b42089
+Node: Pull requests42384
+Ref: contribute id142456
+Ref: 7c42456
+Ref: contribute pull-requests42456
+Ref: 7d42456
+Node: Tests43262
+Ref: contribute id243356
+Ref: 7e43356
+Ref: contribute tests43356
+Ref: 7f43356
+Node: Setup43675
+Ref: contribute setup43736
+Ref: 8043736
+Ref: contribute tests-setup43736
+Ref: 8143736
+Node: Running43912
+Ref: contribute running43973
+Ref: 8243973
+Ref: contribute tests-running43973
+Ref: 8343973
+Node: Documentation44254
+Ref: contribute documentation44326
+Ref: 8444326
+Ref: contribute id344326
+Ref: 8544326
+Node: Setup<2>45046
+Ref: contribute documentation-setup45119
+Ref: 8645119
+Ref: contribute id445119
+Ref: 8745119
+Node: Building45359
+Ref: contribute building45432
+Ref: 8845432
+Ref: contribute documentation-building45432
+Ref: 8945432
+Node: License45737
+Ref: index id145815
+Ref: 8a45815
+Ref: index license45815
+Ref: 8b45815
+Node: GNU General Public License46347
+Ref: gpl doc46415
+Ref: 8d46415
+Ref: gpl gnu-general-public-license46415
+Ref: 8e46415
+Ref: gpl gpl46478
+Ref: 8c46478
+Node: Index84391
 
 End Tag Table
 
