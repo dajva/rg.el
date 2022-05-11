@@ -465,12 +465,9 @@ detailed info."
 
 (defun rg-get-rename-target ()
   "Return the buffer that will be target for renaming."
-  (let* ((buffer-name (rg-buffer-name))
-         (buffer (if (eq major-mode 'rg-mode)
-                     (current-buffer)
-                   (get-buffer buffer-name))))
-    (or buffer
-        (error "Current buffer is not an rg-mode buffer and no buffer with name '%s'" buffer-name))))
+  (if (eq major-mode 'rg-mode)
+      (current-buffer)
+    (get-buffer (rg-buffer-name))))
 
 (defun rg-get-buffer-file-name ()
   "Wrapper for function `buffer-file-name'.
@@ -553,7 +550,7 @@ NEWNAME will be added to the result buffer name.  New searches will use the
 standard buffer unless the search is done from a saved buffer in
 which case the saved buffer will be reused."
   (interactive "sSave search as name: ")
-  (let ((buffer (rg-get-rename-target)))
+  (when-let ((buffer (rg-get-rename-target)))
     (with-current-buffer buffer
       (rename-buffer (format "*%s %s*" (rg--buffer-name) newname)))))
 
@@ -564,7 +561,7 @@ To choose a custom name, use `rg-save-search-as-name' instead.  New
 searches will use the standard buffer unless the search is done from
 a saved buffer in which case the saved buffer will be reused."
   (interactive)
-  (let ((buffer (rg-get-rename-target)))
+  (when-let ((buffer (rg-get-rename-target)))
     (with-current-buffer buffer
       (rename-uniquely)
       ;; If the new buffer name became default result buffer name, just rename
