@@ -60,7 +60,7 @@
 
 (ert-deftest rg-unit-test/custom-command-line-flags ()
   "Test that `rg-command-line-flags' is added to the template."
-  (let ((rg-command "rg")
+  (let ((rg-executable "rg")
         (rg-custom-type-aliases nil)
         (rg-command-line-flags '("--foo" "--bar")))
     (should (s-matches? (rg-regexp-anywhere-but-last "--foo --bar")
@@ -230,7 +230,7 @@ on emacs version."
 (ert-deftest rg-unit-test/build-command-files ()
   "Test that`rg-build-command' convert files argument to correct type
 alias."
-  (let ((rg-command "rg")
+  (let ((rg-executable "rg")
         (rg-custom-type-aliases nil)
         full-command)
     (setq full-command (rg-build-command "foo" "cpp" nil nil))
@@ -245,7 +245,7 @@ alias."
 
 (ert-deftest rg-unit-test/build-command-type ()
   "Test `rg-build-template' template creation."
-  (let* ((rg-command "rg")
+  (let* ((rg-executable "rg")
          (rg-custom-type-aliases nil)
          (notype-command (rg-build-command "query" "everything" nil nil))
          (builtin-type-command (rg-build-command "query" "elisp" nil nil))
@@ -264,6 +264,17 @@ alias."
     (should-not (s-matches? type-add-pattern builtin-type-command))
     (should (s-matches? type-add-pattern custom-type-command))
     (should (s-matches? (rg-regexp-anywhere-but-last "--type=custom") custom-type-command))))
+
+(ert-deftest rg-unit-test/build-command-explicit-dir ()
+  "Test that `rg-build-command' use explicit current dir on some platforms."
+  (let ((rg-executable "rg"))
+    (should-not (string-match "\\.$" (rg-build-command "query" "glob" nil nil)))
+    (let ((system-type 'darwin))
+      (should (string-match "\\.$" (rg-build-command "query" "glob" nil nil))))
+    ;; Need w32-shell-dos-semantics when faking system-type on Linux
+    (cl-letf (((symbol-function (intern "w32-shell-dos-semantics")) (lambda ()))
+              (system-type 'windows-nt))
+      (should (string-match "\\.$" (rg-build-command "query" "glob" nil nil))))))
 
 (ert-deftest rg-unit-test/default-alias ()
   "Test that `rg-default-alias' detects the current file and selects

@@ -285,7 +285,7 @@ are command line flags to use for the search."
           (when (not (equal files "everything"))
             (list "--type=<F>"))
           (list "-e <R>")
-          (when (eq system-type 'windows-nt)
+          (when (member system-type '(darwin windows-nt))
             (list ".")))))
 
     (grep-expand-template
