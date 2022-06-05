@@ -14,7 +14,7 @@ RST_DOCS = $(addprefix $(RST_OUT_DIR)/,$(patsubst %.org,%.rst,$(notdir $(ORG_DOC
 
 all: deps test
 
-test: ert-test style-check package-lint build-test package-test
+test: ert-test style-check package-lint build-test
 
 build-test: clean build
 	cask clean-elc
