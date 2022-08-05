@@ -502,6 +502,14 @@
 
     :COMMAND:
     #+BEGIN_SRC elisp :results value raw :exports results
+    (rg-command-info #'rg-rerun-toggle-word 'rg-mode-map)
+    #+END_SRC
+    Toggle word search. The state of the flag is shown
+    in the *[word]* header field.
+    :END:
+
+    :COMMAND:
+    #+BEGIN_SRC elisp :results value raw :exports results
     (rg-command-info #'rg-rerun-toggle-ignore 'rg-mode-map)
     #+END_SRC
     Toggle if ignore files are respected. The state of the flag is shown

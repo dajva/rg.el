@@ -282,6 +282,7 @@ Becomes buffer local in `rg-mode' buffers.")
     (define-key map "s" 'rg-save-search)
     (define-key map "S" 'rg-save-search-as-name)
     (define-key map "t" 'rg-rerun-change-literal)
+    (define-key map "w" 'rg-rerun-toggle-word)
     (define-key map "e" 'wgrep-change-to-wgrep-mode)
     (define-key map "\M-N" 'rg-next-file)
     (define-key map "\M-P" 'rg-prev-file)
@@ -692,6 +693,11 @@ otherwise a regexp search."
   "Rerun last search but prompt for new literal."
   (interactive)
   (rg-rerun-change-search-string t))
+
+(defun rg-rerun-toggle-word ()
+  "Rerun last search with toggled '--word-regexp' flag."
+  (interactive)
+  (rg-rerun-toggle-flag "--word-regexp"))
 
 (defun rg-rerun-change-files()
   "Rerun last search but prompt for new files."

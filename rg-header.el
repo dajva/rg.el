@@ -133,6 +133,12 @@ If FULL-COMMAND specifies if the full command line search was done."
               (rg-header-render-toggle
                `(not (member "--no-ignore" (rg-search-flags ,search)))))
              itemspace
+             (rg-header-render-label "word")
+             (rg-header-mouse-action
+              'rg-rerun-toggle-word "Toggle word"
+              (rg-header-render-toggle
+               `(member "--word-regexp" (rg-search-flags ,search))))
+             itemspace
              (rg-header-render-label "hits")
                '(:eval (format "%d" rg-hit-count)))))))
 
