@@ -619,6 +619,26 @@ method. "
                   (rg-project-root "/tmp/foo.el"))
                  "/tmp/")))
 
+(ert-deftest rg-integration-test/imenu-populated ()
+  "Test that the imenu entries are correct."
+  :tags '(need-rg)
+  (rg-run "imenu" "elisp" (concat default-directory "test/data"))
+  (with-current-buffer (rg-buffer-name)
+    (rg-wait-for-search-result)
+    (let ((ientries (funcall imenu-create-index-function)))
+      (should (equal (length ientries) 1))
+      (should (equal
+               '("limenu.el")
+               (mapcar #'car ientries)))))
+  (rg-run "hello" "*.baz" (concat default-directory "test/data"))
+  (with-current-buffer (rg-buffer-name)
+    (rg-wait-for-search-result)
+    (let ((ientries (funcall imenu-create-index-function)))
+      (should (equal (length ientries) 2))
+      (should (equal
+               '("bar.baz" "foo.baz")
+               (seq-sort #'string-lessp (mapcar #'car ientries)))))))
+
 (ert-deftest rg-integration/command-hiding-hide ()
   "Test command hiding when `rg-hide-command` is non nil."
   :tags '(need-rg)
