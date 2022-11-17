@@ -478,7 +478,7 @@ This function is called from `compilation-filter-hook'."
 ;; The regexp and filter functions below were taken from ag.el
 ;; Kudos to the people from https://github.com/Wilfred/ag.el for these.
 (defconst rg-file-line-column-pattern-nogroup
-  "^\\(.+?\\):\\([1-9][0-9]*\\):\\([1-9][0-9]*\\):"
+  "^\\([^\n:]+?\\):\\([1-9][0-9]*\\):\\([1-9][0-9]*\\):"
   "A regexp pattern that groups output.
 Groups into filename,line number and column number.")
 
@@ -492,7 +492,7 @@ Groups into filename,line number and column number.")
                                  rg-align-position-content-separator) ":"))))
 
 (defconst rg-file-line-pattern-nogroup
-  "^\\(.+?\\):\\([1-9][0-9]*\\):"
+  "^\\([^\n:]+?\\):\\([1-9][0-9]*\\):"
   "A regexp pattern that groups output into filename, line number.")
 
 (defun rg-file-line-pattern-group ()
