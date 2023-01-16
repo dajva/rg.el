@@ -387,11 +387,13 @@ DEFAULT is the default pattern to use at the prompt."
               (fboundp 'ffip-project-root))
      (ffip-project-root))
    (when (and (require 'project nil t)
-              (fboundp 'project-current)
-              (fboundp 'project-roots))
-     (let ((project (project-current)))
-       (when project
-         (car (project-roots project)))))
+              (fboundp 'project-current))
+     (if-let ((project (project-current)))
+         (cond
+          ((fboundp 'project-root)
+           (project-root project))
+          ((fboundp 'project-roots)
+           (car (project-roots project))))))
    (let ((file (expand-file-name (or file default-directory))))
      (condition-case nil
          (vc-call-backend (vc-responsible-backend file) 'root file)
