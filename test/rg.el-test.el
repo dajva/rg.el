@@ -563,6 +563,31 @@ Test `:flags' directive."
         (should (= 3 (s-count-matches "foo.baz.*hello" bufstr)))
         (should (= 3 (s-count-matches "bar.baz.*hello" bufstr)))))))
 
+(ert-deftest rg-integration-test/rg-get-type-aliases()
+  "Test that rg-get-type-aliases combines the aliases and priorities correctly."
+  :tags '(need-rg)
+  (let* ((rg-custom-type-aliases '())
+        (builtin (rg-list-builtin-type-aliases)))
+    ;; No custom type aliases and no prioritized aliases gives the
+    ;; ripgrep internal aliases.
+    (should (seq-set-equal-p (rg-get-type-aliases 'skip-internal) builtin))
+    (setq rg-builtin-type-aliases nil)
+    (let* ((rg-prioritized-type-aliases '("cpp" "puppet" "elisp"))
+           (result (rg-get-type-aliases 'skip-internal)))
+      ;; Using prioritized aliases doesn't modify the set of aliases
+      (should (seq-set-equal-p result builtin))
+      ;; The three first aliases should be the prioritized ones.
+      (should (seq-set-equal-p (mapcar #'car (seq-take result 3)) rg-prioritized-type-aliases))
+      (setq rg-builtin-type-aliases nil)
+      (let* ((rg-custom-type-aliases '(("foo" . "*.foo") ("bar" . "*.bar")))
+             (result (rg-get-type-aliases 'skip-internal)))
+        ;; Custom aliases are included.
+        (should (seq-set-equal-p result (append rg-custom-type-aliases builtin)))
+        ;; The two first are the custom aliases
+        (should (seq-set-equal-p (mapcar #'car (seq-take result 2)) (mapcar #'car (seq-take rg-custom-type-aliases 2))))
+        ;; The three following are the prioritized aliases.
+        (should (seq-set-equal-p (mapcar #'car (seq-take (seq-drop result 2) 3)) rg-prioritized-type-aliases))))))
+
 (ert-deftest rg-integration-test/search-history ()
   "Test that `rg-history' gets updated."
   :tags '(need-rg)

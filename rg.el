@@ -68,12 +68,21 @@
   :group 'external)
 
 (defcustom rg-custom-type-aliases
-  '(("gyp" .    "*.gyp *.gypi"))
+  '()
   "A list of file type aliases that are added to the 'rg' built in aliases.
 Each list element may be a (string . string) cons containing the name of the
 type alias and the file patterns, or a lambda returning a similar cons cell.
 A lambda should return nil if it currently has no type aliases to contribute."
   :type '(repeat (choice (cons string string) function))
+  :group 'rg)
+
+(defcustom rg-prioritized-type-aliases '()
+  "A list of file type aliases that are prioritized.
+When detecting the file type from the current buffer these aliases are selected
+if there are conflicting aliases for a file type.  Contains only the alias names
+and need to match alias names of ripgrep's built in aliases.  The order of the
+list is not significant."
+  :type '(repeat string)
   :group 'rg)
 
 (defcustom rg-executable (executable-find "rg")
@@ -324,7 +333,14 @@ filtered out."
 If SKIP-INTERNAL is non nil the `rg-internal-type-aliases' will be
 excluded."
   (unless rg-builtin-type-aliases
-    (setq rg-builtin-type-aliases (rg-list-builtin-type-aliases)))
+    (let ((builtin-aliases (rg-list-builtin-type-aliases)))
+      (setq rg-builtin-type-aliases
+            (delete-dups
+             (append
+              (seq-filter (lambda (item)
+                            (member (car item) rg-prioritized-type-aliases))
+                          builtin-aliases)
+              builtin-aliases)))))
   (append (rg-get-custom-type-aliases) rg-builtin-type-aliases
           (unless skip-internal rg-internal-type-aliases)))
 

@@ -72,6 +72,23 @@
 
   :OPTION:
   #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-custom-info 'rg-prioritized-type-aliases)
+  #+END_SRC
+
+  A list of aliases that are prioritized among ripgrep's builtin
+  aliases when selecting the alias based on the buffer file name. This
+  list contains only the alias names and the order between the items
+  does not matter.
+
+  Example:
+  #+BEGIN_SRC elisp
+    (setq rg-custom-type-aliases
+      '("cpp" "puppet"))
+  #+END_SRC
+  :END:
+
+  :OPTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
   (rg-custom-info 'rg-default-alias-fallback)
   #+END_SRC
 
