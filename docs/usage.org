@@ -653,7 +653,7 @@
 
 * Multi line search
   :PROPERTIES:
-  :CUSTOM_ID: search_management
+  :CUSTOM_ID: multi_line_search
   :END:
   By default, ripgrep does matching per line. The =--multiline= flag
   can be used for enabling matching over multiple lines. This

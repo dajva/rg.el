@@ -8,7 +8,7 @@ Copyright 2014 by Jorgen Schäfer
 
 from sphinx import addnodes
 from sphinx.domains import Domain, ObjType
-from sphinx.locale import l_
+from sphinx.locale import _
 from sphinx.directives import ObjectDescription
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
@@ -112,10 +112,10 @@ class ELispDomain(Domain):
     label = 'ELisp'
 
     object_types = {
-        'function': ObjType(l_('function'), 'func'),
-        'variable': ObjType(l_('variable'), 'var'),
-        'command': ObjType(l_('command'), 'cmd'),
-        'option': ObjType(l_('variable'), 'opt'),
+        'function': ObjType(_('function'), 'func'),
+        'variable': ObjType(_('variable'), 'var'),
+        'command': ObjType(_('command'), 'cmd'),
+        'option': ObjType(_('variable'), 'opt'),
     }
     directives = {
         'function': ELispFunction,
