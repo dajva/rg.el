@@ -185,4 +185,8 @@ backward."
                         (eq face properties))))))))
   pos)
 
+(defun rg-set-equal-p (set1 set2)
+  "Compare if SET1 and SET2 contain the same elements."
+  (not (cl-set-exclusive-or set1 set2 :test #'equal)))
+
 ;;; test-helper.el ends here
