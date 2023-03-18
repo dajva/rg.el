@@ -299,6 +299,12 @@ Becomes buffer local in `rg-mode' buffers.")
 (defvar rg-ellipsis (if (char-displayable-p ?…) "[…]" "[...]")
   "Used when hiding command line.")
 
+(defvar rg-finish-functions '()
+  "Functions to call when a ripgrep process finishes.
+
+Each function is called with two arguments: the compilation buffer,
+and a string describing how the process finished.")
+
 
 ;; Defuns
 
