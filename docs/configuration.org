@@ -513,7 +513,7 @@
     invoking the search.
   - *:menu* - Bind the command into =rg-menu=.  Must be a list with three
     items in it.  The first item is the description of the
-    group in witch the new command will appear.  If the group
+    group in which the new command will appear.  If the group
     does not exist a new will be created.  The second item is
     the key binding for this new command (ether a key vector
     or a key description string) and the third item is the
