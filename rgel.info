@@ -1,6 +1,6 @@
 This is rgel.info, produced by makeinfo version 6.8 from rgel.texi.
 
-     rg.el 2.2.0, Feb 23, 2023
+     rg.el 2.2.0, Mar 23, 2023
 
      David Landell
 
@@ -20,7 +20,7 @@ File: rgel.info,  Node: Top,  Next: Usage,  Up: (dir)
 RG User Manual
 **************
 
-     rg.el 2.2.0, Feb 23, 2023
+     rg.el 2.2.0, Mar 23, 2023
 
      David Landell
 
@@ -1085,7 +1085,7 @@ File: rgel.info,  Node: Configuration macros,  Next: Use with evil-mode,  Prev: 
 
         - `:menu' - Bind the command into ‘rg-menu’.  Must be a list
           with three items in it.  The first item is the description of
-          the group in witch the new command will appear.  If the group
+          the group in which the new command will appear.  If the group
           does not exist a new will be created.  The second item is the
           key binding for this new command (ether a key vector or a key
           description string) and the third item is the description of
