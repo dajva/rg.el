@@ -442,6 +442,37 @@
   function in your init file.
   :END:
 
+* Hooks
+  :PROPERTIES:
+  :CUSTOM_ID: hooks
+  :END:
+
+  :OPTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-custom-info 'rg-finish-functions)
+  #+END_SRC
+  Functions to call when a ripgrep search is finished.
+
+  Each function is called with two arguments: the compilation buffer,
+  and a string describing how the process finished.
+  :END:
+
+  :OPTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-custom-info 'rg-filter-hook)
+  #+END_SRC
+  Hook run after new content has been inserted in in the rg buffer.
+  This hook is called every time the rg buffer has been updated with
+  new content and filtered internally by the package.
+  :END:
+
+  :OPTION:
+  #+BEGIN_SRC elisp :results value raw :exports results
+  (rg-custom-info 'rg-mode-hook)
+  #+END_SRC
+  Hook run after entering rg mode.
+  :END:
+
 * Configuration macros
   :PROPERTIES:
   :CUSTOM_ID: configuration_macros
@@ -547,7 +578,7 @@
 
   This is a start of a configuration. This let /rg-mode/'s key bindings
   override the motion state map bindings based on that these motion
-  keys are not important in an /rg/ results buffer. 
+  keys are not important in an /rg/ results buffer.
   Adjust this to your preferred use case:
   #+begin_src elisp
     (with-eval-after-load 'rg
