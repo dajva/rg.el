@@ -432,7 +432,8 @@ Test `:query' directive."
          (point (rg-search-parse-local-bindings '(:query point))))
     (should (null (assq 'query ask)))
     (should (equal (cadr (assq 'query form)) '(form)))
-    (should (equal (cadr (assq 'query point)) '(grep-tag-default)))))
+    (should (equal (cadr (assq 'query point)) '(or (rg-tag-default)
+                                                   (rg-read-pattern literal))))))
 
 (ert-deftest rg-unit/search-parse-local-bindings-dir ()
   "Test rg-define-search helper defun rg-search-parse-local-bindings.

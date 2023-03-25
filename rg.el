@@ -370,6 +370,16 @@ excluded."
         (message "Warning: rg-default-alias-fallback customization does not match any alias. Using \"all\".")
         (car rg-internal-type-aliases))))))
 
+(defun rg-tag-default ()
+  "Get the marked area or thing at point.
+Returns nil if nothing at point."
+  (or (and transient-mark-mode mark-active
+	   (/= (point) (mark))
+	   (buffer-substring-no-properties (point) (mark)))
+      (funcall (or find-tag-default-function
+		   (get major-mode 'find-tag-default-function)
+		   'find-tag-default))))
+
 (defun rg-read-files ()
   "Read files argument for interactive rg."
   (let ((default-alias (rg-default-alias)))
@@ -388,7 +398,7 @@ excluded."
   "Read search pattern argument from user.
 If LITERAL is non nil prompt for literal string.
 DEFAULT is the default pattern to use at the prompt."
-  (let ((default (or default (grep-tag-default)))
+  (let ((default (or default (rg-tag-default)))
         (prompt (concat (if literal "Literal" "Regexp")
                         " search for")))
     (read-regexp prompt default 'rg-pattern-history)))
@@ -685,7 +695,8 @@ the :query option is missing, set it to ASK"
            (alias-opt (plist-get search-cfg :files))
            (dir-opt (plist-get search-cfg :dir))
            (flags-opt (plist-get search-cfg :flags))
-           (binding-list `((literal ,(rg-parse-format-literal format-opt)))))
+           (literal-opt (rg-parse-format-literal format-opt))
+           (binding-list `((literal ,literal-opt))))
 
       ;; confirm binding
       (cond ((eq confirm-opt 'never)
@@ -701,7 +712,8 @@ the :query option is missing, set it to ASK"
 
       ;; query binding
       (unless (eq query-opt 'ask)
-        (let ((query (cond ((eq query-opt 'point) '(grep-tag-default))
+        (let ((query (cond ((eq query-opt 'point) '(or (rg-tag-default)
+                                                       (rg-read-pattern literal)))
                            (t query-opt))))
           (setq binding-list (append binding-list `((query ,query))))))
 
@@ -842,7 +854,7 @@ Example:
          ,@decls
          (interactive
           (list ,@(mapcar 'cdr iargs)))
-         (let ,local-bindings
+         (let* ,local-bindings
            (rg-run query files dir literal confirm flags)))
        (rg-menu-wrap-transient-search ,name)
        ,@menu-forms)))
