@@ -1,6 +1,6 @@
 This is rgel.info, produced by makeinfo version 6.8 from rgel.texi.
 
-     rg.el 2.2.0, Mar 23, 2023
+     rg.el 2.3.0, Mar 25, 2023
 
      David Landell
 
@@ -20,7 +20,7 @@ File: rgel.info,  Node: Top,  Next: Usage,  Up: (dir)
 RG User Manual
 **************
 
-     rg.el 2.2.0, Mar 23, 2023
+     rg.el 2.3.0, Mar 25, 2023
 
      David Landell
 
@@ -692,6 +692,7 @@ File: rgel.info,  Node: Configuration,  Next: Contribute,  Prev: Usage,  Up: Top
 * Customization::
 * Faces::
 * Configuration functions::
+* Hooks::
 * Configuration macros::
 * Use with evil-mode::
 * Customizing the menu::
@@ -992,7 +993,7 @@ File: rgel.info,  Node: Header line,  Prev: Results buffer<2>,  Up: Faces
      Face used the on the ‘regexp’ marker in the header line.
 
 
-File: rgel.info,  Node: Configuration functions,  Next: Configuration macros,  Prev: Faces,  Up: Configuration
+File: rgel.info,  Node: Configuration functions,  Next: Hooks,  Prev: Faces,  Up: Configuration
 
 2.3 Configuration functions
 ===========================
@@ -1018,9 +1019,32 @@ File: rgel.info,  Node: Configuration functions,  Next: Configuration macros,  P
      call this function in your init file.
 
 
-File: rgel.info,  Node: Configuration macros,  Next: Use with evil-mode,  Prev: Configuration functions,  Up: Configuration
+File: rgel.info,  Node: Hooks,  Next: Configuration macros,  Prev: Configuration functions,  Up: Configuration
 
-2.4 Configuration macros
+2.4 Hooks
+=========
+
+ -- ELisp Variable: rg-finish-functions [nil]
+
+     Functions to call when a ripgrep search is finished.
+
+     Each function is called with two arguments: the compilation buffer,
+     and a string describing how the process finished.
+
+ -- ELisp Variable: rg-filter-hook [nil]
+
+     Hook run after new content has been inserted in in the rg buffer.
+     This hook is called every time the rg buffer has been updated with
+     new content and filtered internally by the package.
+
+ -- ELisp Variable: rg-mode-hook [(wgrep-rg-setup)]
+
+     Hook run after entering rg mode.
+
+
+File: rgel.info,  Node: Configuration macros,  Next: Use with evil-mode,  Prev: Hooks,  Up: Configuration
+
+2.5 Configuration macros
 ========================
 
  -- ELisp Function: (rg-define-toggle flag, &optional, key, default)
@@ -1112,7 +1136,7 @@ File: rgel.info,  Node: Configuration macros,  Next: Use with evil-mode,  Prev: 
 
 File: rgel.info,  Node: Use with evil-mode,  Next: Customizing the menu,  Prev: Configuration macros,  Up: Configuration
 
-2.5 Use with evil-mode
+2.6 Use with evil-mode
 ======================
 
 Some key bindings clash with `evil-mode'.  Recommendation is to use evil
@@ -1140,7 +1164,7 @@ preferred use case:
 
 File: rgel.info,  Node: Customizing the menu,  Prev: Use with evil-mode,  Up: Configuration
 
-2.6 Customizing the menu
+2.7 Customizing the menu
 ========================
 
 The menu can be modified from the emacs configuration file.
@@ -1344,7 +1368,7 @@ option) any later version.
 `rg' is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE. See the *note GNU General Public
-License: 8d. for more details.
+License: 92. for more details.
 
 * Menu:
 
@@ -2085,6 +2109,8 @@ Index
                                                               (line  21)
 * rg-file-tag-face (customize option):   Results buffer<2>.   (line  32)
 * rg-filename-face (customize option):   Results buffer<2>.   (line  28)
+* rg-filter-hook (customize option):     Hooks.               (line  13)
+* rg-finish-functions (customize option): Hooks.              (line   6)
 * rg-forward-history (command):          History navigation.  (line  14)
 * rg-group-result (customize option):    Customization.       (line  74)
 * rg-hide-command (customize option):    Customization.       (line 103)
@@ -2103,6 +2129,7 @@ Index
 * rg-menu (command):                     Refine search.       (line  51)
 * rg-menu-transient-insert (function):   Customizing the menu.
                                                               (line  33)
+* rg-mode-hook (customize option):       Hooks.               (line  19)
 * rg-next-file (command):                Navigation.          (line  26)
 * rg-prev-file (command):                Navigation.          (line  31)
 * rg-prioritized-type-aliases (customize option): Customization.
@@ -2288,178 +2315,189 @@ Ref: configuration doc24362
 Ref: 4c24362
 Ref: configuration configuration24362
 Ref: 4d24362
-Node: Customization24534
-Ref: configuration customization24609
-Ref: 4e24609
-Ref: configuration id124609
-Ref: 4f24609
-Ref: configuration option-rg-executable24800
-Ref: 5024800
-Ref: configuration option-rg-executable-per-connection25361
-Ref: 5125361
-Ref: configuration option-rg-custom-type-aliases25732
-Ref: 1f25732
-Ref: configuration option-rg-prioritized-type-aliases26394
-Ref: 5226394
-Ref: configuration option-rg-default-alias-fallback26774
-Ref: 1826774
-Ref: configuration option-rg-command-line-flags27025
-Ref: 4b27025
-Ref: configuration option-rg-group-result27248
-Ref: 2b27248
-Ref: configuration option-rg-show-columns27590
-Ref: 5327590
-Ref: configuration option-rg-ignore-case27697
-Ref: c27697
-Ref: configuration option-rg-hide-command28337
-Ref: 5428337
-Ref: configuration option-rg-keymap-prefix28591
-Ref: 2128591
-Ref: configuration option-rg-use-transient-menu28823
-Ref: 5528823
-Ref: configuration option-rg-show-header29029
-Ref: 5629029
-Ref: configuration option-rg-buffer-name29237
-Ref: 4629237
-Ref: configuration option-rg-ignore-ripgreprc29959
-Ref: 729959
-Node: Position numbers alignment30594
-Ref: configuration id230668
-Ref: 5730668
-Ref: configuration position-numbers-alignment30668
-Ref: 5830668
-Ref: configuration option-rg-align-position-numbers31275
-Ref: 5931275
-Ref: configuration option-rg-align-line-number-field-length31432
-Ref: 5a31432
-Ref: configuration option-rg-align-column-number-field-length31542
-Ref: 5b31542
-Ref: configuration option-rg-align-line-column-separator31656
-Ref: 5c31656
-Ref: configuration option-rg-align-position-content-separator31835
-Ref: 5d31835
-Node: Faces32036
-Ref: configuration faces32143
-Ref: 5e32143
-Node: Results buffer<2>32346
-Ref: configuration results-buffer32423
-Ref: 5f32423
-Ref: configuration option-rg-match-face32466
-Ref: 6032466
-Ref: configuration option-rg-error-face32557
-Ref: 6132557
-Ref: configuration option-rg-context-face32673
-Ref: 6232673
-Ref: configuration option-rg-info-face32828
-Ref: 6332828
-Ref: configuration option-rg-warning-face32990
-Ref: 6432990
-Ref: configuration option-rg-filename-face33112
-Ref: 6533112
-Ref: configuration option-rg-file-tag-face33219
-Ref: 6633219
-Ref: configuration option-rg-line-number-face33339
-Ref: 6733339
-Ref: configuration option-rg-column-number-face33439
-Ref: 6833439
-Ref: configuration option-rg-match-position-face33545
-Ref: 6933545
-Node: Header line33764
-Ref: configuration header-line33841
-Ref: 6a33841
-Ref: configuration header-line-config33841
-Ref: 6b33841
-Ref: configuration option-rg-toggle-on-face33878
-Ref: 6c33878
-Ref: configuration option-rg-toggle-off-face33989
-Ref: 6d33989
-Ref: configuration option-rg-literal-face34099
-Ref: 6e34099
-Ref: configuration option-rg-regexp-face34223
-Ref: 6f34223
-Node: Configuration functions34352
-Ref: configuration configuration-functions34466
-Ref: 7034466
-Ref: configuration id334466
-Ref: 7134466
-Ref: configuration function-rg-enable-default-bindings34523
-Ref: 7234523
-Ref: configuration function-rg-enable-menu34869
-Ref: 7334869
-Ref: configuration function-rg-use-old-defaults35117
-Ref: 7435117
-Node: Configuration macros35410
-Ref: configuration configuration-macros35537
-Ref: 7535537
-Ref: configuration id435537
-Ref: 7635537
-Ref: configuration function-rg-define-toggle35588
-Ref: 3835588
-Ref: configuration function-rg-define-search36497
-Ref: 2236497
-Node: Use with evil-mode39496
-Ref: configuration use-with-evil-mode39620
-Ref: 7739620
-Node: Customizing the menu40594
-Ref: configuration customizing-the-menu40689
-Ref: 7840689
-Ref: configuration id540689
-Ref: 7940689
-Ref: configuration function-rg-menu-transient-insert41725
-Ref: 7a41725
-Node: Contribute42348
-Ref: contribute doc42434
-Ref: 7b42434
-Ref: contribute contribute42434
-Ref: 7c42434
-Node: Pull requests42729
-Ref: contribute id142801
-Ref: 7d42801
-Ref: contribute pull-requests42801
-Ref: 7e42801
-Node: Tests43607
-Ref: contribute id243701
-Ref: 7f43701
-Ref: contribute tests43701
-Ref: 8043701
-Node: Setup44020
-Ref: contribute setup44081
-Ref: 8144081
-Ref: contribute tests-setup44081
-Ref: 8244081
-Node: Running44257
-Ref: contribute running44318
-Ref: 8344318
-Ref: contribute tests-running44318
-Ref: 8444318
-Node: Documentation44599
-Ref: contribute documentation44671
-Ref: 8544671
-Ref: contribute id344671
-Ref: 8644671
-Node: Setup<2>45391
-Ref: contribute documentation-setup45464
-Ref: 8745464
-Ref: contribute id445464
-Ref: 8845464
-Node: Building45704
-Ref: contribute building45777
-Ref: 8945777
-Ref: contribute documentation-building45777
-Ref: 8a45777
-Node: License46082
-Ref: index id146160
-Ref: 8b46160
-Ref: index license46160
-Ref: 8c46160
-Node: GNU General Public License46692
-Ref: gpl doc46760
-Ref: 8e46760
-Ref: gpl gnu-general-public-license46760
-Ref: 8f46760
-Ref: gpl gpl46823
-Ref: 8d46823
-Node: Index84736
+Node: Customization24544
+Ref: configuration customization24619
+Ref: 4e24619
+Ref: configuration id124619
+Ref: 4f24619
+Ref: configuration option-rg-executable24810
+Ref: 5024810
+Ref: configuration option-rg-executable-per-connection25371
+Ref: 5125371
+Ref: configuration option-rg-custom-type-aliases25742
+Ref: 1f25742
+Ref: configuration option-rg-prioritized-type-aliases26404
+Ref: 5226404
+Ref: configuration option-rg-default-alias-fallback26784
+Ref: 1826784
+Ref: configuration option-rg-command-line-flags27035
+Ref: 4b27035
+Ref: configuration option-rg-group-result27258
+Ref: 2b27258
+Ref: configuration option-rg-show-columns27600
+Ref: 5327600
+Ref: configuration option-rg-ignore-case27707
+Ref: c27707
+Ref: configuration option-rg-hide-command28347
+Ref: 5428347
+Ref: configuration option-rg-keymap-prefix28601
+Ref: 2128601
+Ref: configuration option-rg-use-transient-menu28833
+Ref: 5528833
+Ref: configuration option-rg-show-header29039
+Ref: 5629039
+Ref: configuration option-rg-buffer-name29247
+Ref: 4629247
+Ref: configuration option-rg-ignore-ripgreprc29969
+Ref: 729969
+Node: Position numbers alignment30604
+Ref: configuration id230678
+Ref: 5730678
+Ref: configuration position-numbers-alignment30678
+Ref: 5830678
+Ref: configuration option-rg-align-position-numbers31285
+Ref: 5931285
+Ref: configuration option-rg-align-line-number-field-length31442
+Ref: 5a31442
+Ref: configuration option-rg-align-column-number-field-length31552
+Ref: 5b31552
+Ref: configuration option-rg-align-line-column-separator31666
+Ref: 5c31666
+Ref: configuration option-rg-align-position-content-separator31845
+Ref: 5d31845
+Node: Faces32046
+Ref: configuration faces32153
+Ref: 5e32153
+Node: Results buffer<2>32356
+Ref: configuration results-buffer32433
+Ref: 5f32433
+Ref: configuration option-rg-match-face32476
+Ref: 6032476
+Ref: configuration option-rg-error-face32567
+Ref: 6132567
+Ref: configuration option-rg-context-face32683
+Ref: 6232683
+Ref: configuration option-rg-info-face32838
+Ref: 6332838
+Ref: configuration option-rg-warning-face33000
+Ref: 6433000
+Ref: configuration option-rg-filename-face33122
+Ref: 6533122
+Ref: configuration option-rg-file-tag-face33229
+Ref: 6633229
+Ref: configuration option-rg-line-number-face33349
+Ref: 6733349
+Ref: configuration option-rg-column-number-face33449
+Ref: 6833449
+Ref: configuration option-rg-match-position-face33555
+Ref: 6933555
+Node: Header line33774
+Ref: configuration header-line33851
+Ref: 6a33851
+Ref: configuration header-line-config33851
+Ref: 6b33851
+Ref: configuration option-rg-toggle-on-face33888
+Ref: 6c33888
+Ref: configuration option-rg-toggle-off-face33999
+Ref: 6d33999
+Ref: configuration option-rg-literal-face34109
+Ref: 6e34109
+Ref: configuration option-rg-regexp-face34233
+Ref: 6f34233
+Node: Configuration functions34362
+Ref: configuration configuration-functions34461
+Ref: 7034461
+Ref: configuration id334461
+Ref: 7134461
+Ref: configuration function-rg-enable-default-bindings34518
+Ref: 7234518
+Ref: configuration function-rg-enable-menu34864
+Ref: 7334864
+Ref: configuration function-rg-use-old-defaults35112
+Ref: 7435112
+Node: Hooks35405
+Ref: configuration hooks35519
+Ref: 7535519
+Ref: configuration id435519
+Ref: 7635519
+Ref: configuration option-rg-finish-functions35540
+Ref: 7735540
+Ref: configuration option-rg-filter-hook35775
+Ref: 7835775
+Ref: configuration option-rg-mode-hook36018
+Ref: 7936018
+Node: Configuration macros36110
+Ref: configuration configuration-macros36219
+Ref: 7a36219
+Ref: configuration id536219
+Ref: 7b36219
+Ref: configuration function-rg-define-toggle36270
+Ref: 3836270
+Ref: configuration function-rg-define-search37179
+Ref: 2237179
+Node: Use with evil-mode40178
+Ref: configuration use-with-evil-mode40302
+Ref: 7c40302
+Node: Customizing the menu41276
+Ref: configuration customizing-the-menu41371
+Ref: 7d41371
+Ref: configuration id641371
+Ref: 7e41371
+Ref: configuration function-rg-menu-transient-insert42407
+Ref: 7f42407
+Node: Contribute43030
+Ref: contribute doc43116
+Ref: 8043116
+Ref: contribute contribute43116
+Ref: 8143116
+Node: Pull requests43411
+Ref: contribute id143483
+Ref: 8243483
+Ref: contribute pull-requests43483
+Ref: 8343483
+Node: Tests44289
+Ref: contribute id244383
+Ref: 8444383
+Ref: contribute tests44383
+Ref: 8544383
+Node: Setup44702
+Ref: contribute setup44763
+Ref: 8644763
+Ref: contribute tests-setup44763
+Ref: 8744763
+Node: Running44939
+Ref: contribute running45000
+Ref: 8845000
+Ref: contribute tests-running45000
+Ref: 8945000
+Node: Documentation45281
+Ref: contribute documentation45353
+Ref: 8a45353
+Ref: contribute id345353
+Ref: 8b45353
+Node: Setup<2>46073
+Ref: contribute documentation-setup46146
+Ref: 8c46146
+Ref: contribute id446146
+Ref: 8d46146
+Node: Building46386
+Ref: contribute building46459
+Ref: 8e46459
+Ref: contribute documentation-building46459
+Ref: 8f46459
+Node: License46764
+Ref: index id146842
+Ref: 9046842
+Ref: index license46842
+Ref: 9146842
+Node: GNU General Public License47374
+Ref: gpl doc47442
+Ref: 9347442
+Ref: gpl gnu-general-public-license47442
+Ref: 9447442
+Ref: gpl gpl47505
+Ref: 9247505
+Node: Index85418
 
 End Tag Table
 
