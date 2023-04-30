@@ -126,6 +126,16 @@
   package if you are not careful.
   :END:
 
+  :RUBRIC:
+  Interaction with xterm-color
+  :END:
+  This package is not written to be used with custom output colors
+  provided by external packages like /xterm-color/. It relies on the
+  color escape sequences so stripping these will break in unexpected
+  ways.
+  If you are using such packages, the advice is to hook such
+  functionality into =compilation-filter-hook= instead of advising
+  =compilation-filter=.
 
 * Searching
   :PROPERTIES:
