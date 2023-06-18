@@ -30,6 +30,39 @@ repository]]. If you find a bug, please report it in the [[https://github.com/da
   the new code in order to discuss the best way to proceed and what
   additions are needed.
 
+* Docker
+  :PROPERTIES:
+  :CUSTOM_ID: docker
+  :END:
+  Docker can be used to run the tests or generate documentation
+  locally without installing dependencies on the host and to test with
+  different emacs versions.
+
+  To use docker, just set the =USE_DOCKER= variable when
+  running the tests.
+  The =EMACS_VERSION= variable can be used to select emacs
+  version. Note that dash ('-') is used instead of points ('.') in the
+  version numbering. So emacs 28.2 is specified as =28-2=.
+  Emacs are installed from https://github.com/purcell/nix-emacs-ci so
+  only emacs versions supported in that repository will work.
+  - Build docker container:
+    #+begin_src bash
+      # Don't use the USE_DOCKER variable here
+      make EMACS_VERSION=26-2 docker-build
+    #+end_src
+  - To run all the tests in docker image:
+    #+begin_src bash
+     make USE_DOCKER=true test
+    #+end_src
+  - Use a specific emacs version:
+    #+begin_src bash
+      make USE_DOCKER=true EMACS_VERSION=snapshot
+    #+end_src
+  - Generate html documentation:
+    #+begin_src bash
+      make USE_DOCKER=true html
+    #+end_src
+
 * Tests
   :PROPERTIES:
   :CUSTOM_ID: tests
@@ -62,6 +95,7 @@ repository]]. If you find a bug, please report it in the [[https://github.com/da
       #+BEGIN_SRC bash
       cask emacs -Q -L . --eval="(progn (require 'rg) (enable-default-bindings))"
       #+END_SRC
+
 
 * Documentation
   :PROPERTIES:

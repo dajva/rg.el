@@ -1,3 +1,17 @@
+EMACS_VERSION=28-2
+DOCKER_IMAGE=rg.el-test-emacs-$(EMACS_VERSION)
+
+ifdef USE_DOCKER
+DOCKER_WRAPPER=docker run --workdir /app --mount type=bind,source="$(PWD)",target=/app $(DOCKER_IMAGE)
+%: run_make
+	@:
+
+.PHONY: run_make
+run_make:
+	$(DOCKER_WRAPPER) $(MAKE) $(MAKECMDGOALS)
+
+else  # actual Makefile
+
 PKG_NAME = $(shell cask info | head -1 | cut -f2 -d" ")
 PKG_VERSION = $(shell cask version)
 PKG_FULL_NAME = $(PKG_NAME)-$(PKG_VERSION)
@@ -13,6 +27,9 @@ RST_OUT_DIR = $(DOC_DIR)/rst
 RST_DOCS = $(addprefix $(RST_OUT_DIR)/,$(patsubst %.org,%.rst,$(notdir $(ORG_DOCS))))
 
 all: deps test
+
+docker-build:
+	docker build --build-arg EMACS_VERSION=$(EMACS_VERSION) -t $(DOCKER_IMAGE) .
 
 test: ert-test style-check package-lint build-test package-test
 
@@ -77,3 +94,5 @@ deps:
 	cask install
 
 .PHONY: all test build-test clean clean-docs package-test style-check package-lint unit-test integration-test ert-test deps docs
+
+endif
