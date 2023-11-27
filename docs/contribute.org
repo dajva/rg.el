@@ -68,8 +68,9 @@ repository]]. If you find a bug, please report it in the [[https://github.com/da
   :CUSTOM_ID: tests
   :END:
   [[https://cask.readthedocs.io/][Cask]] is used for testing. The tests are written using the Emacs
-  built in ERT framework and executed with [[https://github.com/rejeep/ert-runner.el][ert runner]]. There are also
-  compilation tests, style check, package verification etc.
+  built in ERT framework and follows the conventions of [[https://github.com/rejeep/ert-runner.el][ert runner]]
+  although ert_runner is no longer used. There are also compilation
+  tests, style check, package verification etc.
 *** Setup
     :PROPERTIES:
     :CUSTOM_ID: tests_setup

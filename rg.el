@@ -69,7 +69,7 @@
 
 (defcustom rg-custom-type-aliases
   '()
-  "A list of file type aliases that are added to the 'rg' built in aliases.
+  "A list of file type aliases that are added to the ripgrep built in aliases.
 Each list element may be a (string . string) cons containing the name of the
 type alias and the file patterns, or a lambda returning a similar cons cell.
 A lambda should return nil if it currently has no type aliases to contribute."
@@ -86,7 +86,7 @@ list is not significant."
   :group 'rg)
 
 (defcustom rg-executable (executable-find "rg")
-  "'rg' executable."
+  "Ripgrep executable."
   :type 'string
   :group 'rg)
 
@@ -154,7 +154,7 @@ line flags to use.")
 
 ;; Internal vars and structs
 (defvar rg-builtin-type-aliases nil
-  "Cache for 'rg --type-list'.")
+  "Cache for \"rg --type-list\".")
 
 (defvar rg-initial-toggle-flags nil
   "List of command line flags set by default by `rg-define-toggle' macro.")
@@ -177,7 +177,7 @@ line flags to use.")
   '(("all" . "all defined type aliases") ; rg --type=all
     ("everything" . "*")) ; rg without '--type' arg
   "Internal type aliases for special purposes.
-These are not produced by 'rg --type-list' but we need them anyway.")
+These are not produced by \"rg --type-list\" but we need them anyway.")
 
 (defvar rg-global-map
   (let ((map (make-sparse-keymap)))
@@ -228,7 +228,7 @@ These are not produced by 'rg --type-list' but we need them anyway.")
       (default-value 'rg-executable))))
 
 (defun rg-executable ()
-  "Return the 'rg' executable.
+  "Return the \"rg\" executable.
 Raises an error if it can not be found."
   (let ((executable (rg-find-executable)))
     (if executable
@@ -251,7 +251,7 @@ NAME-OF-MODE is needed to pass this function to `compilation-start'."
     (format "*%s*" (rg--buffer-name))))
 
 (defun rg-build-type-add-args ()
-  "Build a list of --type-add: 'foo:*.foo' flags.
+  "Build a list of --type-add: \"foo:*.foo\" flags.
 Do this for each type in `rg-custom-type-aliases'."
   (mapcar
    (lambda (typedef)
@@ -545,11 +545,11 @@ reports."
 (defmacro rg-define-toggle (flag &optional key default)
   "Define a command line flag that can be toggled from the rg result buffer.
 
-This will create a function with prefix 'rg-custom-toggle-flag-'
+This will create a function with prefix \"rg-custom-toggle-flag-\"
 concatenated with the FLAG name, stripped of any leading dashes.  Flag
 must be a form that will be evaluated to a string at macro expansion
-time.  For instance, if FLAG is '--invert-match' the function name
-will be 'rg-custom-toggle-flag-invert-match.  If the flag contains a
+time.  For instance, if FLAG is \"--invert-match\" the function name
+will be `rg-custom-toggle-flag-invert-match'.  If the flag contains a
 value that will be excluded from the function name.
 
 Optional KEY is a key binding that is added to `rg-mode-map'.  If the

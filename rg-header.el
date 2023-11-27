@@ -33,12 +33,12 @@
 ;; Faces
 (defface rg-toggle-on-face
   '((t :inherit rg-file-tag-face))
-  "face for toggle 'on' text in header."
+  "face for toggle \"on\" text in header."
   :group 'rg-face)
 
 (defface rg-toggle-off-face
   '((t :inherit rg-error-face))
-  "face for toggle 'off' text in header."
+  "face for toggle \"off\" text in header."
   :group 'rg-face)
 
 (defface rg-literal-face

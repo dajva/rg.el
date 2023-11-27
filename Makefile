@@ -1,4 +1,4 @@
-EMACS_VERSION=28-2
+EMACS_VERSION=29-1
 DOCKER_IMAGE=rg.el-test-emacs-$(EMACS_VERSION)
 
 ifdef USE_DOCKER
@@ -19,6 +19,12 @@ SOURCES = $(shell cask files)
 OBJECTS = $(SOURCES:.el=.elc)
 STYLE_CHECK= -L test -L . -l test/style-check.el
 DISABLE_DEFALIAS_CHECK= --eval "(defun package-lint--check-defalias (prefix def))"
+
+# This setup testing similar to ert-runner for legacy reasons.
+# All files under test/ that matches the source files.
+TEST_FILES = $(filter $(patsubst %,test/%-test.el, $(SOURCES)), $(wildcard test/*.el))
+# Load test-helper.el first, then all test files.
+LOAD_TEST_FILES = -L test -l test-helper $(patsubst %,-l %,$(TEST_FILES:test/%.el=%))
 
 SPHINX-BUILD = sphinx-build
 DOC_DIR = docs
@@ -82,13 +88,13 @@ package-lint:
 	cask emacs -batch -Q $(STYLE_CHECK) $(DISABLE_DEFALIAS_CHECK) -f run-package-lint-and-exit rg.el
 
 unit-test:
-	cask exec ert-runner --pattern rg-unit
+	cask emacs --batch -l ert $(LOAD_TEST_FILES) --eval="(ert-run-tests-batch \"rg-unit\")"
 
 integration-test:
-	cask exec ert-runner --pattern rg-integration
+	cask emacs --batch -l ert $(LOAD_TEST_FILES) --eval="(ert-run-tests-batch \"rg-integration\")"
 
 ert-test:
-	cask exec ert-runner --quiet
+	cask emacs --batch -l ert $(LOAD_TEST_FILES) -f ert-run-tests-batch
 
 deps:
 	cask install

@@ -16,7 +16,6 @@
 
 (development
  (depends-on "cl-lib" "0.5")
- (depends-on "ert-runner")
  (depends-on "find-file-in-project")
  (depends-on "flycheck")
  (depends-on "package-lint")
