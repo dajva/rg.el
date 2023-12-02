@@ -46,7 +46,7 @@ jobs:
         -H "Accept: application/vnd.github.v3+json" \
         -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
         "https://api.github.com/repos/${REPO}/releases/tags/${RELEASE_TAG}" \
-        | jq -r ".assets | .[] | select(.name | test(\"${PACKAGE_NAME}\")) | .url" \
+        | jq -r ".assets | .[] | select(.name==\"${PACKAGE_NAME}\") | .url" \
         | tee asset.url
 
         curl -sL --fail \
