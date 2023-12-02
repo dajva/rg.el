@@ -1,6 +1,6 @@
 This is rgel.info, produced by makeinfo version 6.8 from rgel.texi.
 
-     rg.el 2.3.0, Apr 30, 2023
+     rg.el 2.3.0, Dec 02, 2023
 
      David Landell
 
@@ -20,7 +20,7 @@ File: rgel.info,  Node: Top,  Next: Usage,  Up: (dir)
 RG User Manual
 **************
 
-     rg.el 2.3.0, Apr 30, 2023
+     rg.el 2.3.0, Dec 02, 2023
 
      David Landell
 
@@ -1231,11 +1231,12 @@ report it in the issue tracker (https://github.com/dajva/rg.el/issues).
 * Menu:
 
 * Pull requests::
+* Docker::
 * Tests::
 * Documentation::
 
 
-File: rgel.info,  Node: Pull requests,  Next: Tests,  Up: Contribute
+File: rgel.info,  Node: Pull requests,  Next: Docker,  Up: Contribute
 
 3.1 Pull requests
 =================
@@ -1256,15 +1257,50 @@ new code in order to discuss the best way to proceed and what additions
 are needed.
 
 
-File: rgel.info,  Node: Tests,  Next: Documentation,  Prev: Pull requests,  Up: Contribute
+File: rgel.info,  Node: Docker,  Next: Tests,  Prev: Pull requests,  Up: Contribute
 
-3.2 Tests
+3.2 Docker
+==========
+
+Docker can be used to run the tests or generate documentation locally
+without installing dependencies on the host and to test with different
+emacs versions.
+
+To use docker, just set the ‘USE_DOCKER’ variable when running the
+tests.  The ‘EMACS_VERSION’ variable can be used to select emacs
+version.  Note that dash (‘-’) is used instead of points (‘.’) in the
+version numbering.  So emacs 28.2 is specified as ‘28-2’.  Emacs are
+installed from ‘https://github.com/purcell/nix-emacs-ci’ so only emacs
+versions supported in that repository will work.
+
+   - Build docker container:
+
+          # Don't use the USE_DOCKER variable here
+          make EMACS_VERSION=26-2 docker-build
+
+   - To run all the tests in docker image:
+
+          make USE_DOCKER=true test
+
+   - Use a specific emacs version:
+
+          make USE_DOCKER=true EMACS_VERSION=snapshot
+
+   - Generate html documentation:
+
+          make USE_DOCKER=true html
+
+
+File: rgel.info,  Node: Tests,  Next: Documentation,  Prev: Docker,  Up: Contribute
+
+3.3 Tests
 =========
 
 Cask (https://cask.readthedocs.io/) is used for testing.  The tests are
-written using the Emacs built in ERT framework and executed with ert
-runner (https://github.com/rejeep/ert-runner.el).  There are also
-compilation tests, style check, package verification etc.
+written using the Emacs built in ERT framework and follows the
+conventions of ert runner (https://github.com/rejeep/ert-runner.el)
+although ert_runner is no longer used.  There are also compilation
+tests, style check, package verification etc.
 
 * Menu:
 
@@ -1274,7 +1310,7 @@ compilation tests, style check, package verification etc.
 
 File: rgel.info,  Node: Setup,  Next: Running,  Up: Tests
 
-3.2.1 Setup
+3.3.1 Setup
 -----------
 
    - Install cask
@@ -1287,7 +1323,7 @@ File: rgel.info,  Node: Setup,  Next: Running,  Up: Tests
 
 File: rgel.info,  Node: Running,  Prev: Setup,  Up: Tests
 
-3.2.2 Running
+3.3.2 Running
 -------------
 
    - Run the whole test suite:
@@ -1305,7 +1341,7 @@ File: rgel.info,  Node: Running,  Prev: Setup,  Up: Tests
 
 File: rgel.info,  Node: Documentation,  Prev: Tests,  Up: Contribute
 
-3.3 Documentation
+3.4 Documentation
 =================
 
 The documentation is written in org mode.  The export target is
@@ -1329,7 +1365,7 @@ expected.
 
 File: rgel.info,  Node: Setup<2>,  Next: Building,  Up: Documentation
 
-3.3.1 Setup
+3.4.1 Setup
 -----------
 
    - Install Sphinx
@@ -1344,7 +1380,7 @@ File: rgel.info,  Node: Setup<2>,  Next: Building,  Up: Documentation
 
 File: rgel.info,  Node: Building,  Prev: Setup<2>,  Up: Documentation
 
-3.3.2 Building
+3.4.2 Building
 --------------
 
    - HTML documentation
@@ -1377,7 +1413,7 @@ option) any later version.
 `rg' is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE. See the *note GNU General Public
-License: 92. for more details.
+License: 94. for more details.
 
 * Menu:
 
@@ -2459,54 +2495,59 @@ Ref: contribute doc43536
 Ref: 8043536
 Ref: contribute contribute43536
 Ref: 8143536
-Node: Pull requests43831
-Ref: contribute id143903
-Ref: 8243903
-Ref: contribute pull-requests43903
-Ref: 8343903
-Node: Tests44709
-Ref: contribute id244803
-Ref: 8444803
-Ref: contribute tests44803
-Ref: 8544803
-Node: Setup45122
-Ref: contribute setup45183
-Ref: 8645183
-Ref: contribute tests-setup45183
-Ref: 8745183
-Node: Running45359
-Ref: contribute running45420
-Ref: 8845420
-Ref: contribute tests-running45420
-Ref: 8945420
-Node: Documentation45701
-Ref: contribute documentation45773
-Ref: 8a45773
-Ref: contribute id345773
-Ref: 8b45773
-Node: Setup<2>46493
-Ref: contribute documentation-setup46566
-Ref: 8c46566
-Ref: contribute id446566
-Ref: 8d46566
-Node: Building46806
-Ref: contribute building46879
-Ref: 8e46879
-Ref: contribute documentation-building46879
-Ref: 8f46879
-Node: License47184
-Ref: index id147262
-Ref: 9047262
-Ref: index license47262
-Ref: 9147262
-Node: GNU General Public License47794
-Ref: gpl doc47862
-Ref: 9347862
-Ref: gpl gnu-general-public-license47862
-Ref: 9447862
-Ref: gpl gpl47925
-Ref: 9247925
-Node: Index85838
+Node: Pull requests43842
+Ref: contribute id143915
+Ref: 8243915
+Ref: contribute pull-requests43915
+Ref: 8343915
+Node: Docker44721
+Ref: contribute docker44808
+Ref: 8444808
+Ref: contribute id244808
+Ref: 8544808
+Node: Tests45778
+Ref: contribute id345865
+Ref: 8645865
+Ref: contribute tests45865
+Ref: 8745865
+Node: Setup46235
+Ref: contribute setup46296
+Ref: 8846296
+Ref: contribute tests-setup46296
+Ref: 8946296
+Node: Running46472
+Ref: contribute running46533
+Ref: 8a46533
+Ref: contribute tests-running46533
+Ref: 8b46533
+Node: Documentation46814
+Ref: contribute documentation46886
+Ref: 8c46886
+Ref: contribute id446886
+Ref: 8d46886
+Node: Setup<2>47606
+Ref: contribute documentation-setup47679
+Ref: 8e47679
+Ref: contribute id547679
+Ref: 8f47679
+Node: Building47919
+Ref: contribute building47992
+Ref: 9047992
+Ref: contribute documentation-building47992
+Ref: 9147992
+Node: License48297
+Ref: index id148375
+Ref: 9248375
+Ref: index license48375
+Ref: 9348375
+Node: GNU General Public License48907
+Ref: gpl doc48975
+Ref: 9548975
+Ref: gpl gnu-general-public-license48975
+Ref: 9648975
+Ref: gpl gpl49038
+Ref: 9449038
+Node: Index86951
 
 End Tag Table
 
