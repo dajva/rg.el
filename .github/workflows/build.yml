@@ -13,6 +13,7 @@ jobs:
     strategy:
       matrix:
         emacs_version:
+          - 26.1
           - 26.3
           - 27.2
           - 28.2
@@ -55,6 +56,10 @@ jobs:
         "$(cat asset.url)"
         tar xf ${PACKAGE_NAME}
         echo "$PWD/$(basename -s .tar.gz $PACKAGE_NAME)" >> $GITHUB_PATH
+
+    - name: Update elpa keyring
+      if:  contains(matrix.emacs_version, '26')
+      run: make update-keyring
 
     - name: Install emacs deps
       run: make deps
