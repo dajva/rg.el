@@ -28,7 +28,7 @@ jobs:
       uses: conao3/setup-cask@master
 
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Install ripgrep
       env:
