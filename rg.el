@@ -144,6 +144,19 @@ Disabling this setting can break functionality of this package."
   :type 'boolean
   :group 'rg)
 
+(defcustom rg-use-pattern-file nil
+  "Use ripgrep -f option to input pattern.
+This is very useful on Windows, because NTEmacs subprocess creation
+doesn't support Unicode arguments."
+  :type 'boolean
+  :group 'rg)
+
+(defcustom rg-pattern-file
+  (expand-file-name "rg-pattern" temporary-file-directory)
+  "Whenever `rg' build a command, it generates a temp pattern file."
+  :type 'string
+  :group 'rg)
+
 ;;;###autoload
 (defvar rg-command-line-flags-function 'identity
   "Function to modify command line flags of a search.
@@ -293,13 +306,17 @@ are command line flags to use for the search."
             (list "--fixed-strings"))
           (when (not (equal files "everything"))
             (list "--type=<F>"))
-          (list "-e <R>")
+          (list (if rg-use-pattern-file "-f <R>" "-e <R>"))
           (when (member system-type '(darwin windows-nt))
             (list ".")))))
-
+    (when rg-use-pattern-file
+      (with-temp-file rg-pattern-file
+               (set-buffer-multibyte t)
+               (setq buffer-file-coding-system 'utf-8)
+               (insert (format "%s\n" pattern))))
     (grep-expand-template
      (mapconcat 'identity (cons (rg-executable) (delete-dups command-line)) " ")
-     pattern
+     (if rg-use-pattern-file rg-pattern-file pattern)
      (if (rg-is-custom-file-pattern files) "custom" files))))
 
 (defun rg-invoke-rg-type-list ()
