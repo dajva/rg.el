@@ -145,13 +145,15 @@ Disabling this setting can break functionality of this package."
   :group 'rg)
 
 (defcustom rg-w32-unicode nil
-  "Enable the workaround for NTEmacs subprocess not supporting Unicode arguments."
+  "Enable Unicode support on Windows.
+A workaround for NTEmacs subprocess not supporting Unicode arguments."
   :type 'boolean
   :group 'rg)
 
 (defcustom rg-w32-ripgrep-proxy
   (expand-file-name "rg-w32-ripgrep-proxy.bat" user-emacs-directory)
-  "An automatically generated temporary batch file used to proxy ripgrep Unicode arguments."
+  "An automatically generated temporary batch file.
+Used to proxy ripgrep Unicode arguments."
   :type 'string
   :group 'rg)
 
@@ -314,6 +316,8 @@ are command line flags to use for the search."
                     (if (rg-is-custom-file-pattern files) "custom" files))))
       (cond ((and (eq system-type 'windows-nt) rg-w32-unicode)
              (with-temp-file rg-w32-ripgrep-proxy
+               (set-buffer-multibyte t)
+               (setq buffer-file-coding-system 'utf-8-dos)
                (insert (format "@echo off\n"))
                (insert (format "chcp 65001 > null\n"))
                (insert (format "%s\n" command)))
