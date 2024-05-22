@@ -319,7 +319,7 @@ are command line flags to use for the search."
                (set-buffer-multibyte t)
                (setq buffer-file-coding-system 'utf-8-dos)
                (insert (format "@echo off\n"))
-               (insert (format "chcp 65001 > null\n"))
+               (insert (format "chcp 65001 > nul\n"))
                (insert (format "%s\n" command)))
              rg-w32-ripgrep-proxy)
             (t command)))
