@@ -189,6 +189,10 @@ Becomes buffer local in `rg-mode' buffers.")
 (defvar-local rg-hit-count 0
   "Stores number of hits in a search.")
 
+(defvar-local rg-match-positions nil
+  "Stores position of matches in a search.
+Each element is consists by (match-beginning-marker . match-string-length).")
+
 (defvar-local rg-recompile nil
   "Is `recompile' in progress or `compile-start'.")
 
@@ -469,6 +473,10 @@ This function is called from `compilation-filter-hook'."
           (replace-match (propertize (match-string 1)
                                      'face nil 'font-lock-face 'rg-match-face)
                          t t)
+          (setq rg-match-positions
+                (append rg-match-positions
+                        (list (cons (copy-marker (match-beginning 0))
+                                    (length (match-string 0))))) )
           (cl-incf rg-hit-count))
 
         (rg-format-line-and-column-numbers beg end)
