@@ -29,8 +29,6 @@
   (let ((package-check-signature nil))
     (package-initialize)
     (package-refresh-contents)
-    (package-install 'gnu-elpa-keyring-update)
-    (ignore-errors
-      (gnu-elpa-keyring-update))))
+    (package-install 'gnu-elpa-keyring-update)))
 
 ;;; keyring-update.el ends here
