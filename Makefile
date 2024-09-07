@@ -99,9 +99,6 @@ ert-test:
 deps:
 	cask install
 
-update-keyring:
-	cask emacs --batch -L test -l test/keyring-update.el -f rg-update-elpa-keyring
-
 .PHONY: all test build-test clean clean-docs package-test style-check package-lint unit-test integration-test ert-test deps docs
 
 endif
