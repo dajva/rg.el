@@ -26,9 +26,8 @@
 
 ;;; Code:
 
-(defadvice info-insert-file-contents (after
-                                      sphinx-info-insert-file-contents
-                                      activate)
+(define-advice info-insert-file-contents
+    (:after (&rest _) sphinx-info-insert-file-contents)
   "Hack to hide \"See\" in references.
 This makes `Info-hide-note-references' buffer-local and
 automatically set to `hide' iff it can be determined that this file
