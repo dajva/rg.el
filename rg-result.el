@@ -795,6 +795,10 @@ previous file with grouped matches."
                 (push (cons filepath nextfile) elements))
               (nreverse elements))))))
 
+(defun rg-cur-search-pattern ()
+  "Get the current search pattern."
+  (rg-search-pattern rg-cur-search))
+
 (provide 'rg-result)
 
 ;; Local Variables:

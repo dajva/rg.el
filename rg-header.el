@@ -29,6 +29,17 @@
 ;;; Code:
 
 (require 'mouse)
+
+(declare-function rg-cur-search-pattern "rg-result.el")
+
+
+;; Customization
+(defcustom rg-header-max-search-string-length nil
+  "The max line length of header line search string item."
+  :type '(choice (const :tag "Don't truncate" nil)
+                 (number :tag "The max width"))
+  :group 'rg)
+
 
 ;; Faces
 (defface rg-toggle-on-face
@@ -97,6 +108,29 @@ items that the map will be applied to."
                   help-echo ,help
                   keymap ,map)))
 
+(defun rg-header-truncate-search-pattern (search)
+  "Truncate SEARCH if it exceeds `rg-header-max-search-string-length'."
+  (if (rg-header-truncates-p search)
+      (truncate-string-to-width search
+                                rg-header-max-search-string-length
+                                0
+                                nil
+                                t)
+    search))
+
+(defun rg-header-truncates-p (search)
+  "Verify that SEARCH would be truncated."
+  (and (numberp rg-header-max-search-string-length)
+       (< rg-header-max-search-string-length (length search))))
+
+(defun rg-header-search-help ()
+  "Get the search help for the current buffer."
+  (let ((pattern (rg-cur-search-pattern)))
+
+    (if (rg-header-truncates-p pattern)
+        (concat "Change search string: " pattern)
+      "Change search string")))
+
 ;; Use full-command here to avoid dependency on rg-search
 ;; struct. Should be properly fixed.
 (defun rg-create-header-line (search full-command)
@@ -113,8 +147,8 @@ If FULL-COMMAND specifies if the full command line search was done."
                                         ("literal" rg-literal-face)
                                         ("regexp" rg-regexp-face))))
              (rg-header-mouse-action
-              'rg-rerun-change-query "Change search string"
-              `(:eval (rg-search-pattern ,search)))
+              'rg-rerun-change-query (rg-header-search-help)
+              `(:eval (rg-header-truncate-search-pattern (rg-search-pattern ,search))))
              itemspace
              (rg-header-render-label "files")
              (rg-header-mouse-action
