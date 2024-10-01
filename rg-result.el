@@ -444,7 +444,7 @@ Set up `compilation-exit-message-function'."
 This function is called from `compilation-filter-hook'."
   (save-excursion
     (forward-line 0)
-    (let ((end (point)) beg)
+    (let ((end (point)) beg temp-positions)
       (goto-char compilation-filter-start)
       (forward-line 0)
       (setq beg (point))
@@ -475,9 +475,8 @@ This function is called from `compilation-filter-hook'."
                          t t)
           (push (cons (copy-marker (match-beginning 0))
                       (length (match-string 0)))
-                rg-match-positions)
+                temp-positions)
           (cl-incf rg-hit-count))
-        (setq rg-match-positions (nreverse rg-match-positions))
         (rg-format-line-and-column-numbers beg end)
 
         ;; Delete all remaining escape sequences
@@ -486,6 +485,9 @@ This function is called from `compilation-filter-hook'."
           (replace-match "" t t))
 
         (goto-char beg)
+
+        (setq rg-match-positions (nconc rg-match-positions (nreverse temp-positions)))
+
         (run-hooks 'rg-filter-hook)))))
 
 ;; The regexp and filter functions below were taken from ag.el
