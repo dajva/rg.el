@@ -217,7 +217,9 @@ Each element is consists by (match-beginning-marker . match-string-length).")
      (0 rg-command-line-properties)
      (1 (rg-hidden-command-line-properties)))
     ("^-\\*- mode: rg; default-directory: \"\\(.*\\)\" -\\*-$"
-     (1 rg-directory-properties))))
+     (1 rg-directory-properties))
+    ("\\[\\.\\.\\. [0-9]+ more match\\(es\\)*\\]$"
+     (0 'rg-info-face nil t))))
 
 (defvar rg-menu-map
   (let ((map (make-sparse-keymap "RipGrep")))
