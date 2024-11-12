@@ -41,6 +41,7 @@
 (require 'seq)
 (require 'tramp)
 (require 'wgrep-rg)
+(require 'mule-util)
 
 (defun rg-regexp-anywhere (needle)
   (s-replace "%%%%" needle "\\( \\|^\\)%%%%\\( \\|$\\)"))
@@ -188,5 +189,10 @@ backward."
 (defun rg-set-equal-p (set1 set2)
   "Compare if SET1 and SET2 contain the same elements."
   (not (cl-set-exclusive-or set1 set2 :test #'equal)))
+
+(defun rg-truncate-string-ellipsis ()
+  (if (fboundp 'truncate-string-ellipsis)
+      (truncate-string-ellipsis)
+    truncate-string-ellipsis))
 
 ;;; test-helper.el ends here

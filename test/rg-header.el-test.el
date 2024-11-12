@@ -1,5 +1,4 @@
 (require 'cl-lib)
-(require 'mule-util)
 
 (defvar rg-unit/long-search-pattern "everything everywhere all at once")
 
@@ -62,31 +61,32 @@ Instead DO-RETURN will be returned when the function is called."
 (ert-deftest rg-unit/search-pattern-truncation-in-header ()
   "Tests `rg-header-truncate-search-pattern'."
   ;; When predicate is true.
-  (rg-unit/mock-truncation-predicate (:max 11 :predicate always)
-    (should (string=
-             (concat "everything" (truncate-string-ellipsis))
-             (rg-header-truncate-search-pattern rg-unit/long-search-pattern))))
+  (let ((ellipsis-len (length (rg-truncate-string-ellipsis))))
+    (rg-unit/mock-truncation-predicate (:max 11 :predicate always)
+      (should (string=
+               (concat (substring "everything" 0 (- 11 ellipsis-len)) (rg-truncate-string-ellipsis))
+               (rg-header-truncate-search-pattern rg-unit/long-search-pattern))))
 
-  (rg-unit/mock-truncation-predicate (:max 5 :predicate always)
-    (should (string=
-             "ever…"
-             (rg-header-truncate-search-pattern rg-unit/long-search-pattern))))
+    (rg-unit/mock-truncation-predicate (:max 5 :predicate always)
+      (should (string=
+               (concat (substring "ever" 0 (- 5 ellipsis-len)) (rg-truncate-string-ellipsis))
+               (rg-header-truncate-search-pattern rg-unit/long-search-pattern))))
 
-  (rg-unit/mock-truncation-predicate (:max (length rg-unit/long-search-pattern) :predicate always)
-    (should (string=
-             "everything everywhere all at once"
-             (rg-header-truncate-search-pattern rg-unit/long-search-pattern))))
+    (rg-unit/mock-truncation-predicate (:max (length rg-unit/long-search-pattern) :predicate always)
+      (should (string=
+               "everything everywhere all at once"
+               (rg-header-truncate-search-pattern rg-unit/long-search-pattern))))
 
-  ;; When predicate is false.
-  (rg-unit/mock-truncation-predicate (:max 11 :predicate ignore)
-    (should (string=
-             "everything everywhere all at once"
-             (rg-header-truncate-search-pattern rg-unit/long-search-pattern))))
+    ;; When predicate is false.
+    (rg-unit/mock-truncation-predicate (:max 11 :predicate ignore)
+      (should (string=
+               "everything everywhere all at once"
+               (rg-header-truncate-search-pattern rg-unit/long-search-pattern))))
 
-  (rg-unit/mock-truncation-predicate (:predicate ignore)
-    (should (string=
-             "everything everywhere all at once"
-             (rg-header-truncate-search-pattern rg-unit/long-search-pattern)))))
+    (rg-unit/mock-truncation-predicate (:predicate ignore)
+      (should (string=
+               "everything everywhere all at once"
+               (rg-header-truncate-search-pattern rg-unit/long-search-pattern))))))
 
 (ert-deftest rg-unit/search-help-for-header ()
   "Tests `rg-header-search-help'."
