@@ -572,14 +572,14 @@ Test `:flags' directive."
     ;; No custom type aliases and no prioritized aliases gives the
     ;; ripgrep internal aliases.
     (should (rg-set-equal-p (rg-get-type-aliases 'skip-internal) builtin))
-    (setq rg-builtin-type-aliases nil)
+    (setq rg-builtin-type-aliases-cache nil)
     (let* ((rg-prioritized-type-aliases '("cpp" "puppet" "elisp"))
            (result (rg-get-type-aliases 'skip-internal)))
       ;; Using prioritized aliases doesn't modify the set of aliases
       (should (rg-set-equal-p result builtin))
       ;; The three first aliases should be the prioritized ones.
-      (should (rg-set-equal-p (mapcar #'car (seq-take result 3)) rg-prioritized-type-aliases))
-      (setq rg-builtin-type-aliases nil)
+      (should (equal (mapcar #'car (seq-take result 3)) rg-prioritized-type-aliases))
+      (setq rg-builtin-type-aliases-cache nil)
       (let* ((rg-custom-type-aliases '(("foo" . "*.foo") ("bar" . "*.bar")))
              (result (rg-get-type-aliases 'skip-internal)))
         ;; Custom aliases are included.
@@ -588,6 +588,18 @@ Test `:flags' directive."
         (should (rg-set-equal-p (mapcar #'car (seq-take result 2)) (mapcar #'car (seq-take rg-custom-type-aliases 2))))
         ;; The three following are the prioritized aliases.
         (should (rg-set-equal-p (mapcar #'car (seq-take (seq-drop result 2) 3)) rg-prioritized-type-aliases))))))
+
+(ert-deftest rg-integration-test/rg-order-of-prioritized-type-aliases()
+  "Test that rg-get-type-aliases honors the order of the `rg-prioritized-type-aliases' var."
+  :tags '(need-rg)
+  (let* ((rg-custom-type-aliases '())
+         (rg-prioritized-type-aliases '("cpp" "puppet" "elisp"))
+         (builtin (rg-list-builtin-type-aliases))
+         (result (rg-get-type-aliases 'skip-internal)))
+    (should (equal (mapcar #'car (seq-take result 3)) rg-prioritized-type-aliases))
+    (setq rg-prioritized-type-aliases '("puppet" "cpp" "elisp"))
+    (setq result (rg-get-type-aliases 'skip-internal))
+    (should (equal (mapcar #'car (seq-take result 3)) rg-prioritized-type-aliases))))
 
 (ert-deftest rg-integration-test/search-history ()
   "Test that `rg-history' gets updated."

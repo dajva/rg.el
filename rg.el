@@ -81,7 +81,7 @@ A lambda should return nil if it currently has no type aliases to contribute."
 When detecting the file type from the current buffer these aliases are selected
 if there are conflicting aliases for a file type.  Contains only the alias names
 and need to match alias names of ripgrep's built in aliases.  The order of the
-list is not significant."
+list decides the priority among the types in the list."
   :type '(repeat string)
   :group 'rg)
 
@@ -166,8 +166,11 @@ line flags to use.")
 
 
 ;; Internal vars and structs
-(defvar rg-builtin-type-aliases nil
+(defvar rg-builtin-type-aliases-cache nil
   "Cache for \"rg --type-list\".")
+
+(defvar rg-prioritized-type-aliases-cache nil
+  "Cache for `rg-prioritized-type-aliases'.")
 
 (defvar rg-initial-toggle-flags nil
   "List of command line flags set by default by `rg-define-toggle' macro.")
@@ -354,16 +357,34 @@ filtered out."
   "Return supported type aliases.
 If SKIP-INTERNAL is non nil the `rg-internal-type-aliases' will be
 excluded."
-  (unless rg-builtin-type-aliases
+  ;; Read from ripgrep once or if prioritized aliases changed.
+  (unless (and rg-builtin-type-aliases-cache
+               (equal rg-prioritized-type-aliases
+                      (mapcar #'car rg-prioritized-type-aliases-cache)))
     (let ((builtin-aliases (rg-list-builtin-type-aliases)))
-      (setq rg-builtin-type-aliases
-            (delete-dups
-             (append
-              (seq-filter (lambda (item)
-                            (member (car item) rg-prioritized-type-aliases))
-                          builtin-aliases)
-              builtin-aliases)))))
-  (append (rg-get-custom-type-aliases) rg-builtin-type-aliases
+      (if rg-prioritized-type-aliases
+          (progn
+            (let ((prioritized-type-aliases
+                   (seq-filter (lambda (item)
+                                 (member (car item) rg-prioritized-type-aliases))
+                               builtin-aliases)))
+              ;; Reorder the the found aliases to the same order as rg-prioritized-type-aliases
+              (setq rg-prioritized-type-aliases-cache
+                    (seq-map (lambda (item)
+                               (assoc item prioritized-type-aliases))
+                             rg-prioritized-type-aliases))
+              ;; Remove the prioritzed aliases from the builtin cache
+              ;; to avoid duplicates.
+              (setq rg-builtin-type-aliases-cache
+                    (seq-remove (lambda (item)
+                                  (member (car item) rg-prioritized-type-aliases))
+                                builtin-aliases))))
+        ;; Simple case, just assign
+        (setq rg-builtin-type-aliases-cache builtin-aliases)
+        (setq rg-prioritized-type-aliases-cache nil))))
+  (append (rg-get-custom-type-aliases)
+          rg-prioritized-type-aliases-cache
+          rg-builtin-type-aliases-cache
           (unless skip-internal rg-internal-type-aliases)))
 
 (defun rg-default-alias ()
