@@ -88,13 +88,13 @@ package-lint:
 	cask emacs -batch -Q $(STYLE_CHECK) $(DISABLE_DEFALIAS_CHECK) -f run-package-lint-and-exit rg.el
 
 unit-test:
-	cask emacs --batch -l ert $(LOAD_TEST_FILES) --eval="(ert-run-tests-batch \"rg-unit\")"
+	cask emacs --batch -l ert $(LOAD_TEST_FILES) --eval="(ert-run-tests-batch-and-exit \"rg-unit\")"
 
 integration-test:
-	cask emacs --batch -l ert $(LOAD_TEST_FILES) --eval="(ert-run-tests-batch \"rg-integration\")"
+	cask emacs --batch -l ert $(LOAD_TEST_FILES) --eval="(ert-run-tests-batch-and-exit \"rg-integration\")"
 
 ert-test:
-	cask emacs --batch -l ert $(LOAD_TEST_FILES) -f ert-run-tests-batch
+	cask emacs --batch -l ert $(LOAD_TEST_FILES) -f ert-run-tests-batch-and-exit
 
 deps:
 	cask install
