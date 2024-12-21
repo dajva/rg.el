@@ -204,7 +204,7 @@
       (let ((p (project-current)))
         (if p
             (format "rg %s" (abbreviate-file-name (cdr p)))
-          "rg"))))
+          "rg")))
   #+END_SRC
   :END:
 
