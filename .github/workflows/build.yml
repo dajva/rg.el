@@ -65,7 +65,7 @@ jobs:
       run: |
         emacs --version
         rg --version
-        make test
+        make EMACS_VERSION=${{ matrix.emacs_version }} test
 
     - name: Coveralls
       uses: coverallsapp/github-action@master
