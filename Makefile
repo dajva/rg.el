@@ -81,7 +81,7 @@ package-test:
 	PKG_FULL_NAME=$(PKG_FULL_NAME) emacs -batch -Q -l test/package-bootstrap.el \
 		--eval "(progn (package-install-file (expand-file-name \"dist/$(PKG_FULL_NAME).tar\")) (rg \"rg\" \"elisp\" \"/tmp/$(PKG_FULL_NAME)-elpa\"))"
 
-ifeq ($(findstring 26-,$(EMACS_VERSION)), 26-)
+ifeq ($(findstring 26,$(EMACS_VERSION)), 26)
 style-check:
 package-lint:
 else
@@ -101,7 +101,7 @@ integration-test:
 ert-test:
 	cask emacs --batch -l ert $(LOAD_TEST_FILES) -f ert-run-tests-batch-and-exit
 
-ifeq ($(findstring 26-,$(EMACS_VERSION)), 26-)
+ifeq ($(findstring 26,$(EMACS_VERSION)), 26)
 deps_prepare:
 	cp Cask /tmp/Cask
 	sed -i '/flycheck/d' Cask
