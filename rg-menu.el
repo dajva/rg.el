@@ -177,7 +177,7 @@ FUNC is an rerun function invoked from an `rg-mode' buffer."
     "Check if group with description DESC exist at location LOC."
     (let ((suffix (transient-get-suffix 'rg-menu loc)))
       (and suffix
-           (string= (plist-get (seq-elt suffix 2) :description) desc))))
+           (string= (plist-get (seq-elt suffix 1) :description) desc))))
 
   (defun rg-menu-get-loc-of-group (desc)
     "Find the location of the group with description DESC.
