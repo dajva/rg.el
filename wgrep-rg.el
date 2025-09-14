@@ -1,4 +1,4 @@
-;;; wgrep-rg.el --- Writable rg buffer and apply the changes to files
+;;; wgrep-rg.el --- Writable rg buffer and apply the changes to files -*- lexical-binding: t; -*-
 
 ;; Author: Masahiro Hayashi <mhayashi1120@gmail.com>
 ;; Rewritten by: Dale Sedivec <dale@codefu.org>
