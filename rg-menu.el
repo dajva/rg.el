@@ -53,7 +53,7 @@
 (eval-and-compile
   (defun rg-menu-create-search-body (func)
     "Call FUNC from search menu with the flags set in the transient menu."
-    `((let* ((transient-flags (transient-get-value))
+    `((let* ((transient-flags (transient-args transient-current-command))
              (function-flags (funcall rg-command-line-flags-function nil))
              (rg-command-line-flags-function
               (lambda (flags)
@@ -64,13 +64,13 @@
     "Call FUNC from rerun menu with flags extracted with ARGFUNC.
 If INTERACTIVE is non nil, call func interactively, otherwise call it
 regularly."
-    `((setf (rg-search-flags rg-cur-search) (transient-get-value))
+    `((setf (rg-search-flags rg-cur-search) (transient-args transient-current-command))
       (if (commandp #',func)
            (call-interactively #',func)
          (,func))))
 
   (defun rg-menu-assemble-transient-wrapper (func body)
-    "Create a defun with name 'FUNC--transient' with BODY."
+    "Create a defun with name `FUNC--transient' with BODY."
     (let ((func-name (concat (symbol-name func) "--transient"))
           (doc-string (format "Transient wrapper around `%s' for `rg-menu'."
                               (symbol-name func))))
@@ -163,7 +163,7 @@ FUNC is an rerun function invoked from an `rg-mode' buffer."
     (3 "t" "Change literal" rg-rerun-change-literal--transient)
     (3 "f" "Change files" rg-rerun-change-files--transient)
     (3 "d" "Change directory" rg-rerun-change-dir--transient)]
-   ["Manage"
+   [:description "Manage"
     (4 "l" "List" rg-list-searches--transient)
     (4 "s" "Save" rg-save-search--transient)
     (4 "S" "Save as name" rg-save-search-as-name--transient)]

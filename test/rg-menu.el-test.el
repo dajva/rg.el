@@ -63,7 +63,7 @@
               (lambda ()
                 (interactive)
                 (setf flags-result (funcall rg-command-line-flags-function func-flags))))
-             ((symbol-function #'transient-get-value) (lambda () transient-flags))
+             ((symbol-function #'transient-args) (lambda (prefix) transient-flags))
 
              (rg-cur-search (rg-search-create
                  :pattern "test"
