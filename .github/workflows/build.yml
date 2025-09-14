@@ -19,6 +19,7 @@ jobs:
           - 28.2
           - 29.1
           - 29.4
+          - 31.1
     steps:
     - name: Setup emacs-ci-nix for ${{ matrix.emacs_version }}
       uses: purcell/setup-emacs@master
