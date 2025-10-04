@@ -83,6 +83,36 @@
   (test-rerun--transient)
   (should (equal (rg-search-flags rg-cur-search) transient-flags))))
 
+(ert-deftest rg-unit/menu-rerun-custom-flags ()
+  "Test that rerun from transient menu preserves custom flags."
+  (rg-define-search rg-test-search-with-flags
+    :flags '("--hidden" "--no-ignore"))
+  (let ((captured-flags nil))
+    (cl-letf* (((symbol-function #'rg-run)
+                (lambda (pattern files dir &optional literal confirm flags)
+                  (with-current-buffer (get-buffer-create "*rg*")
+                    (rg-mode)
+                    (setq rg-cur-search (rg-search-create
+                                         :pattern pattern
+                                         :files files
+                                         :dir dir
+                                         :literal literal
+                                         :flags flags))
+                    (setq compilation-arguments (list "a" 'rg-mode 'rg-buffer-name nil)))))
+               ((symbol-function #'transient-args) (lambda (_) '("--multiline" "--hidden"))))
+      (rg-test-search-with-flags "test" "all" "/tmp")
+      (with-current-buffer "*rg*"
+        (rg-rerun--transient)
+        (setq captured-flags (rg-search-flags rg-cur-search)))
+      ;; This is for certain from the :flags key
+      (should (member "--no-ignore" captured-flags))
+      ;; This is for certain from the transient-args
+      (should (member "--multiline" captured-flags))
+      ;; This could come from either
+      (should (member "--hidden" captured-flags))
+      ;; Ensure duplicates were removed
+      (should (= (length captured-flags) 3)))))
+
 (ert-deftest rg-unit/menu-transient-insert ()
   "Test adding new items to the menu"
   (transient-define-prefix rg-menu ()

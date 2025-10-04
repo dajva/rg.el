@@ -64,10 +64,12 @@
     "Call FUNC from rerun menu with flags extracted with ARGFUNC.
 If INTERACTIVE is non nil, call func interactively, otherwise call it
 regularly."
-    `((setf (rg-search-flags rg-cur-search) (transient-args transient-current-command))
+    `((let ((transient-flags (transient-args transient-current-command))
+            (current-flags (rg-search-flags rg-cur-search)))
+        (setf (rg-search-flags rg-cur-search) (seq-uniq (append current-flags transient-flags))))
       (if (commandp #',func)
-           (call-interactively #',func)
-         (,func))))
+          (call-interactively #',func)
+        (,func))))
 
   (defun rg-menu-assemble-transient-wrapper (func body)
     "Create a defun with name `FUNC--transient' with BODY."
