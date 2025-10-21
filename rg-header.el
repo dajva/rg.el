@@ -99,7 +99,11 @@ string."
 When hoovering HELP is shown as a tooltip.  ITEMS is the header line
 items that the map will be applied to."
   (let ((map (make-sparse-keymap)))
-    (define-key map [header-line mouse-2]
+    (define-key map
+      (if (or (> emacs-major-version 30)
+              (and (= emacs-major-version 30) (>= emacs-minor-version 2)))
+          [header-line mouse-1]
+        [header-line mouse-2])
       (lambda (click)
         (interactive "e")
         (mouse-select-window click)
