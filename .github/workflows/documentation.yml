@@ -8,10 +8,10 @@ jobs:
   documentation:
     runs-on: ubuntu-latest
     steps:
-    - name: Setup emacs-ci-nix for emacs 27.2
+    - name: Setup emacs-ci-nix for emacs 30.2
       uses: purcell/setup-emacs@master
       with:
-        version: 27.2
+        version: 30.2
 
     - name: Setup Cask
       uses: conao3/setup-cask@master
