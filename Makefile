@@ -81,15 +81,10 @@ package-test:
 	PKG_FULL_NAME=$(PKG_FULL_NAME) emacs -batch -Q -l test/package-bootstrap.el \
 		--eval "(progn (package-install-file (expand-file-name \"dist/$(PKG_FULL_NAME).tar\")) (rg \"rg\" \"elisp\" \"/tmp/$(PKG_FULL_NAME)-elpa\"))"
 
-ifeq ($(findstring 26,$(EMACS_VERSION)), 26)
-style-check:
-package-lint:
-else
 style-check:
 	cask emacs -batch -Q $(STYLE_CHECK) -f run-emacs-lisp-flycheck-and-exit $(SOURCES)
 package-lint:
 	cask emacs -batch -Q $(STYLE_CHECK) $(DISABLE_DEFALIAS_CHECK) -f run-package-lint-and-exit rg.el
-endif
 
 
 unit-test:
@@ -101,23 +96,9 @@ integration-test:
 ert-test:
 	cask emacs --batch -l ert $(LOAD_TEST_FILES) -f ert-run-tests-batch-and-exit
 
-ifeq ($(findstring 26,$(EMACS_VERSION)), 26)
-deps_prepare:
-	cp Cask /tmp/Cask
-	sed -i '/flycheck/d' Cask
-
-deps_cleanup:
-	cp /tmp/Cask Cask
-
-else
-deps_prepare:
-deps_cleanup:
-endif
-
-deps_execute:
+deps:
 	cask install
 
-deps: deps_prepare deps_execute deps_cleanup
 
 .PHONY: all test build-test clean clean-docs package-test style-check package-lint unit-test integration-test ert-test deps deps_execute deps_prepare deps_cleanup docs
 

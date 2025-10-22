@@ -48,7 +48,7 @@ repository]]. If you find a bug, please report it in the [[https://github.com/da
   - Build docker container:
     #+begin_src bash
       # Don't use the USE_DOCKER variable here
-      make EMACS_VERSION=26-2 docker-build
+      make EMACS_VERSION=30-2 docker-build
     #+end_src
   - To run all the tests in docker image:
     #+begin_src bash
