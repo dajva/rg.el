@@ -1,3 +1,4 @@
 .cask/*
 dist/*
 *.elc
+docs/rst/_build/
