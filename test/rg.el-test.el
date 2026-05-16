@@ -694,6 +694,15 @@ method. "
         (rg-toggle-command-hiding)
         (should (get-text-property (point) 'display)))))
 
+(ert-deftest rg-integration/command-hiding-hide-quoted ()
+  "Test command hiding when `rg-hide-command` is non nil and `rg-executable' contains quotes."
+  :tags '(need-rg)
+  (cl-letf (((symbol-function #'rg-executable) (lambda () "\"rg\"")))
+    (rg-test-with-command-start "hello"
+        (should (get-text-property (point) 'display))
+        (rg-toggle-command-hiding)
+        (should-not (get-text-property (point) 'display)))))
+
 (ert-deftest rg-integration/nogroup-show-columns ()
   "Test that column numbers are shown in no group mode if enabled."
   :tags '(need-rg)

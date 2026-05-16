@@ -213,7 +213,8 @@ Each element is consists by (match-beginning-marker . match-string-length).")
     ;; "filename-linenumber-" or "linenumber-" format is used for
     ;; context lines in rg
     ("^ *\\(?:.+?-\\)?[0-9]+-.*\n" (0 'rg-context-face))
-    ("^.*rg \\(--color=always .*$\\)"
+    ;; Optional " after 'rg' is for windows where shell-quote-argument adds these.
+    ("^.*rg\"? \\(--color=always .*$\\)"
      (0 rg-command-line-properties)
      (1 (rg-hidden-command-line-properties)))
     ("^-\\*- mode: rg; default-directory: \"\\(.*\\)\" -\\*-$"
