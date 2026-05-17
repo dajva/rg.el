@@ -243,6 +243,22 @@ alias."
                                 " +--type=\"?custom.*? +foo")
                         full-command))))
 
+(ert-deftest rg-unit-test/build-command-quoting ()
+  "Test that `rg-build-command' quotes flags."
+  (let* (;; (system-type 'ms-dos)
+         (rg-executable "rg")
+        (rg-custom-type-aliases nil)
+        (flags '("--glob=O*.md" "--max-columns=30" "--threads='2'"))
+        (command (rg-build-command "pat" "everything" nil flags)))
+    (message "%S" command)
+    (should (string-match-p (regexp-quote (shell-quote-argument "O*.md"))
+                            command))
+    (should (string-match-p (regexp-quote (shell-quote-argument "30"))
+                            command))
+    ;; Already quoted flag should be preserved
+    (should (string-match-p (regexp-quote "--threads='2'")
+                            command))))
+
 (ert-deftest rg-unit-test/build-command-type ()
   "Test `rg-build-template' template creation."
   (let* ((rg-executable "rg")

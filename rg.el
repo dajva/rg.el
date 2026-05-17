@@ -284,6 +284,17 @@ Do this for each type in `rg-custom-type-aliases'."
   "Return non nil if FILES is a custom file pattern."
   (not (assoc files (rg-get-type-aliases))))
 
+(defun rg-quote-flag (flag)
+  "If FLAG is an option with a value, shell quote the value if not already quoted.
+Options are expected to be in the format '--option=value'."
+  (if (and (string-match "\\`\\(--[^=]+=\\)\\(.*\\)\\'" flag)
+           (let ((val (match-string 2 flag)))
+             (not (or (string-prefix-p "'" val)
+                      (string-prefix-p "\"" val)))))
+      (concat (match-string 1 flag)
+              (shell-quote-argument (match-string 2 flag)))
+    flag))
+
 (defun rg-build-command (pattern files literal flags)
   "Create the command line for PATTERN and FILES.
 LITERAL determines if search will be literal or regexp based and FLAGS
@@ -294,10 +305,12 @@ are command line flags to use for the search."
           (when (or rg-show-columns rg-group-result)
             (list "--column"))
           (rg-build-type-add-args)
-          (if (functionp rg-command-line-flags)
-              (funcall rg-command-line-flags)
-            rg-command-line-flags)
-          flags
+          (mapcar #'rg-quote-flag
+                  (if (functionp rg-command-line-flags)
+                      (funcall rg-command-line-flags)
+                    rg-command-line-flags))
+          (mapcar #'rg-quote-flag flags)
+
 
           (list
            (if rg-group-result "--heading" "--no-heading"))
