@@ -37,7 +37,7 @@
 
 (defun rg-history-push (item instance)
   "Push a new ITEM to the rg-history INSTANCE."
-  (when-let (present (rg-history-present instance))
+  (when-let* ((present (rg-history-present instance)))
     (push present (rg-history-past instance)))
   (setf (rg-history-present instance) item)
   (setf (rg-history-future instance) nil))
@@ -45,14 +45,14 @@
 (defun rg-history-back (instance)
   "Move back in the rg-history INSTANCE.
 Return the new current search."
-  (when-let (prev (pop (rg-history-past instance)))
+  (when-let* ((prev (pop (rg-history-past instance))))
     (push (rg-history-present instance) (rg-history-future instance))
     (setf (rg-history-present instance) prev)))
 
 (defun rg-history-forward (instance)
   "Move forward in the rg-history INSTANCE.
 Return the new current search."
-  (when-let (next (pop (rg-history-future instance)))
+  (when-let* ((next (pop (rg-history-future instance))))
     (push (rg-history-present instance) (rg-history-past instance))
     (setf (rg-history-present instance) next)))
 

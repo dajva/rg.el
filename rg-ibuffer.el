@@ -36,7 +36,7 @@
 
 (defun rg-ibuffer-search-updated()
   "This function is executed when search list buffer is updated."
-  (when-let ((list-buffer (get-buffer rg-search-list-buffer-name)))
+  (when-let* ((list-buffer (get-buffer rg-search-list-buffer-name)))
     (ignore-errors
       (with-current-buffer list-buffer
         (ibuffer-update nil t)))))

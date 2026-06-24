@@ -470,7 +470,7 @@ DEFAULT is the default pattern to use at the prompt."
      (ffip-project-root))
    (when (and (require 'project nil t)
               (fboundp 'project-current))
-     (if-let ((project (project-current)))
+     (if-let* ((project (project-current)))
          (cond
           ((fboundp 'project-root)
            (project-root project))
@@ -581,7 +581,7 @@ reports."
                        (shell-command-to-string (format "%s --version" (rg-executable)))
                        "\n")))
          (compilation-filter-advised
-          (when-let (advice-alist (get 'compilation-filter 'ad-advice-info))
+          (when-let* ((advice-alist (get 'compilation-filter 'ad-advice-info)))
             (cdr (assoc 'active advice-alist))))
          (environment (concat
                        "--------- RG environment ---------\n"
@@ -634,7 +634,7 @@ NEWNAME will be added to the result buffer name.  New searches will use the
 standard buffer unless the search is done from a saved buffer in
 which case the saved buffer will be reused."
   (interactive "sSave search as name: ")
-  (when-let ((buffer (rg-get-rename-target)))
+  (when-let* ((buffer (rg-get-rename-target)))
     (with-current-buffer buffer
       (rename-buffer (format "*%s %s*" (rg--buffer-name) newname)))))
 
@@ -645,7 +645,7 @@ To choose a custom name, use `rg-save-search-as-name' instead.  New
 searches will use the standard buffer unless the search is done from
 a saved buffer in which case the saved buffer will be reused."
   (interactive)
-  (when-let ((buffer (rg-get-rename-target)))
+  (when-let* ((buffer (rg-get-rename-target)))
     (with-current-buffer buffer
       (rename-uniquely)
       ;; If the new buffer name became default result buffer name, just rename
@@ -668,7 +668,7 @@ a saved buffer in which case the saved buffer will be reused."
   "Enable the global `rg' default key bindings under PREFIX key.
 If prefix is not supplied `rg-keymap-prefix' is used."
   (interactive)
-  (when-let ((prefix (or prefix rg-keymap-prefix)))
+  (when-let* ((prefix (or prefix rg-keymap-prefix)))
     (if rg-use-transient-menu
         (rg-enable-menu prefix)
       (global-set-key prefix rg-global-map))))
@@ -832,7 +832,7 @@ the :query option is missing, set it to ASK"
   (defun rg-search-parse-menu-arg (search-cfg name)
     "Parse :menu option in SEARCH-CFG.
 Returns forms for binding function with NAME into rg-menu."
-    (when-let ((menu-opt (rg-ensure-unquoted
+    (when-let* ((menu-opt (rg-ensure-unquoted
                           (plist-get search-cfg :menu))))
       (unless (and (consp menu-opt)
                    (= (length menu-opt) 3))

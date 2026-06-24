@@ -203,7 +203,7 @@ command."
       (user-error "'%S' should be a key description string or a key vector" key))
     (unless (stringp description)
       (user-error "'%S' is not a string" description))
-    (if-let (group-loc (rg-menu-get-loc-of-group group))
+    (if-let* ((group-loc (rg-menu-get-loc-of-group group)))
         (transient-append-suffix 'rg-menu (append group-loc '(-1))
           (list 3 key description command))
       (transient-append-suffix 'rg-menu '(-1 -1)

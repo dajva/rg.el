@@ -768,7 +768,7 @@ previous file with grouped matches."
 (defun rg-back-history ()
   "Navigate back in the search history."
   (interactive)
-  (if-let (prev (rg-history-back rg-search-history))
+  (if-let* ((prev (rg-history-back rg-search-history)))
       (progn
         (setq rg-cur-search (rg-search-copy prev))
         (rg-rerun 'no-history))
@@ -777,7 +777,7 @@ previous file with grouped matches."
 (defun rg-forward-history ()
   "Navigate forward in the search history."
   (interactive)
-  (if-let (next (rg-history-forward rg-search-history))
+  (if-let* ((next (rg-history-forward rg-search-history)))
       (progn
         (setq rg-cur-search (rg-search-copy next))
         (rg-rerun 'no-history))
