@@ -182,7 +182,7 @@ line flags to use.")
 (defvar-local rg--executable-local 'unknown)
 
 (defvar rg-required-command-line-flags
-  '("--color=always"
+  (list "--color=always"
     "--colors=match:fg:red"
     "--colors=path:fg:magenta"
     "--colors=line:fg:green"
@@ -304,6 +304,8 @@ are command line flags to use for the search."
           rg-required-command-line-flags
           (when (or rg-show-columns rg-group-result)
             (list "--column"))
+          (when rg-use-json-output
+            (list "--json"))
           (rg-build-type-add-args)
           (mapcar #'rg-quote-flag
                   (if (functionp rg-command-line-flags)

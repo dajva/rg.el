@@ -29,6 +29,7 @@
 (require 'cl-lib)
 (require 'grep)
 (require 'mouse)
+(require 'rg-json)
 (require 'rg-header)
 (require 'rg-history)
 (require 'subr-x)
@@ -100,6 +101,13 @@ Default is ':'."
   :type 'string
   :group 'rg
   :package-version '(rg . "2.0.0"))
+
+
+(defcustom rg-use-json-output (version<= "27.1" emacs-version)
+  "Use json ouput from ripgrep to create the content of the result buffer."
+  :type 'boolean
+  :group 'rg
+  :package-version '(rg . "2.5.0"))
 
 (defvar rg-filter-hook nil
   "Hook for new content in the rg buffer.
@@ -312,6 +320,7 @@ Each element is consists by (match-beginning-marker . match-string-length).")
 Each function is called with two arguments: the compilation buffer,
 and a string describing how the process finished.")
 
+
 
 ;; Defuns
 
@@ -481,7 +490,7 @@ Set up `compilation-exit-message-function'."
 This function is called from `compilation-filter-hook'."
   (save-excursion
     (forward-line 0)
-    (let ((end (point)) beg temp-positions)
+    (let ((end (point)) beg)
       (goto-char compilation-filter-start)
       (forward-line 0)
       (setq beg (point))
@@ -491,11 +500,11 @@ This function is called from `compilation-filter-hook'."
       ;; escape sequence in one chunk and the rest in another.
       (when (< (point) end)
         (setq end (copy-marker end))
-        (rg-filter-raw-output beg end temp-positions))
-      
-      (goto-char beg)
-
-      (run-hooks 'rg-filter-hook))))
+        (if rg-use-json-output
+            (rg-json-filter)
+          (rg-filter-raw-output beg end)))
+      (goto-char beg))
+    (run-hooks 'rg-filter-hook)))
 
 ;; The regexp and filter functions below were taken from ag.el
 ;; Kudos to the people from https://github.com/Wilfred/ag.el for these.

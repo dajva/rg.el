@@ -250,7 +250,6 @@ alias."
         (rg-custom-type-aliases nil)
         (flags '("--glob=O*.md" "--max-columns=30" "--threads='2'"))
         (command (rg-build-command "pat" "everything" nil flags)))
-    (message "%S" command)
     (should (string-match-p (regexp-quote (shell-quote-argument "O*.md"))
                             command))
     (should (string-match-p (regexp-quote (shell-quote-argument "30"))
@@ -641,11 +640,11 @@ Test `:flags' directive."
   :tags '(need-rg)
   (let ((rg-group-result nil)
         (rg-ignore-case 'nil))
-    (rg-run "hello" "all" (concat default-directory "test/data")))
-  (rg-with-current-result
-    (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
-      (should (= 1 (s-count-matches "foo.el.*hello" bufstr)))
-      (should (= 1 (s-count-matches "bar.el.*hello" bufstr))))))
+    (rg-run "hello" "all" (concat default-directory "test/data"))
+    (rg-with-current-result
+     (let ((bufstr (buffer-substring-no-properties (point-min) (point-max))))
+       (should (= 1 (s-count-matches "foo.el.*hello" bufstr)))
+       (should (= 1 (s-count-matches "bar.el.*hello" bufstr)))))))
 
 (ert-deftest rg-integration-test/project-root ()
   "Test that all paths in `rt-project-root' gives valid results.

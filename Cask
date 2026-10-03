@@ -6,6 +6,7 @@
 (files
  "rg.el"
  "rg-history.el"
+ "rg-json.el"
  "rg-result.el"
  "rg-header.el"
  "rg-ibuffer.el"
