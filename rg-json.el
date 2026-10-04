@@ -188,7 +188,7 @@ Formatting is based on alignment and display settings."
                  (condition-case nil
                      (json-parse-buffer :object-type 'plist)
                    (error nil)))
-      (delete-line)
+      (delete-region (pos-bol) (pos-bol 2))
       (pcase (plist-get object :type)
         ("begin" (rg-json-transform-begin output-type object))
         ("match" (rg-json-transform-match output-type object))
