@@ -405,9 +405,6 @@ Set up `compilation-exit-message-function'."
   "Return aligned LINE-NUMBER, COLUMN-NUMBER and CONTEXT-MARKER."
   (let* ((line-col-separator (or rg-align-line-column-separator ":"))
          (pos-content-separator (or rg-align-position-content-separator ":"))
-         (pos-content-separator (if rg-show-columns
-                                    pos-content-separator
-                                  (propertize pos-content-separator 'invisible t)))
          (line-number-width
           (if (and rg-show-columns context-marker)
               ;; Context lines should be aligned to column numbers
@@ -426,7 +423,7 @@ Set up `compilation-exit-message-function'."
                           pos-content-separator)
                         (rg-prepend-space column-number
                                           rg-align-column-number-field-length)
-                        pos-content-separator)
+                        (if rg-show-columns pos-content-separator))
               context-marker))))
 
 (defun rg-format-line-and-column-numbers (beg end)

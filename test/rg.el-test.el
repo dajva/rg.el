@@ -752,7 +752,8 @@ method. "
 (ert-deftest rg-integration/positions-align-line ()
   "Test line position format with alignment."
   :tags '(need-rg)
-  (let ((rg-align-position-numbers t))
+  (let ((rg-align-position-numbers t)
+        (rg-show-columns nil))
     (rg-test-with-first-error "hello"
      (should (looking-at (format
                           " \\{0,3\\}[0-9]\\{1,4\\}%s"
@@ -792,6 +793,7 @@ method. "
   "Test line position format with alignment."
   :tags '(need-rg)
   (let ((rg-align-position-numbers t)
+        (rg-show-columns nil)
         (ctx-line-rx " \\{0,4\\}[1-9]-")
         (match-line-rx (format " \\{0,3\\}[0-9]\\{1,4\\}%s"
                                rg-align-position-content-separator))
