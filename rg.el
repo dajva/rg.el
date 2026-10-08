@@ -449,7 +449,7 @@ Returns nil if nothing at point."
                   (cdr default-alias) ")"))
              ": ")
      (rg-get-type-aliases)
-     nil nil nil 'rg-files-history
+     nil t nil 'rg-files-history
      (car default-alias))))
 
 (defun rg-read-pattern (literal &optional default)
