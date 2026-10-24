@@ -180,7 +180,7 @@ Formatting is based on alignment and display settings."
   ;; buffer.
   ;; Set marker insertion type to t to move the marker to the end of the
   ;; insterted text to have new process output be inserted after our replacements.
-  (when-let ((proc (get-buffer-process (current-buffer))))
+  (when-let* ((proc (get-buffer-process (current-buffer))))
     (set-marker-insertion-type (process-mark proc) t))
   (let (object
         (output-type (if rg-group-result (make-grouped-output) (make-ungrouped-output))))

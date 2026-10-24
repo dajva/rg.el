@@ -60,7 +60,7 @@
 
   (defun rg-key-for-command (sym map &optional wanted-key)
     (cl-assert (commandp sym))
-    (when-let ((keys (where-is-internal sym (symbol-value map))))
+    (when-let* ((keys (where-is-internal sym (symbol-value map))))
       (let* ((key (edmacro-format-keys (or
                                         (and wanted-key
                                              (cl-find wanted-key keys :test 'equal))
