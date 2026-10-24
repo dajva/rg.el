@@ -401,7 +401,7 @@ Set up `compilation-exit-message-function'."
      (when (> space-count 0) (make-string space-count ?\s))
      text)))
 
-(defun rg-perform-position-numbers-alignment (line-number &optional column-number context-marker )
+(defun rg-perform-position-numbers-alignment (line-number &optional column-number context-marker)
   "Return aligned LINE-NUMBER, COLUMN-NUMBER and CONTEXT-MARKER."
   (let* ((line-col-separator (or rg-align-line-column-separator ":"))
          (pos-content-separator (or rg-align-position-content-separator ":"))
@@ -411,19 +411,19 @@ Set up `compilation-exit-message-function'."
               (+ rg-align-line-number-field-length
                  (1+ rg-align-column-number-field-length))
             rg-align-line-number-field-length))
-         (column-number (when column-number
-                          (if rg-show-columns
-                              column-number
-                            (propertize column-number 'invisible t)))))
+         (column (when column-number
+                   (rg-prepend-space column-number
+                                     rg-align-column-number-field-length))))
     (cl-assert (if column-number (not context-marker) context-marker))
     (concat (rg-prepend-space line-number line-number-width)
-            (if column-number
-                (concat (if rg-show-columns
-                            line-col-separator
-                          pos-content-separator)
-                        (rg-prepend-space column-number
-                                          rg-align-column-number-field-length)
-                        (if rg-show-columns pos-content-separator))
+            (if column
+                (if rg-show-columns
+                    (concat line-col-separator
+                            column
+                            pos-content-separator)
+                  (concat pos-content-separator
+                          (propertize column 'invisible t)
+                          (propertize pos-content-separator 'invisible t)))
               context-marker))))
 
 (defun rg-format-line-and-column-numbers (beg end)
@@ -514,7 +514,9 @@ Groups into filename,line number and column number.")
   "A regexp pattern to match line number and column number with grouped output."
   (concat "^ *\\([1-9][0-9]*\\)"
           (regexp-quote (or (and rg-align-position-numbers
-                                 rg-align-line-column-separator) ":"))
+                                 (if rg-show-columns
+                                     rg-align-line-column-separator
+                                   rg-align-position-content-separator)) ":"))
           " *\\([1-9][0-9]*\\)"
           (regexp-quote (or (and rg-align-position-numbers
                                  rg-align-position-content-separator) ":"))))

@@ -36,7 +36,8 @@
         (rg-group-result nil)
         (rg-align-position-numbers nil))
     (rg-run-wgrep-tests)
-    (rg-run-wgrep-context-tests)))
+    (rg-run-wgrep-context-tests)
+    (rg-run-wgrep-edit-tests)))
 
 (ert-deftest rg-integration-test/wgrep-nogroup-columns ()
   "wgrep test with grouped result."
@@ -45,7 +46,8 @@
         (rg-group-result nil)
         (rg-align-position-numbers nil))
     (rg-run-wgrep-tests)
-    (rg-run-wgrep-context-tests)))
+    (rg-run-wgrep-context-tests)
+    (rg-run-wgrep-edit-tests)))
 
 (ert-deftest rg-integration-test/wgrep-group ()
   "wgrep test with grouped result."
@@ -54,7 +56,8 @@
         (rg-group-result t)
         (rg-align-position-numbers nil))
     (rg-run-wgrep-tests)
-    (rg-run-wgrep-context-tests)))
+    (rg-run-wgrep-context-tests)
+    (rg-run-wgrep-edit-tests)))
 
 (ert-deftest rg-integration-test/wgrep-group-columns ()
   "wgrep test with grouped result."
@@ -63,7 +66,8 @@
         (rg-group-result t)
         (rg-align-position-numbers nil))
     (rg-run-wgrep-tests)
-    (rg-run-wgrep-context-tests)))
+    (rg-run-wgrep-context-tests)
+    (rg-run-wgrep-edit-tests)))
 
 (ert-deftest rg-integration-test/wgrep-group-align ()
   "wgrep test with aligned and grouped result."
@@ -72,7 +76,8 @@
         (rg-group-result t)
         (rg-align-position-numbers t))
     (rg-run-wgrep-tests)
-    (rg-run-wgrep-context-tests)))
+    (rg-run-wgrep-context-tests)
+    (rg-run-wgrep-edit-tests)))
 
 (ert-deftest rg-integration-test/wgrep-group-align-columns ()
   "wgrep test with aligned and grouped result including column numbers."
@@ -81,7 +86,8 @@
         (rg-group-result t)
         (rg-align-position-numbers t))
     (rg-run-wgrep-tests)
-    (rg-run-wgrep-context-tests)))
+    (rg-run-wgrep-context-tests)
+    (rg-run-wgrep-edit-tests)))
 
 (ert-deftest rg-integration-test/wgrep-group-align-columns-custom-separators ()
   "wgrep test with aligned and grouped result including column numbers."
@@ -92,7 +98,20 @@
         (rg-align-line-column-separator "   ")
         (rg-align-position-content-separator "#"))
     (rg-run-wgrep-tests)
-    (rg-run-wgrep-context-tests)))
+    (rg-run-wgrep-context-tests)
+    (rg-run-wgrep-edit-tests)))
+
+(ert-deftest rg-integration-test/wgrep-group-align-custom-separators ()
+  "wgrep test with aligned and grouped result with custom separators."
+  :tags '(need-rg)
+  (let ((rg-show-columns nil)
+        (rg-group-result t)
+        (rg-align-position-numbers t)
+        (rg-align-line-column-separator "|")
+        (rg-align-position-content-separator "#"))
+    (rg-run-wgrep-tests)
+    (rg-run-wgrep-context-tests)
+    (rg-run-wgrep-edit-tests)))
 
 
 ;; Helper functions
@@ -159,6 +178,29 @@
   (rg-test-with-fontified-buffer "hello"
     (wgrep-change-to-wgrep-mode)
     (rg-check-wgrep-current-buffer)))
+
+
+(defun rg-run-wgrep-edit-tests ()
+  (let* ((temp-dir (make-temp-file "rg-wgrep-test-" 'directory))
+         (test-file (expand-file-name "test.txt" temp-dir))
+         (wgrep-auto-save-buffer t))
+    (unwind-protect
+        (progn
+          (with-temp-file test-file
+            (insert "first line\nsecond line foobar\nthird line\n"))
+          (let ((default-directory temp-dir))
+            (rg-test-with-fontified-buffer (rg-run "foobar" "everything" temp-dir)
+                                           (goto-char (next-single-property-change (point-min) 'rg-command-hidden-part))
+                                           (compilation-next-file 1)
+                                           (wgrep-change-to-wgrep-mode)
+                                           (search-forward "foobar")
+                                           (replace-match "barbaz")
+                                           (wgrep-finish-edit)))
+          (with-temp-buffer
+            (insert-file-contents test-file)
+            (should (equal (buffer-string)
+                           "first line\nsecond line barbaz\nthird line\n"))))
+      (delete-directory temp-dir t))))
 
 (defun rg-check-wgrep-current-buffer ()
   (rg-check-wgrep-header)

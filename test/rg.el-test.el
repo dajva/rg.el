@@ -763,7 +763,9 @@ method. "
     (let ((rg-align-position-content-separator "#"))
       (rg-test-with-first-error "hello"
        (should (looking-at (format " \\{0,4\\}[0-9]\\{1,5\\}%s"
-                                   rg-align-position-content-separator)))))))
+                                   rg-align-position-content-separator)))
+       ;; separator must not be invisible
+       (should-not (get-text-property (1- (match-end 0)) 'invisible))))))
 
 (ert-deftest rg-integration/positions-align-line-column ()
   "Test line and column position format with alignment."
