@@ -144,7 +144,9 @@ Formatting is based on alignment and display settings."
          (first-match (seq-first matches))
          (column-number (when first-match
                           (1+ (rg-json-plist-path first-match :start))))
-         (text (rg-json-plist-path object :data :lines :text)))
+         (text (replace-regexp-in-string
+                "\r\n" "\n"
+                (rg-json-plist-path object :data :lines :text))))
     (setf rg-json-last-context-line-number line-number)
     (mapc
      (lambda (match)
@@ -168,7 +170,9 @@ Formatting is based on alignment and display settings."
          (rg-perform-position-numbers-alignment
           (number-to-string line-number) nil "-")
        (format "%d-" line-number))
-     (rg-json-plist-path object :data :lines :text))))
+     (replace-regexp-in-string
+      "\r\n" "\n"
+      (rg-json-plist-path object :data :lines :text)))))
 
 (cl-defmethod rg-json-transform-unhandled ((_output-type grouped-output) _object))
 
