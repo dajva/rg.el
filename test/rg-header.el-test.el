@@ -97,3 +97,17 @@ Instead DO-RETURN will be returned when the function is called."
 
     (rg-unit/mock-truncation-predicate (:predicate ignore)
       (should (string= "Change search string" (rg-header-search-help))))))
+
+(ert-deftest rg-unit/header-mouse-action-keymap ()
+  "Tests keymap created by `rg-header-mouse-action'."
+  (let* ((prop (rg-header-mouse-action 'test-cmd "help" "test-item"))
+         (plist (cddr prop))
+         (keymap (plist-get plist 'keymap)))
+    (should (keymapp keymap))
+    (should (lookup-key keymap [header-line mouse-1]))
+    (should (lookup-key keymap [header-line mouse-2]))
+    (should (lookup-key keymap [mouse-1]))
+    (should (lookup-key keymap [mouse-2]))
+    (should (eq (lookup-key keymap [follow-link]) 'mouse-face))
+    (should (eq (plist-get plist 'mouse-face) 'header-line-highlight))
+    (should (equal (plist-get plist 'help-echo) "help"))))

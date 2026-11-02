@@ -96,18 +96,18 @@ string."
 
 (defun rg-header-mouse-action (command help &rest items)
   "Add a keymap with mouse click action for COMMAND.
-When hoovering HELP is shown as a tooltip.  ITEMS is the header line
+When hovering HELP is shown as a tooltip.  ITEMS is the header line
 items that the map will be applied to."
-  (let ((map (make-sparse-keymap)))
-    (define-key map
-      (if (or (> emacs-major-version 30)
-              (and (= emacs-major-version 30) (>= emacs-minor-version 2)))
-          [header-line mouse-1]
-        [header-line mouse-2])
-      (lambda (click)
-        (interactive "e")
-        (mouse-select-window click)
-        (call-interactively command)))
+  (let ((map (make-sparse-keymap))
+        (action (lambda (click)
+                  (interactive "e")
+                  (mouse-select-window click)
+                  (call-interactively command))))
+    (define-key map [header-line mouse-1] action)
+    (define-key map [header-line mouse-2] action)
+    (define-key map [mouse-1] action)
+    (define-key map [mouse-2] action)
+    (define-key map [follow-link] 'mouse-face)
     `(:propertize ,items mouse-face header-line-highlight
                   help-echo ,help
                   keymap ,map)))
