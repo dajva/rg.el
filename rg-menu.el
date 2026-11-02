@@ -50,6 +50,31 @@
   (when (eq major-mode 'rg-mode)
     (rg-search-flags rg-cur-search)))
 
+(defun rg-menu-managed-arg-p (flag managed-args)
+  "Return non-nil if FLAG is managed by one of MANAGED-ARGS."
+  (seq-some (lambda (arg)
+              (if (string-suffix-p "=" arg)
+                  (string-prefix-p arg flag)
+                (string= arg flag)))
+            managed-args))
+
+(defun rg-menu-merge-flags (current-flags transient-flags prefix)
+  "Merge CURRENT-FLAGS with TRANSIENT-FLAGS.
+Flags managed by PREFIX are replaced by TRANSIENT-FLAGS, while
+unmanaged/custom flags from CURRENT-FLAGS are preserved."
+  (let* ((prefix (or prefix 'rg-menu))
+         (managed-args
+          (seq-keep (lambda (suffix)
+                      (when (and (cl-typep suffix 'transient-argument)
+                                 (slot-boundp suffix 'argument))
+                        (oref suffix argument)))
+                    (ignore-errors (transient-suffixes prefix))))
+         (unmanaged-flags
+          (seq-remove (lambda (flag)
+                        (rg-menu-managed-arg-p flag managed-args))
+                      current-flags)))
+    (seq-uniq (append unmanaged-flags transient-flags))))
+
 (eval-and-compile
   (defun rg-menu-create-search-body (func)
     "Call FUNC from search menu with the flags set in the transient menu."
@@ -66,7 +91,8 @@ If INTERACTIVE is non nil, call func interactively, otherwise call it
 regularly."
     `((let ((transient-flags (transient-args transient-current-command))
             (current-flags (rg-search-flags rg-cur-search)))
-        (setf (rg-search-flags rg-cur-search) (seq-uniq (append current-flags transient-flags))))
+        (setf (rg-search-flags rg-cur-search)
+              (rg-menu-merge-flags current-flags transient-flags transient-current-command)))
       (if (commandp #',func)
           (call-interactively #',func)
         (,func))))

@@ -86,9 +86,10 @@
 (ert-deftest rg-unit/menu-rerun-custom-flags ()
   "Test that rerun from transient menu preserves custom flags."
   (rg-define-search rg-test-search-with-flags
-    :flags '("--hidden" "--no-ignore"))
+    :flags '("--hidden" "--max-depth=2"))
   (let ((captured-flags nil))
-    (cl-letf* (((symbol-function #'rg-run)
+    (cl-letf* (((symbol-function #'rg-recompile) #'ignore)
+               ((symbol-function #'rg-run)
                 (lambda (pattern files dir &optional literal confirm flags)
                   (with-current-buffer (get-buffer-create "*rg*")
                     (rg-mode)
@@ -105,7 +106,7 @@
         (rg-rerun--transient)
         (setq captured-flags (rg-search-flags rg-cur-search)))
       ;; This is for certain from the :flags key
-      (should (member "--no-ignore" captured-flags))
+      (should (member "--max-depth=2" captured-flags))
       ;; This is for certain from the transient-args
       (should (member "--multiline" captured-flags))
       ;; This could come from either
@@ -113,57 +114,138 @@
       ;; Ensure duplicates were removed
       (should (= (length captured-flags) 3)))))
 
+(ert-deftest rg-unit/menu-rerun-remove-managed-flag ()
+  "Test that rerun from transient menu removes disabled managed flags."
+  (rg-define-search rg-test-search-with-managed-flags
+    :flags '("--hidden" "--no-ignore"))
+  (let ((captured-flags nil))
+    (cl-letf* (((symbol-function #'rg-recompile) #'ignore)
+               ((symbol-function #'rg-run)
+                (lambda (pattern files dir &optional literal confirm flags)
+                  (with-current-buffer (get-buffer-create "*rg*")
+                    (rg-mode)
+                    (setq rg-cur-search (rg-search-create
+                                         :pattern pattern
+                                         :files files
+                                         :dir dir
+                                         :literal literal
+                                         :flags flags))
+                    (setq compilation-arguments (list "a" 'rg-mode 'rg-buffer-name nil)))))
+               ;; Only returning '--hidden' means '--no-ignore' was toggled.
+               ((symbol-function #'transient-args) (lambda (_) '("--hidden"))))
+      (rg-test-search-with-managed-flags "test" "all" "/tmp")
+      (with-current-buffer "*rg*"
+        (rg-rerun--transient)
+        (setq captured-flags (rg-search-flags rg-cur-search)))
+      ;; --no-ignore was toggled off in menu, should not be present
+      (should-not (member "--no-ignore" captured-flags))
+      (should (equal captured-flags '("--hidden"))))))
+
+(ert-deftest rg-unit/menu-rerun-clear-option ()
+  "Test that clearing an option like --glob removes it on rerun."
+  (rg-define-search rg-test-search-with-glob
+    :flags '("--glob=foo"))
+  (let ((captured-flags nil))
+    (cl-letf* (((symbol-function #'rg-recompile) #'ignore)
+               ((symbol-function #'rg-run)
+                (lambda (pattern files dir &optional literal confirm flags)
+                  (with-current-buffer (get-buffer-create "*rg*")
+                    (rg-mode)
+                    (setq rg-cur-search (rg-search-create
+                                         :pattern pattern
+                                         :files files
+                                         :dir dir
+                                         :literal literal
+                                         :flags flags))
+                    (setq compilation-arguments (list "a" 'rg-mode 'rg-buffer-name nil)))))
+               ((symbol-function #'transient-args) (lambda (_) nil)))
+      (rg-test-search-with-glob "test" "all" "/tmp")
+      (with-current-buffer "*rg*"
+        (rg-rerun--transient)
+        (setq captured-flags (rg-search-flags rg-cur-search)))
+      (should (null captured-flags)))))
+
+(ert-deftest rg-unit/menu-rerun-change-option ()
+  "Test that changing an option like --glob replaces the old value on rerun."
+  (rg-define-search rg-test-search-change-glob
+    :flags '("--glob=foo"))
+  (let ((captured-flags nil))
+    (cl-letf* (((symbol-function #'rg-recompile) #'ignore)
+               ((symbol-function #'rg-run)
+                (lambda (pattern files dir &optional literal confirm flags)
+                  (with-current-buffer (get-buffer-create "*rg*")
+                    (rg-mode)
+                    (setq rg-cur-search (rg-search-create
+                                         :pattern pattern
+                                         :files files
+                                         :dir dir
+                                         :literal literal
+                                         :flags flags))
+                    (setq compilation-arguments (list "a" 'rg-mode 'rg-buffer-name nil)))))
+               ((symbol-function #'transient-args) (lambda (_) '("--glob=bar"))))
+      (rg-test-search-change-glob "test" "all" "/tmp")
+      (with-current-buffer "*rg*"
+        (rg-rerun--transient)
+        (setq captured-flags (rg-search-flags rg-cur-search)))
+      (should (equal captured-flags '("--glob=bar"))))))
+
 (ert-deftest rg-unit/menu-transient-insert ()
   "Test adding new items to the menu"
-  (transient-define-prefix rg-menu ()
-    [ "Switches" ]
-    [ "Options" ]
-    [[ "Search"
-       (3 "s" "search" search--transient)]
-     [ "Rerun"
-       (3 "r" "rerun" rerun--transient)]])
-  ;; Make sure we are not using some other rg-menu
-  (should-not (ignore-errors (transient-get-suffix 'rg-menu '(2 2))))
-  (should (transient-get-suffix 'rg-menu 'search--transient))
-  (should (transient-get-suffix 'rg-menu 'rerun--transient))
+  (unwind-protect
+      (progn
+        (transient-define-prefix rg-menu ()
+          [ "Switches" ]
+          [ "Options" ]
+          [[ "Search"
+             (3 "s" "search" search--transient)]
+           [ "Rerun"
+             (3 "r" "rerun" rerun--transient)]])
+        ;; Make sure we are not using some other rg-menu
+        (should-not (ignore-errors (transient-get-suffix 'rg-menu '(2 2))))
+        (should (transient-get-suffix 'rg-menu 'search--transient))
+        (should (transient-get-suffix 'rg-menu 'rerun--transient))
 
-  ;; Add to existing sub group
-  (rg-menu-transient-insert "Search" "n" "new search" 'new--transient)
-  (should (eq (plist-get
-               (cdr (transient-get-suffix 'rg-menu '(2 0 1))) :command)
-              'new--transient))
+        ;; Add to existing sub group
+        (rg-menu-transient-insert "Search" "n" "new search" 'new--transient)
+        (should (eq (plist-get
+                     (cdr (transient-get-suffix 'rg-menu '(2 0 1))) :command)
+                    'new--transient))
 
-  ;; Create a new sub group and add to that
-  (rg-menu-transient-insert "Custom" "c" "custom search" 'custom--transient)
-  (should (eq (plist-get
-               (cdr (transient-get-suffix 'rg-menu '(2 2 0))) :command)
-              'custom--transient)))
+        ;; Create a new sub group and add to that
+        (rg-menu-transient-insert "Custom" "c" "custom search" 'custom--transient)
+        (should (eq (plist-get
+                     (cdr (transient-get-suffix 'rg-menu '(2 2 0))) :command)
+                    'custom--transient)))
+    (load "rg-menu")))
 
 (ert-deftest rg-unit/menu-define-search ()
   "Test adding new items to the menu"
-  (transient-define-prefix rg-menu ()
-    [ "Switches" ]
-    [ "Options" ]
-    [[ "Search"
-       (3 "s" "search" search--transient)]
-     [ "Rerun"
-       (3 "r" "rerun" rerun--transient)]])
-  ;; Make sure we are not using some other rg-menu
-  (should-not (ignore-errors (transient-get-suffix 'rg-menu '(2 2))))
+  (unwind-protect
+      (progn
+        (transient-define-prefix rg-menu ()
+          [ "Switches" ]
+          [ "Options" ]
+          [[ "Search"
+             (3 "s" "search" search--transient)]
+           [ "Rerun"
+             (3 "r" "rerun" rerun--transient)]])
+        ;; Make sure we are not using some other rg-menu
+        (should-not (ignore-errors (transient-get-suffix 'rg-menu '(2 2))))
 
-  (rg-define-search menu-search
-    :menu ("Macro" "m" "macro search"))
+        (rg-define-search menu-search
+          :menu ("Macro" "m" "macro search"))
 
-  (let ((subgroup (seq-elt (transient-get-suffix 'rg-menu '(2 2)) 1))
-        (entry (cdr (transient-get-suffix 'rg-menu '(2 2 0)))))
-    (should (equal (plist-get subgroup :description)
-                   "Macro"))
-    (should (eq (plist-get entry :command)
-                'menu-search--transient))
-    (should (equal (plist-get entry :description)
-                   "macro search"))
-    (should (equal (plist-get entry :key)
-                   "m"))))
+        (let ((subgroup (seq-elt (transient-get-suffix 'rg-menu '(2 2)) 1))
+              (entry (cdr (transient-get-suffix 'rg-menu '(2 2 0)))))
+          (should (equal (plist-get subgroup :description)
+                         "Macro"))
+          (should (eq (plist-get entry :command)
+                      'menu-search--transient))
+          (should (equal (plist-get entry :description)
+                         "macro search"))
+          (should (equal (plist-get entry :key)
+                         "m"))))
+    (load "rg-menu")))
 
 (ert-deftest rg-unit/menu-search-initial-value ()
   "Test extraction of flags into transient initial value."
